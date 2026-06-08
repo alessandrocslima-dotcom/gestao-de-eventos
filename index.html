@@ -967,10 +967,13 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
         <div class="sb-si" onclick="sbGo('admin-backup',this)"><div class="sb-sdot"></div><span class="sb-slbl">Backup</span></div>
       </div>
 
-      <!-- Sincronizar / Sair -->
+      <!-- Sincronizar / Enviar / Sair -->
       <div class="sb-grp">Conta</div>
       <div class="sb-item" data-tip="Sincronizar com a nuvem" onclick="btnSincronizar()" id="btnSync">
         <span class="sb-ico">🔄</span><span class="sb-lbl">Sincronizar</span>
+      </div>
+      <div class="sb-item" data-tip="Enviar dados deste dispositivo para a nuvem" onclick="btnEnviarTudo()">
+        <span class="sb-ico">☁️</span><span class="sb-lbl">Enviar para nuvem</span>
       </div>
       <div class="sb-item" data-tip="Sair" onclick="doLogout()">
         <span class="sb-ico">🚪</span><span class="sb-lbl">Sair do sistema</span>
@@ -6608,6 +6611,73 @@ function btnSincronizar(){
   });
 }
 window.btnSincronizar = btnSincronizar;
+
+
+/* ══ ENVIAR TUDO LOCAL PARA A NUVEM (v14) ══ */
+/* Sobe todos os dados locais para o Firestore - usado na migração inicial */
+function enviarTudoParaNuvem(onComplete){
+  if(!db){ if(onComplete) onComplete(false, 'Firebase não disponível'); return; }
+  console.log('☁️ Enviando todos os dados locais para a nuvem...');
+
+  var modulos = [
+    { col:'fornecedores', sk:'vtp_fornecedores_v1' },
+    { col:'empresas',     sk:'vtp_empresas_v1' },
+    { col:'secretarias',  sk:'vtp_secretarias_v1' },
+    { col:'produtores',   sk:'vtp_produtores_v1' },
+    { col:'orcamentos',   sk:'vtp_orcamentos_v1' },
+    { col:'agenda',       sk:'vtp_agenda_v1' },
+    { col:'realizados',   sk:'vtp_realizados_v1' }
+  ];
+
+  var pendentes = modulos.length;
+  var enviados = 0;
+  var totalItens = 0;
+
+  modulos.forEach(function(m){
+    var raw = localStorage.getItem(m.sk);
+    if(!raw){
+      pendentes--;
+      if(pendentes===0 && onComplete) onComplete(true, enviados+' módulos enviados ('+totalItens+' itens)');
+      return;
+    }
+    try {
+      var items = JSON.parse(raw);
+      if(!Array.isArray(items)) items = [];
+      var docData = { items: items, atualizadoEm: new Date().toISOString() };
+      db.collection(m.col).doc('_lista').set(docData)
+        .then(function(){
+          enviados++;
+          totalItens += items.length;
+          console.log('  ✓ '+m.col+' ('+items.length+' itens)');
+          pendentes--;
+          if(pendentes===0 && onComplete) onComplete(true, enviados+' módulos enviados ('+totalItens+' itens)');
+        })
+        .catch(function(e){
+          console.error('  ✗ '+m.col+':', e.message);
+          pendentes--;
+          if(pendentes===0 && onComplete) onComplete(true, enviados+' módulos enviados, alguns falharam');
+        });
+    } catch(e){
+      console.error('Erro ao ler '+m.sk+':', e);
+      pendentes--;
+      if(pendentes===0 && onComplete) onComplete(true, enviados+' módulos enviados');
+    }
+  });
+}
+window.enviarTudoParaNuvem = enviarTudoParaNuvem;
+
+/* Botão de força upload */
+function btnEnviarTudo(){
+  if(!confirm('Enviar TODOS os dados deste dispositivo para a nuvem?\n\nIsso vai SUBSTITUIR os dados que estão na nuvem com os que estão aqui.\n\nUse no dispositivo que tem os dados mais atualizados.')){
+    return;
+  }
+  toast('Enviando para a nuvem...','');
+  enviarTudoParaNuvem(function(ok, msg){
+    if(ok) toast(msg,'ok');
+    else toast('Erro: '+msg,'err');
+  });
+}
+window.btnEnviarTudo = btnEnviarTudo;
 
 </script>
 <datalist id="dl-fornecedores"></datalist>
