@@ -811,6 +811,33 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 .eq-hist-item:last-child{border-bottom:none}
 .eq-hist-acao{font-weight:700;color:#0F172A}
 .eq-hist-data{color:#94A3B8;font-size:10px}
+
+/* ── Campo de período do evento (data início + fim opcional) ── */
+.dt-range{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.dt-inp{padding:9px 12px;border:1.5px solid #E2E8F0;border-radius:8px;font-size:14px;outline:none;font-family:'Inter',sans-serif;color:#0F172A;background:#fff;flex:1;min-width:140px}
+.dt-inp:focus{border-color:#3B82F6}
+.dt-add-btn{display:inline-flex;align-items:center;gap:6px;padding:9px 14px;background:#EFF6FF;border:1.5px dashed #93C5FD;color:#1D4ED8;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;transition:all .15s}
+.dt-add-btn:hover{background:#DBEAFE;border-style:solid}
+.dt-end-wrap{display:flex;align-items:center;gap:8px;flex:1;min-width:200px}
+.dt-arrow{color:#94A3B8;font-size:18px;font-weight:600;flex-shrink:0}
+.dt-rm-btn{width:32px;height:32px;border-radius:8px;border:1.5px solid #FCA5A5;background:#FEF2F2;color:#DC2626;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+.dt-rm-btn:hover{background:#FEE2E2}
+.dt-info{margin-top:8px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px}
+.dt-info.dt-ok{color:#15803D}
+.dt-info.dt-err{color:#DC2626}
+@media(max-width:600px){
+  .dt-range{flex-direction:column;align-items:stretch}
+  .dt-end-wrap{width:100%}
+  .dt-add-btn{justify-content:center}
+}
+
+/* ── Botão Voltar (em telas internas) ── */
+.btn-voltar{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#fff;border:1.5px solid #E2E8F0;color:#475569;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;margin-bottom:10px;transition:all .15s;
+  position:sticky;top:8px;z-index:30;box-shadow:0 2px 6px rgba(15,23,42,0.08);align-self:flex-start}
+.btn-voltar:hover{background:#F8FAFC;border-color:#CBD5E1;color:#0F172A;box-shadow:0 3px 10px rgba(15,23,42,0.12)}
+@media(max-width:600px){
+  .btn-voltar{top:4px;padding:10px 14px;font-size:13px}
+}
 </style>
 </head>
 <body>
@@ -940,8 +967,11 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
         <div class="sb-si" onclick="sbGo('admin-backup',this)"><div class="sb-sdot"></div><span class="sb-slbl">Backup</span></div>
       </div>
 
-      <!-- Sair -->
+      <!-- Sincronizar / Sair -->
       <div class="sb-grp">Conta</div>
+      <div class="sb-item" data-tip="Sincronizar com a nuvem" onclick="btnSincronizar()" id="btnSync">
+        <span class="sb-ico">🔄</span><span class="sb-lbl">Sincronizar</span>
+      </div>
       <div class="sb-item" data-tip="Sair" onclick="doLogout()">
         <span class="sb-ico">🚪</span><span class="sb-lbl">Sair do sistema</span>
       </div>
@@ -1050,7 +1080,24 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
         <div class="fld"><label>Tipo de evento</label>
           <select id="fTipo"><option value="">Selecionar...</option><optgroup label="Festas e Comemorações"><option>Casamento</option><option>Aniversário</option><option>Formatura</option><option>Debutante</option><option>Festa infantil</option></optgroup><optgroup label="Eventos Públicos"><option>Show / Festa pública</option><option>Agenda de rua</option><option>Festival</option><option>Rock In Rio</option><option>Carnaval / Micareta</option><option>Evento Esportivo</option><option>Evento Cultural</option><option>Evento Comunitário</option></optgroup><optgroup label="Inaugurações e Obras"><option>Inauguração de Praça</option><option>Inauguração de Rua</option><option>Início de Obras</option><option>Entrega de Obras</option><option>Entrega de Moradias</option><option>Reinauguração de Espaço Público</option></optgroup><optgroup label="Ações Institucionais"><option>Ação Social</option><option>Feira de Serviços</option><option>Audiência Pública</option><option>Reunião Comunitária</option><option>Visita Técnica</option><option>Visita Institucional</option><option>Coletiva de Imprensa</option><option>Evento Religioso de Apoio Institucional</option></optgroup><optgroup label="Corporativos e Outros"><option>Corporativo</option><option>Congresso / Palestra</option><option>Evento escolar</option><option>Evento religioso</option><option>Feira / Exposição</option><option>Evento beneficente</option><option>Outro</option></optgroup></select>
         </div>
-        <div class="fld"><label class="req">Data do evento</label><input type="date" id="fData"></div>
+        <div class="fld">
+          <label class="req">Data do evento</label>
+          <div class="dt-range">
+            <input type="date" id="fData" class="dt-inp" onchange="dtRangeCheck()">
+            <button type="button" class="dt-add-btn" id="dtAddBtn" onclick="dtRangeShow()">
+              <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round"><path d="M12 5v14M5 12h14"/></svg>
+              Adicionar data de término
+            </button>
+            <div class="dt-end-wrap" id="dtEndWrap" style="display:none">
+              <span class="dt-arrow">→</span>
+              <input type="date" id="fDataFim" class="dt-inp" onchange="dtRangeCheck()">
+              <button type="button" class="dt-rm-btn" onclick="dtRangeHide()" title="Remover data de término">
+                <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="dt-info" id="dtInfo"></div>
+        </div>
         <div class="row2">
           <div class="fld"><label>Horário de início</label><input type="time" id="fHora"></div>
           <div class="fld"><label>Horário de término</label><input type="time" id="fHoraFim"></div>
@@ -1372,6 +1419,10 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <!-- ORÇAMENTO -->
       <div class="vp" id="vpOrcamentos">
         <div class="pg-hdr">
+          <button id="orcVoltarBtn" onclick="orcVoltar()" class="btn-voltar" style="display:none">
+            <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;vertical-align:-2px"><polyline points="15 18 9 12 15 6"/></svg>
+            Voltar para Orçamentos
+          </button>
           <h1>💰 Planilha Orçamentária</h1>
           <p id="orc-subtitle">Selecione uma visita para gerar o orçamento</p>
         </div>
@@ -1801,6 +1852,19 @@ window.addEventListener('load', function(){
       firebase.initializeApp(firebaseConfig);
       db = firebase.firestore();
       console.log('Firebase conectado!');
+      // Sincronizar todos os módulos ao conectar
+      if(typeof sincronizarTudo==='function'){
+        setTimeout(function(){
+          sincronizarTudo(function(ok){
+            if(ok){
+              // Re-renderizar telas atuais (sem deslogar)
+              if(typeof renderDash==='function' && me) try{ renderDash(); }catch(e){}
+              if(typeof agRenderAll==='function') try{ agRenderAll(); }catch(e){}
+              if(typeof renderForns==='function') try{ renderForns(); }catch(e){}
+            }
+          });
+        }, 1000);
+      }
     } else {
       console.warn('Firebase SDK não carregado — usando localStorage');
     }
@@ -1863,6 +1927,79 @@ function loadVisitasCloud(callback){
     });
 }
 
+/* ══ HELPER GENÉRICO DE SINCRONIZAÇÃO CLOUD (v14) ══ */
+/* Salva uma lista inteira no Firestore como documento único */
+function cloudSaveList(colecao, lista){
+  if(!db){ return; }
+  try {
+    // Limitar tamanho: Firestore aceita doc até 1MB
+    var docData = { items: lista, atualizadoEm: new Date().toISOString() };
+    db.collection(colecao).doc('_lista').set(docData)
+      .then(function(){ console.log(colecao+' sincronizado na nuvem ('+lista.length+' itens)'); })
+      .catch(function(e){ console.error('Erro cloud '+colecao+':', e.message); });
+  } catch(err) { console.error('Erro ao preparar cloud '+colecao+':', err); }
+}
+
+/* Carrega lista do Firestore; chama callback(lista) */
+function cloudLoadList(colecao, callback){
+  if(!db){ callback(null); return; }
+  db.collection(colecao).doc('_lista').get()
+    .then(function(doc){
+      if(doc.exists){
+        var d = doc.data();
+        callback(Array.isArray(d.items) ? d.items : null);
+      } else {
+        callback(null);
+      }
+    })
+    .catch(function(e){
+      console.error('Erro load cloud '+colecao+':', e.message);
+      callback(null);
+    });
+}
+window.cloudSaveList = cloudSaveList;
+window.cloudLoadList = cloudLoadList;
+
+
+/* ══ SINCRONIZAÇÃO COMPLETA AO ABRIR (v14) ══ */
+/* Puxa todos os módulos da nuvem e atualiza o localStorage */
+function sincronizarTudo(onComplete){
+  if(!db){ if(onComplete) onComplete(false); return; }
+  console.log('🔄 Sincronizando módulos da nuvem...');
+
+  var modulos = [
+    { col:'fornecedores', sk:'vtp_fornecedores_v1' },
+    { col:'empresas',     sk:'vtp_empresas_v1' },
+    { col:'secretarias',  sk:'vtp_secretarias_v1' },
+    { col:'produtores',   sk:'vtp_produtores_v1' },
+    { col:'orcamentos',   sk:'vtp_orcamentos_v1' },
+    { col:'agenda',       sk:'vtp_agenda_v1' },
+    { col:'realizados',   sk:'vtp_realizados_v1' }
+  ];
+
+  var pendentes = modulos.length;
+  var atualizados = 0;
+
+  modulos.forEach(function(m){
+    cloudLoadList(m.col, function(items){
+      if(items !== null){
+        try {
+          localStorage.setItem(m.sk, JSON.stringify(items));
+          atualizados++;
+          console.log('  ✓ '+m.col+' ('+items.length+' itens)');
+        } catch(e){ console.error('Erro local '+m.col+':', e); }
+      }
+      pendentes--;
+      if(pendentes===0){
+        console.log('✅ Sincronização concluída ('+atualizados+'/'+modulos.length+' módulos)');
+        if(onComplete) onComplete(true);
+      }
+    });
+  });
+}
+window.sincronizarTudo = sincronizarTudo;
+
+
 /* ── FIRESTORE — excluir visita ── */
 function deleteVisitaCloud(id){
   if(!db) return;
@@ -1871,7 +2008,7 @@ function deleteVisitaCloud(id){
 }
 
 function loadE(){ try{ return JSON.parse(localStorage.getItem(SK_E)||'[]'); }catch(e){ return []; } }
-function saveE(a){ try{ localStorage.setItem(SK_E, JSON.stringify(a)); }catch(e){} }
+function saveE(a){ try{ localStorage.setItem(SK_E, JSON.stringify(a)); }catch(e){} if(typeof cloudSaveList==='function') cloudSaveList('empresas', a); }
 
 function initStorage(){
   // Sempre limpa e recria o admin raiz com senha em texto puro
@@ -2482,6 +2619,14 @@ function buildSum(){
   document.getElementById('sumContent').innerHTML=h;
 }
 
+function fmtDR(d1, d2){
+  // Formata intervalo: '10/06/2026' se só d1, '10/06/2026 a 18/06/2026' se ambos
+  if(!d1) return '';
+  var s1 = fmtD(d1);
+  if(!d2 || d2===d1) return s1;
+  return s1+' a '+fmtD(d2);
+}
+
 /* ── SAVE ── */
 function collectData(){
   var _existente = editId ? (loadV().find(function(v){return v.id===editId;})||{}) : {};
@@ -2502,7 +2647,7 @@ function collectData(){
     responsavel: _resp, participantes: _parts, historico: _hist,
     empresa:gv('fEmp'), doc:gv('fDoc'), telEmp:gv('fTelEmp'),
     produtor:gv('fProd'), telProd:gv('fTelProd'),
-    nome:gv('fNome'), tipo:gv('fTipo'), dataEvento:gv('fData'), horaEvento:gv('fHora'), horaFim:gv('fHoraFim'), pessoas:gv('fPessoas'),
+    nome:gv('fNome'), tipo:gv('fTipo'), dataEvento:gv('fData'), dataEventoFim:gv('fDataFim'), horaEvento:gv('fHora'), horaFim:gv('fHoraFim'), pessoas:gv('fPessoas'),
     dataMont:gv('fDataM'), horaMont:gv('fHoraM'), obsMont:gv('fObsM'),
     local:gv('fLoc'), end:gv('fEnd'), ref:gv('fRef'), linkLoc:gv('fLinkLoc'),
     gpsMain:gps.main, risco:fRisco, riscoDesc:gv('fRDesc'),
@@ -2726,7 +2871,7 @@ function genPDF(){
 
 /* ── RESET FORM ── */
 function resetForm(){
-  ['fEmp','fDoc','fTelEmp','fProd','fTelProd','fNome','fTipo','fData','fHora','fHoraFim','fPessoas',
+  ['fEmp','fDoc','fTelEmp','fProd','fTelProd','fNome','fTipo','fData','fDataFim','fHora','fHoraFim','fPessoas',
    'fDataM','fHoraM','fObsM','fLoc','fEnd','fRef','fLinkLoc','fRDesc','fSom','fSomDet','fObsEst','fObs'].forEach(function(id){
     var e=document.getElementById(id); if(e){ if(e.tagName==='SELECT') e.selectedIndex=0; else e.value=''; }
   });
@@ -2747,6 +2892,7 @@ function resetForm(){
   if(sigCtx) sigCtx.clearRect(0,0,sigCv?sigCv.width:0,sigCv?sigCv.height:0);
   fStep=0; editId=null;
   document.getElementById('fNav').style.display='flex';
+  if(typeof dtRangeInit==='function') dtRangeInit();
 }
 
 /* ── LOAD FORM (editar) ── */
@@ -2754,7 +2900,8 @@ function loadForm(v){
   resetForm();
   sv('fEmp',v.empresa);sv('fDoc',v.doc);sv('fTelEmp',v.telEmp);
   sv('fProd',v.produtor);sv('fTelProd',v.telProd);
-  sv('fNome',v.nome);sv('fTipo',v.tipo);sv('fData',v.dataEvento);
+  sv('fNome',v.nome);sv('fTipo',v.tipo);sv('fData',v.dataEvento);sv('fDataFim',v.dataEventoFim||'');
+  setTimeout(function(){if(typeof dtRangeInit==='function')dtRangeInit();},50);
   sv('fHora',v.horaEvento);sv('fHoraFim',v.horaFim);sv('fPessoas',v.pessoas);
   sv('fDataM',v.dataMont);sv('fHoraM',v.horaMont);sv('fObsM',v.obsMont);
   sv('fLoc',v.local);sv('fEnd',v.end);sv('fRef',v.ref);sv('fLinkLoc',v.linkLoc);
@@ -2919,7 +3066,7 @@ function renderAdEv(){
   var h='';
   vs.slice().reverse().forEach(function(v){
     h+='<div class="ecard"><div class="ecard-top"><div class="ecard-name">'+(v.nome||'Sem nome')+'</div>'+(v.risco==='risco'?'<span class="badge b-risco">⚠ Risco</span>':'')+'</div>';
-    h+='<div class="ecard-meta"><span class="emeta">'+(v.empresa||'-')+'</span><span class="emeta">'+(v.produtor||'-')+'</span><span class="emeta">'+fmtD(v.dataEvento)+'</span></div>';
+    h+='<div class="ecard-meta"><span class="emeta">'+(v.empresa||'-')+'</span><span class="emeta">'+(v.produtor||'-')+'</span><span class="emeta">'+fmtDR(v.dataEvento, v.dataEventoFim)+'</span></div>';
     h+='<div class="adm-act-row"><button class="btn-adel" onclick="delV(\''+v.id+'\')"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>Excluir</button></div></div>';
   });
   el.innerHTML=h;
@@ -3237,6 +3384,69 @@ if('serviceWorker' in navigator){
   });
 }
 </script>
+
+<!-- MODAL DEMANDA / WHATSAPP DO EVENTO -->
+<div class="modal-ov center" id="agDemandaOv" onclick="if(event.target===this)agDemandaClose()">
+  <div class="modal" style="max-width:520px;max-height:90vh;overflow-y:auto">
+    <div class="modal-title">
+      <span>📦 Demanda do evento</span>
+      <button class="modal-x" onclick="agDemandaClose()"><svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div id="agDmEvNome" style="font-size:13px;font-weight:600;color:#475569;margin-bottom:14px"></div>
+
+    <!-- Importar da VT -->
+    <div id="agDmImportBox" style="margin-bottom:14px;display:none">
+      <button class="btn-outline-blue" style="width:100%;padding:10px;font-size:13px" onclick="agDmImportarVT()">
+        <svg viewBox="0 0 24 24" style="width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;vertical-align:-2px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Importar demanda da Visita Técnica
+      </button>
+    </div>
+
+    <!-- Itens da demanda -->
+    <div class="fld">
+      <label>Itens da demanda</label>
+      <div id="agDmItens"></div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <input type="text" id="agDmNovoItem" placeholder="Ex: Cadeira PVC" style="flex:2;padding:9px 12px;border:1.5px solid #E2E8F0;border-radius:8px;font-size:13px;outline:none;font-family:'Inter',sans-serif">
+        <input type="text" id="agDmNovoQtd" placeholder="Qtd" inputmode="numeric" style="flex:1;min-width:60px;padding:9px 12px;border:1.5px solid #E2E8F0;border-radius:8px;font-size:13px;outline:none;font-family:'Inter',sans-serif">
+        <button class="btn-outline-blue" style="width:auto;margin:0;padding:9px 14px;font-size:13px" onclick="agDmAddItem()">+ Add</button>
+      </div>
+    </div>
+
+    <!-- Localização -->
+    <div class="fld"><label>Link da localização (Google Maps)</label>
+      <input type="text" id="agDmLink" placeholder="https://maps.google.com/..." style="width:100%;padding:9px 12px;border:1.5px solid #E2E8F0;border-radius:8px;font-size:13px;outline:none;box-sizing:border-box;font-family:'Inter',sans-serif">
+    </div>
+
+    <!-- Área de risco -->
+    <div class="fld"><label>Área de risco?</label>
+      <select id="agDmRisco" onchange="agDmToggleRisco()" style="width:100%;padding:9px 12px;border:1.5px solid #E2E8F0;border-radius:8px;font-size:13px;outline:none;box-sizing:border-box;font-family:'Inter',sans-serif">
+        <option value="nao">✅ Sem área de risco</option>
+        <option value="sim">⚠️ Área de risco</option>
+      </select>
+    </div>
+    <div class="fld" id="agDmRiscoDescWrap" style="display:none"><label>Descrição do risco</label>
+      <input type="text" id="agDmRiscoDesc" placeholder="Ex: Piso irregular, acesso por escada" style="width:100%;padding:9px 12px;border:1.5px solid #E2E8F0;border-radius:8px;font-size:13px;outline:none;box-sizing:border-box;font-family:'Inter',sans-serif">
+    </div>
+
+    <!-- Campos de logística -->
+    <div class="row2">
+      <div class="fld"><label>Horário de saída</label><input type="time" id="agDmSaidaHora" style="width:100%;padding:9px 12px;border:1.5px solid #E2E8F0;border-radius:8px;font-size:13px;outline:none;box-sizing:border-box"></div>
+      <div class="fld"><label>Previsão de retorno</label><input type="time" id="agDmRetorno" style="width:100%;padding:9px 12px;border:1.5px solid #E2E8F0;border-radius:8px;font-size:13px;outline:none;box-sizing:border-box"></div>
+    </div>
+    <div class="fld"><label>Local de saída</label>
+      <input type="text" id="agDmSaidaLocal" placeholder="Ex: Galpão Central" style="width:100%;padding:9px 12px;border:1.5px solid #E2E8F0;border-radius:8px;font-size:13px;outline:none;box-sizing:border-box;font-family:'Inter',sans-serif">
+    </div>
+    <div class="fld"><label>Observações <span style="font-weight:400;color:#94A3B8;font-size:11px">(opcional)</span></label>
+      <textarea id="agDmObs" rows="2" placeholder="Ex: Levar lona extra, equipe chega 1h antes..." style="width:100%;padding:9px 12px;border:1.5px solid #E2E8F0;border-radius:8px;font-size:13px;outline:none;box-sizing:border-box;font-family:'Inter',sans-serif;resize:vertical"></textarea>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-top:6px">
+      <button class="btn-primary" style="flex:1" onclick="agDmSalvar()">💾 Salvar demanda</button>
+      <button class="btn-success" style="flex:1" onclick="agDmEnviarWA()">📲 Enviar WhatsApp</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
 
@@ -3250,8 +3460,12 @@ if('serviceWorker' in navigator){
     <div class="ag-modal-body">
       <div class="fld"><label>Nome do evento *</label><input type="text" id="agENome" placeholder="Ex: Inauguração da Praça Tiradentes"></div>
       <div class="row2">
-        <div class="fld"><label>Data *</label><input type="date" id="agEData"></div>
-        <div class="fld"><label>Horário</label><input type="time" id="agEHora"></div>
+        <div class="fld"><label>Data início *</label><input type="date" id="agEData"></div>
+        <div class="fld"><label>Data término <span style="font-weight:400;color:#94A3B8;font-size:11px">(opcional)</span></label><input type="date" id="agEDataFim"></div>
+      </div>
+      <div class="row2">
+        <div class="fld"><label>Horário de início</label><input type="time" id="agEHora"></div>
+        <div class="fld"><label>Horário de término</label><input type="time" id="agEHoraFim"></div>
       </div>
       <div class="fld"><label>Local</label><input type="text" id="agELocal" placeholder="Endereço ou nome do local"></div>
       <div class="fld"><label>Secretaria</label>
@@ -3273,7 +3487,7 @@ if('serviceWorker' in navigator){
         <input type="text" id="agENum" placeholder="Ex: EVT-2026-0047">
       </div>
       <div class="fld"><label>Visita técnica vinculada</label>
-        <select id="agEVisita"><option value="">Nenhuma</option></select>
+        <select id="agEVisita" onchange="agEvtImportarVT()"><option value="">Nenhuma</option></select>
       </div>
       <div class="fld"><label>Observações</label><textarea id="agEObs" style="min-height:60px" placeholder="Detalhes adicionais..."></textarea></div>
       <div style="display:flex;gap:8px;margin-top:4px">
@@ -3558,9 +3772,9 @@ var orcCurrentVid = null;
 var orcEditSecId = null;
 
 function loadOrc(){ try{ return JSON.parse(localStorage.getItem(SK_ORC)||'{}'); }catch(e){ return {}; } }
-function saveOrc(o){ localStorage.setItem(SK_ORC, JSON.stringify(o)); }
+function saveOrc(o){ localStorage.setItem(SK_ORC, JSON.stringify(o)); if(typeof cloudSaveList==='function') cloudSaveList('orcamentos', o); }
 function loadSec(){ try{ return JSON.parse(localStorage.getItem(SK_SEC)||'[]'); }catch(e){ return []; } }
-function saveSec(a){ localStorage.setItem(SK_SEC, JSON.stringify(a)); }
+function saveSec(a){ localStorage.setItem(SK_SEC, JSON.stringify(a)); if(typeof cloudSaveList==='function') cloudSaveList('secretarias', a); }
 
 /* ── Helpers ── */
 function fmtM2(v){ return 'R$ '+(parseFloat(v)||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
@@ -3585,15 +3799,17 @@ function orcPopulateSelector(){
 
 /* ── Carregar visita no orçamento ── */
 function orcLoadVisita(vid){
-  if(!vid){ document.getElementById('orc-body-panel').style.display='none'; document.getElementById('orc-visita-preview').style.display='none'; return; }
+  if(!vid){ document.getElementById('orc-body-panel').style.display='none'; document.getElementById('orc-visita-preview').style.display='none'; var bv=document.getElementById('orcVoltarBtn'); if(bv) bv.style.display='none'; return; }
   orcCurrentVid = vid;
+  // Mostrar botão Voltar
+  var bv=document.getElementById('orcVoltarBtn'); if(bv) bv.style.display='inline-flex';
   var vs = loadV();
   var v = vs.find(function(x){ return x.id===vid; });
   if(!v) return;
   // Preview
   var prev = document.getElementById('orc-visita-preview');
   prev.style.display='block';
-  prev.innerHTML = '<strong>'+( v.nome||'Sem nome')+'</strong> · '+(v.empresa||'')+(v.local?' · '+v.local:'')+(v.dataEvento?' · '+fmtD(v.dataEvento):'');
+  prev.innerHTML = '<strong>'+( v.nome||'Sem nome')+'</strong> · '+(v.empresa||'')+(v.local?' · '+v.local:'')+(v.dataEvento?' · '+fmtDR(v.dataEvento, v.dataEventoFim):'');
   // Cabeçalho
   orcRenderCabecalho(v);
   // Carregar itens salvos ou vazio
@@ -3626,7 +3842,7 @@ function orcRenderCabecalho(v){
   var cells = [
     {lbl:'Nº do evento',   val: numOf || null,          span:1, empty:'— aguardando aprovação'},
     {lbl:'Cliente',        val: v.empresa||null,         span:1},
-    {lbl:'Data',           val: fmtD(v.dataEvento),      span:1},
+    {lbl:'Data',           val: fmtDR(v.dataEvento, v.dataEventoFim),      span:1},
     {lbl:'Horário',        val: v.horaEvento||(v.horaFim?'até '+v.horaFim:null), span:1},
     {lbl:'Nome do evento', val: v.nome||null,            span:4},
     {lbl:'Local',          val: v.local||v.end||null,    span:4},
@@ -3867,7 +4083,7 @@ function orcWAOrcamento(){
   if(orc.numOficial) m+='Nº do Evento: '+orc.numOficial+'\n';
   m+='Cliente: '+(v.empresa||'');
   if(v.nome) m+='\nEvento: '+v.nome;
-  if(v.dataEvento) m+='\nData: '+fmtD(v.dataEvento);
+  if(v.dataEvento) m+='\nData: '+fmtDR(v.dataEvento, v.dataEventoFim);
   if(v.horaEvento) m+=' às '+v.horaEvento;
   if(v.local||v.end) m+='\nLocal: '+(v.local||v.end);
   if(v.pessoas) m+='\nPúblico: '+v.pessoas+' pessoas';
@@ -3898,7 +4114,7 @@ function orcWACotacao(){
   var m = '📋 *PEDIDO DE ORÇAMENTO*\n'+linha+'\n';
   if(orc && orc.numOficial) m+='*Nº do evento:* '+orc.numOficial+'\n';
   m+='*Evento:* '+(v.nome||'');
-  if(v.dataEvento) m+='\n*Data:* '+fmtD(v.dataEvento);
+  if(v.dataEvento) m+='\n*Data:* '+fmtDR(v.dataEvento, v.dataEventoFim);
   if(v.horaEvento) m+=' às '+v.horaEvento;
   if(v.local||v.end) m+='\n*Local:* '+(v.local||v.end);
   // Link de localização
@@ -4080,7 +4296,16 @@ function orcAbrirImportVT(){
   // Coletar itens da VT: eqItens, equipeItens, servicoItens
   var itens = [];
   (v.eqItens||[]).forEach(function(it){
-    if(it.nome) itens.push({nome:it.nome, desc:it.obs||'', qtd:it.qtd||1, unidade:'Unid', cat:'Equipamento'});
+    if(it.nome){
+      // Montar descrição com medida (ex: tenda 3x3m) + obs
+      var partes = [];
+      if(it.medida) partes.push(it.medida);
+      if(it.obs) partes.push(it.obs);
+      var descricao = partes.join(' · ');
+      // Adicionar medida ao nome também (ex: "Tenda 3x3m")
+      var nomeCompleto = it.nome + (it.medida ? ' (' + it.medida + ')' : '');
+      itens.push({nome:nomeCompleto, desc:descricao, qtd:it.qtd||1, unidade:'Unid', cat:'Equipamento'});
+    }
   });
   (v.equipeItens||[]).forEach(function(it){
     if(it.nome) itens.push({nome:it.nome, desc:it.obs||'', qtd:it.qtd||1, unidade:'Dia', cat:'Equipe'});
@@ -4227,7 +4452,7 @@ function orcAbrirCotacaoForn(){
     var m = '📋 *PEDIDO DE ORÇAMENTO*\n'+linha+'\n';
     if(orc.numOficial) m+='*Nº do evento:* '+orc.numOficial+'\n';
     m+='*Evento:* '+(v.nome||'');
-    if(v.dataEvento) m+='\n*Data:* '+fmtD(v.dataEvento);
+    if(v.dataEvento) m+='\n*Data:* '+fmtDR(v.dataEvento, v.dataEventoFim);
     if(v.horaEvento) m+=' às '+v.horaEvento;
     if(v.local||v.end) m+='\n*Local:* '+(v.local||v.end);
     if(v.linkLoc) m+='\n🗺 '+v.linkLoc;
@@ -4294,7 +4519,7 @@ var SK_FORN = 'vtp_fornecedores_v1';
 var _editFornId = null;
 
 function loadForn(){ try{ return JSON.parse(localStorage.getItem('vtp_fornecedores_v1')||'[]'); }catch(e){ return []; } }
-function saveFornDb(a){ localStorage.setItem('vtp_fornecedores_v1', JSON.stringify(a)); }
+function saveFornDb(a){ localStorage.setItem('vtp_fornecedores_v1', JSON.stringify(a)); if(typeof cloudSaveList==='function') cloudSaveList('fornecedores', a); }
 
 /* ══ AUTOCOMPLETE FORNECEDOR ══ */
 function orcFornAcOpen(inp){
@@ -4609,7 +4834,7 @@ var AG_MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','A
 var AG_MESES_ABR = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 
 function agLoadEvs(){ try{ return JSON.parse(localStorage.getItem(SK_AG)||'[]'); }catch(e){ return []; } }
-function agSaveEvs(a){ localStorage.setItem(SK_AG, JSON.stringify(a)); }
+function agSaveEvs(a){ localStorage.setItem(SK_AG, JSON.stringify(a)); if(typeof cloudSaveList==='function') cloudSaveList('agenda', a); }
 
 function agFiltered(){
   var evs = agLoadEvs();
@@ -4691,8 +4916,14 @@ function agRenderCal(){
       td.appendChild(dayNum);
 
       var evsNoDia=filtered.filter(function(e){
-        var d=new Date(e.data+'T00:00:00'); d.setHours(0,0,0,0);
-        return d.getTime()===cellDate.getTime();
+        if(!e.data) return false;
+        var dIni=new Date(e.data+'T00:00:00'); dIni.setHours(0,0,0,0);
+        // Se tem data fim, considera intervalo
+        if(e.dataFim && e.dataFim!==e.data){
+          var dFim=new Date(e.dataFim+'T00:00:00'); dFim.setHours(0,0,0,0);
+          return cellDate.getTime()>=dIni.getTime() && cellDate.getTime()<=dFim.getTime();
+        }
+        return dIni.getTime()===cellDate.getTime();
       });
       evsNoDia.slice(0,2).forEach(function(e){
         var pill=document.createElement('span');
@@ -4768,6 +4999,7 @@ function agRenderList(day){
         '<div class="ag-ev-meta">'+
           (e.hora?'<span>🕐 '+esc(e.hora)+'</span>':'')+
           (e.local?'<span>📍 '+esc(e.local)+'</span>':'')+
+          (e.dataFim && e.dataFim!==e.data?'<span>📅 até '+esc(agFmtData(e.dataFim))+'</span>':'')+
         '</div>'+
         '<div class="ag-ev-badges">'+
           '<span class="ag-badge ag-b-'+e.status+'">'+AG_STATUS_LBL[e.status]+'</span>'+
@@ -4776,6 +5008,7 @@ function agRenderList(day){
         '</div>'+
         '<div class="ag-ev-btns">'+
           (e.visitaId?'<button class="ag-ev-btn ag-ev-btn-blue" onclick="agIrVisita(\''+e.visitaId+'\')">📋 Ver visita</button>':'')+
+          '<button class="ag-ev-btn" style="color:#15803D;border-color:#86EFAC;background:#F0FDF4" onclick="agDemandaModal(\''+e.id+'\')">📦 Demanda / WhatsApp</button>'+
           '<button class="ag-ev-btn ag-ev-btn-blue" onclick="agEditarEvento(\''+e.id+'\')">✏️ Editar</button>'+
           '<button class="ag-ev-btn" style="color:#DC2626;border-color:#FCA5A5;background:#FEF2F2" onclick="agExcluirEvento(\''+e.id+'\')">🗑 Excluir</button>'+
         '</div>'+
@@ -4800,6 +5033,7 @@ function agAbrirModal(data){
   document.getElementById('agENome').value='';
   document.getElementById('agEData').value=data?data:'';
   document.getElementById('agEHora').value='';
+  document.getElementById('agEHoraFim').value='';
   document.getElementById('agELocal').value='';
   document.getElementById('agENum').value='';
   document.getElementById('agEObs').value='';
@@ -4817,6 +5051,7 @@ function agEditarEvento(id){
   document.getElementById('agENome').value=ev.nome||'';
   document.getElementById('agEData').value=ev.data||'';
   document.getElementById('agEHora').value=ev.hora||'';
+  document.getElementById('agEHoraFim').value=ev.horaFim||'';
   document.getElementById('agELocal').value=ev.local||'';
   document.getElementById('agENum').value=ev.numOfc||'';
   document.getElementById('agEObs').value=ev.obs||'';
@@ -4859,7 +5094,9 @@ function agSalvarEvento(){
     id: agEditId||uid(),
     nome: nome,
     data: document.getElementById('agEData').value,
+    dataFim: document.getElementById('agEDataFim').value,
     hora: document.getElementById('agEHora').value,
+    horaFim: document.getElementById('agEHoraFim').value,
     local: document.getElementById('agELocal').value.trim(),
     sec: document.getElementById('agESec').value,
     status: document.getElementById('agEStatus').value,
@@ -4904,7 +5141,7 @@ var SK_PROD = 'vtp_produtores_v1';
 var _editProdId = null;
 
 function loadProd(){ try{ return JSON.parse(localStorage.getItem(SK_PROD)||'[]'); }catch(e){ return []; } }
-function saveProdDb(a){ localStorage.setItem(SK_PROD, JSON.stringify(a)); }
+function saveProdDb(a){ localStorage.setItem(SK_PROD, JSON.stringify(a)); if(typeof cloudSaveList==='function') cloudSaveList('produtores', a); }
 
 function openProdModal(id){
   _editProdId = id||null;
@@ -5068,7 +5305,7 @@ var SK_REAL = 'vtp_realizados_v1';
 var _erEditId = null;
 
 function erLoad(){ try{ return JSON.parse(localStorage.getItem(SK_REAL)||'[]'); }catch(e){ return []; } }
-function erSave(a){ localStorage.setItem(SK_REAL, JSON.stringify(a)); }
+function erSave(a){ localStorage.setItem(SK_REAL, JSON.stringify(a)); if(typeof cloudSaveList==='function') cloudSaveList('realizados', a); }
 
 var ER_MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 var ER_MESES_ABR = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
@@ -5359,8 +5596,20 @@ function erRender(){
   });
 }
 
+var BK_KEYS = [
+  'vtp_users_v2',
+  'vtp_visitas_v2',
+  'vtp_empresas_v1',
+  'vtp_fornecedores_v1',
+  'vtp_secretarias_v1',
+  'vtp_produtores_v1',
+  'vtp_orcamentos_v1',
+  'vtp_agenda_v1',
+  'vtp_realizados_v1'
+];
+
 function bkExportar(){
-  var dump = { _app:'Gestao de Eventos Pro', _versao:'10', _data:new Date().toISOString(), dados:{} };
+  var dump = { _app:'Gestao de Eventos Pro', _versao:'13', _data:new Date().toISOString(), dados:{} };
   BK_KEYS.forEach(function(k){
     var v = localStorage.getItem(k);
     if(v!==null) dump.dados[k] = v;
@@ -6004,6 +6253,361 @@ window.eqCloseModal=eqCloseModal;
 window.eqAddParticipante=eqAddParticipante;
 window.eqRemoveParticipante=eqRemoveParticipante;
 window.eqTransferir=eqTransferir;
+
+
+/* ══ DEMANDA / WHATSAPP DO EVENTO (v12) ══ */
+var _agDmEvId = null;
+var _agDmItens = [];
+
+function agDemandaModal(eventoId){
+  _agDmEvId = eventoId;
+  var ev = agLoadEvs().find(function(e){ return e.id===eventoId; });
+  if(!ev){ toast('Evento não encontrado','err'); return; }
+
+  document.getElementById('agDmEvNome').textContent = '📋 ' + (ev.nome||'Sem nome') + (ev.data ? ' · ' + agFmtDataR(ev.data, ev.dataFim) : '');
+
+  // Carregar demanda salva no evento (ou vazia)
+  _agDmItens = Array.isArray(ev.demanda) ? ev.demanda.slice() : [];
+  document.getElementById('agDmLink').value = ev.dmLink || ev.linkLoc || '';
+  document.getElementById('agDmRisco').value = ev.dmRisco || 'nao';
+  document.getElementById('agDmRiscoDesc').value = ev.dmRiscoDesc || '';
+  document.getElementById('agDmSaidaHora').value = ev.dmSaidaHora || '';
+  document.getElementById('agDmSaidaLocal').value = ev.dmSaidaLocal || '';
+  document.getElementById('agDmRetorno').value = ev.dmRetorno || '';
+  document.getElementById('agDmObs').value = ev.dmObs || '';
+  agDmToggleRisco();
+
+  // Mostrar botão de importar só se houver VT vinculada
+  document.getElementById('agDmImportBox').style.display = ev.visitaId ? 'block' : 'none';
+
+  agDmRenderItens();
+  document.getElementById('agDemandaOv').classList.add('on');
+}
+
+function agDemandaClose(){ document.getElementById('agDemandaOv').classList.remove('on'); }
+
+function agFmtData(d){
+  if(!d) return '';
+  var dt = new Date(d+'T00:00:00');
+  return String(dt.getDate()).padStart(2,'0')+'/'+String(dt.getMonth()+1).padStart(2,'0')+'/'+dt.getFullYear();
+}
+
+function agFmtDataR(d1, d2){
+  // Formata intervalo: '10/06/2026' ou '10/06/2026 a 18/06/2026'
+  if(!d1) return '';
+  var s1 = agFmtData(d1);
+  if(!d2 || d2===d1) return s1;
+  return s1+' a '+agFmtData(d2);
+}
+
+function agDmToggleRisco(){
+  var v = document.getElementById('agDmRisco').value;
+  document.getElementById('agDmRiscoDescWrap').style.display = v==='sim' ? 'block' : 'none';
+}
+
+function agDmRenderItens(){
+  var el = document.getElementById('agDmItens');
+  if(!_agDmItens.length){
+    el.innerHTML = '<div style="font-size:12px;color:#94A3B8;padding:8px 0">Nenhum item. Adicione abaixo ou importe da VT.</div>';
+    return;
+  }
+  el.innerHTML = '';
+  _agDmItens.forEach(function(it, i){
+    var row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:8px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:8px 10px;margin-bottom:6px';
+    row.innerHTML = '<span style="flex:1;font-size:13px;font-weight:600;color:#0F172A">'+esc(it.nome)+'</span>'
+      +'<span style="font-size:12px;color:#64748B">'+(it.qtd?esc(String(it.qtd)):'—')+'</span>';
+    var rm = document.createElement('button');
+    rm.innerHTML = '✕';
+    rm.style.cssText = 'width:24px;height:24px;border-radius:6px;border:1px solid #FCA5A5;background:#FEF2F2;color:#DC2626;cursor:pointer;flex-shrink:0';
+    rm.onclick = (function(idx){ return function(){ _agDmItens.splice(idx,1); agDmRenderItens(); }; })(i);
+    row.appendChild(rm);
+    el.appendChild(row);
+  });
+}
+
+function agDmAddItem(){
+  var nome = document.getElementById('agDmNovoItem').value.trim();
+  var qtd = document.getElementById('agDmNovoQtd').value.trim();
+  if(!nome){ toast('Digite o nome do item','err'); return; }
+  _agDmItens.push({ nome: nome, qtd: qtd });
+  document.getElementById('agDmNovoItem').value = '';
+  document.getElementById('agDmNovoQtd').value = '';
+  agDmRenderItens();
+}
+
+function agDmImportarVT(){
+  var ev = agLoadEvs().find(function(e){ return e.id===_agDmEvId; });
+  if(!ev || !ev.visitaId){ toast('Sem VT vinculada','err'); return; }
+  var v = loadV().find(function(x){ return x.id===ev.visitaId; });
+  if(!v){ toast('Visita não encontrada','err'); return; }
+  // Importar itens da demanda (eqItens)
+  var importados = 0;
+  if(Array.isArray(v.eqItens)){
+    v.eqItens.forEach(function(it){
+      if(it.nome){
+        // Incluir medida entre parênteses se houver (ex: "Tenda Piramidal (3x3m)")
+        var nomeCompleto = it.nome + (it.medida ? ' (' + it.medida + ')' : '');
+        _agDmItens.push({ nome: nomeCompleto, qtd: it.qtd||'' });
+        importados++;
+      }
+    });
+  }
+  // Importar localização: prioridade GPS principal > link colado
+  var linkLocal = '';
+  if(v.gpsMain && v.gpsMain.lat && v.gpsMain.lng){
+    linkLocal = 'https://www.google.com/maps?q=' + v.gpsMain.lat + ',' + v.gpsMain.lng;
+  } else if(v.linkLoc){
+    linkLocal = v.linkLoc;
+  }
+  if(linkLocal) document.getElementById('agDmLink').value = linkLocal;
+  // Importar risco
+  if(v.riscoDesc){
+    document.getElementById('agDmRisco').value = 'sim';
+    document.getElementById('agDmRiscoDesc').value = v.riscoDesc;
+    agDmToggleRisco();
+  }
+  agDmRenderItens();
+  toast(importados+' itens importados da VT','ok');
+}
+
+function agDmSalvar(){
+  var evs = agLoadEvs();
+  var ix = evs.findIndex(function(e){ return e.id===_agDmEvId; });
+  if(ix<0) return;
+  evs[ix].demanda = _agDmItens;
+  evs[ix].dmLink = document.getElementById('agDmLink').value.trim();
+  evs[ix].dmRisco = document.getElementById('agDmRisco').value;
+  evs[ix].dmRiscoDesc = document.getElementById('agDmRiscoDesc').value.trim();
+  evs[ix].dmSaidaHora = document.getElementById('agDmSaidaHora').value;
+  evs[ix].dmSaidaLocal = document.getElementById('agDmSaidaLocal').value.trim();
+  evs[ix].dmRetorno = document.getElementById('agDmRetorno').value;
+  evs[ix].dmObs = document.getElementById('agDmObs').value.trim();
+  agSaveEvs(evs);
+  toast('Demanda salva!','ok');
+}
+
+function agDmEnviarWA(){
+  // Salva antes de enviar
+  agDmSalvar();
+  var ev = agLoadEvs().find(function(e){ return e.id===_agDmEvId; });
+  if(!ev) return;
+
+  // Saudação automática por horário
+  var h = new Date().getHours();
+  var saud = h<12 ? 'Bom dia!' : (h<18 ? 'Boa tarde!' : 'Boa noite!');
+
+  // Formatar data (com intervalo se houver dataFim)
+  var dataFmt = ev.data ? agFmtDataR(ev.data, ev.dataFim) : '';
+
+  var linha = '━━━━━━━━━━━━━━━━━━━━━━';
+  var m = saud + '\n\n';
+
+  // === INFORMAÇÕES DO EVENTO (ordem do modelo original) ===
+  m += '📌 *INFORMAÇÕES DO EVENTO*\n' + linha + '\n';
+  m += '*Número do Evento:* ' + (ev.numOfc||'—') + '\n';
+  m += '*Data do Evento:* ' + (dataFmt||'—') + '\n';
+  // Horário do evento (início + término se houver)
+  if(ev.hora){
+    var horaTxt = ev.hora;
+    if(ev.horaFim) horaTxt += ' às ' + ev.horaFim;
+    m += '*Horário:* ' + horaTxt + '\n';
+  }
+  m += '*Local:* ' + (ev.local||'—') + '\n';
+  var link = document.getElementById('agDmLink').value.trim();
+  if(link) m += '🗺 ' + link + '\n';
+
+  // === ÁREA DE RISCO ===
+  m += '\n';
+  if(document.getElementById('agDmRisco').value==='sim'){
+    var rd = document.getElementById('agDmRiscoDesc').value.trim();
+    m += '⚠️ *ÁREA DE RISCO*\n';
+    if(rd) m += rd + '\n';
+  } else {
+    m += '✅ Sem área de risco identificada\n';
+  }
+
+  // === LOGÍSTICA (termos do modelo original) ===
+  var saidaH = document.getElementById('agDmSaidaHora').value;
+  var saidaL = document.getElementById('agDmSaidaLocal').value.trim();
+  var retorno = document.getElementById('agDmRetorno').value;
+  if(saidaH || saidaL || retorno){
+    m += '\n🚚 *LOGÍSTICA*\n' + linha + '\n';
+    if(saidaH) m += '*Horário de saída:* ' + saidaH + '\n';
+    if(saidaL) m += '*Local de saída:* ' + saidaL + '\n';
+    if(retorno) m += '*PREVISÃO de retorno:* ' + retorno + '\n';
+  }
+
+  // === DEMANDAS ===
+  m += '\n📦 *DEMANDAS*\n' + linha + '\n';
+  if(_agDmItens.length){
+    _agDmItens.forEach(function(it){
+      m += '• ' + it.nome;
+      if(it.qtd) m += ' - ' + it.qtd;
+      m += '\n';
+    });
+  } else {
+    m += '(nenhum item)\n';
+  }
+
+  // === OBSERVAÇÕES (opcional) ===
+  var obs = document.getElementById('agDmObs').value.trim();
+  if(obs){
+    m += '\n📝 *Observações:*\n' + obs + '\n';
+  }
+
+  var url = 'https://wa.me/?text=' + encodeURIComponent(m);
+  window.open(url, '_blank');
+}
+
+window.agDemandaModal=agDemandaModal;
+window.agDemandaClose=agDemandaClose;
+window.agDmToggleRisco=agDmToggleRisco;
+window.agDmAddItem=agDmAddItem;
+window.agDmImportarVT=agDmImportarVT;
+window.agDmSalvar=agDmSalvar;
+window.agDmEnviarWA=agDmEnviarWA;
+
+
+/* ══ CAMPO DE DATA INTELIGENTE (início + fim opcional) ══ */
+function dtRangeShow(){
+  document.getElementById('dtAddBtn').style.display = 'none';
+  document.getElementById('dtEndWrap').style.display = 'flex';
+  dtRangeCheck();
+}
+function dtRangeHide(){
+  document.getElementById('fDataFim').value = '';
+  document.getElementById('dtEndWrap').style.display = 'none';
+  document.getElementById('dtAddBtn').style.display = 'inline-flex';
+  document.getElementById('dtInfo').textContent = '';
+  document.getElementById('dtInfo').className = 'dt-info';
+}
+function dtRangeCheck(){
+  var d1 = document.getElementById('fData').value;
+  var d2 = document.getElementById('fDataFim').value;
+  var info = document.getElementById('dtInfo');
+  if(!d1 || !d2){ info.textContent = ''; info.className = 'dt-info'; return; }
+  var dt1 = new Date(d1+'T00:00:00');
+  var dt2 = new Date(d2+'T00:00:00');
+  if(dt2 < dt1){
+    info.innerHTML = '⚠️ A data de término não pode ser anterior à data de início';
+    info.className = 'dt-info dt-err';
+    return;
+  }
+  var diffMs = dt2 - dt1;
+  var dias = Math.round(diffMs/(1000*60*60*24)) + 1; // +1 pra contar o dia inicial
+  info.innerHTML = '✓ ' + (dias===1 ? '1 dia de duração' : dias + ' dias de duração');
+  info.className = 'dt-info dt-ok';
+}
+/* Ao abrir o formulário pra editar, mostrar o campo de fim se já tiver valor */
+function dtRangeInit(){
+  var d2 = document.getElementById('fDataFim').value;
+  if(d2){
+    document.getElementById('dtAddBtn').style.display = 'none';
+    document.getElementById('dtEndWrap').style.display = 'flex';
+    dtRangeCheck();
+  } else {
+    document.getElementById('dtAddBtn').style.display = 'inline-flex';
+    document.getElementById('dtEndWrap').style.display = 'none';
+    document.getElementById('dtInfo').textContent = '';
+  }
+}
+window.dtRangeShow=dtRangeShow;
+window.dtRangeHide=dtRangeHide;
+window.dtRangeCheck=dtRangeCheck;
+window.dtRangeInit=dtRangeInit;
+
+
+/* Voltar para lista de orçamentos (limpa visita selecionada) */
+function orcVoltar(){
+  orcCurrentVid = null;
+  // Resetar select se existir
+  var sel = document.getElementById('orcSelVisita');
+  if(sel) sel.value = '';
+  // Esconder painéis de detalhe
+  var bp = document.getElementById('orc-body-panel');
+  if(bp) bp.style.display = 'none';
+  var pv = document.getElementById('orc-visita-preview');
+  if(pv) pv.style.display = 'none';
+  // Mostrar o seletor de novo
+  var sp = document.getElementById('orc-selector-panel');
+  if(sp) sp.style.display = '';
+  // Esconder o botão voltar
+  var bv = document.getElementById('orcVoltarBtn');
+  if(bv) bv.style.display = 'none';
+  // Voltar o subtítulo padrão
+  var sub = document.getElementById('orc-subtitle');
+  if(sub) sub.textContent = 'Selecione uma visita para gerar o orçamento';
+  // Atualizar lista de orçamentos existentes (se houver função)
+  if(typeof orcRenderLista === 'function') orcRenderLista();
+}
+window.orcVoltar = orcVoltar;
+
+
+/* ══ IMPORTAR DADOS DA VT PARA O EVENTO DA AGENDA (com confirmação) ══ */
+function agEvtImportarVT(){
+  var vid = document.getElementById('agEVisita').value;
+  if(!vid) return; // não selecionou nada, ignora
+  var v = loadV().find(function(x){ return x.id===vid; });
+  if(!v){ toast('Visita não encontrada','err'); return; }
+
+  // Verificar se há dados úteis pra importar
+  var temAlgo = v.nome || v.dataEvento || v.dataEventoFim || v.horaEvento || v.horaFim || v.local || v.end;
+  if(!temAlgo) return; // VT sem dados, não pergunta nada
+
+  // Verificar se algum campo do evento já está preenchido (pra não sobrescrever sem avisar)
+  var nome = document.getElementById('agENome').value.trim();
+  var data = document.getElementById('agEData').value;
+  var dataFim = document.getElementById('agEDataFim').value;
+  var hora = document.getElementById('agEHora').value;
+  var horaFim = document.getElementById('agEHoraFim').value;
+  var local = document.getElementById('agELocal').value.trim();
+  var temPreenchido = nome || data || dataFim || hora || horaFim || local;
+
+  var msg = temPreenchido
+    ? 'Importar os dados desta Visita Técnica?\n(Nome, datas, horários e local — vai substituir o que está preenchido)'
+    : 'Importar os dados desta Visita Técnica?\n(Nome, datas, horários e local)';
+
+  if(!confirm(msg)) return;
+
+  // Importar os campos
+  if(v.nome)         document.getElementById('agENome').value    = v.nome;
+  if(v.dataEvento)   document.getElementById('agEData').value    = v.dataEvento;
+  if(v.dataEventoFim)document.getElementById('agEDataFim').value = v.dataEventoFim;
+  if(v.horaEvento)   document.getElementById('agEHora').value    = v.horaEvento;
+  if(v.horaFim)      document.getElementById('agEHoraFim').value = v.horaFim;
+  if(v.local)        document.getElementById('agELocal').value   = v.local;
+  else if(v.end)     document.getElementById('agELocal').value   = v.end;
+
+  toast('Dados da VT importados!','ok');
+}
+window.agEvtImportarVT = agEvtImportarVT;
+
+
+/* Botão manual de sincronizar */
+function btnSincronizar(){
+  var btn = document.getElementById('btnSync');
+  if(btn){ btn.disabled = true; btn.innerHTML = '⏳ Sincronizando...'; }
+  if(typeof sincronizarTudo !== 'function'){
+    toast('Firebase não disponível','err');
+    if(btn){ btn.disabled = false; btn.innerHTML = '🔄 Sincronizar'; }
+    return;
+  }
+  sincronizarTudo(function(ok){
+    if(btn){ btn.disabled = false; btn.innerHTML = '🔄 Sincronizar'; }
+    if(ok){
+      toast('Sincronizado com a nuvem!','ok');
+      // Re-render telas
+      if(typeof renderDash==='function' && me) try{ renderDash(); }catch(e){}
+      if(typeof agRenderAll==='function') try{ agRenderAll(); }catch(e){}
+      if(typeof renderForns==='function') try{ renderForns(); }catch(e){}
+      if(typeof erRender==='function') try{ erRender(); }catch(e){}
+    } else {
+      toast('Erro ao sincronizar','err');
+    }
+  });
+}
+window.btnSincronizar = btnSincronizar;
 
 </script>
 <datalist id="dl-fornecedores"></datalist>
