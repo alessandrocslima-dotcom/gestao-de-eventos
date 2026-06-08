@@ -3038,13 +3038,30 @@ function populateEmpSelect(){
 
 function adTab(t){
   curAdTab=t;
-  document.getElementById('adUsersP').style.display=t==='users'?'block':'none';
-  document.getElementById('adEventsP').style.display=t==='events'?'block':'none';
-  document.getElementById('adEmpresasP').style.display=t==='empresas'?'block':'none';
-  document.getElementById('at-users').className='atab'+(t==='users'?' on':'');
-  document.getElementById('at-events').className='atab'+(t==='events'?' on':'');
-  document.getElementById('at-empresas').className='atab'+(t==='empresas'?' on':'');
-  renderAdmin();
+  // Mostrar/esconder painéis
+  var paineis = {
+    'users':'adUsersP',
+    'events':'adEventsP',
+    'empresas':'adEmpresasP',
+    'secretarias':'adSecretariasP',
+    'produtores':'adProdutoresP',
+    'backup':'adBackupP'
+  };
+  Object.keys(paineis).forEach(function(k){
+    var el = document.getElementById(paineis[k]);
+    if(el) el.style.display = (t===k ? 'block' : 'none');
+  });
+  // Atualizar abas (highlight)
+  ['users','events','empresas','secretarias','produtores','backup'].forEach(function(k){
+    var btn = document.getElementById('at-'+k);
+    if(btn) btn.className = 'atab' + (t===k ? ' on' : '');
+  });
+  // Renderizar conteúdo da aba selecionada
+  if(t==='users' || t==='events') renderAdmin();
+  if(t==='empresas')    { if(typeof renderEmpList==='function')  renderEmpList(); }
+  if(t==='secretarias') { if(typeof renderSecList==='function')  renderSecList(); }
+  if(t==='produtores')  { if(typeof renderProdList==='function') renderProdList(); }
+  if(t==='backup')      { if(typeof bkAtualizarInfo==='function') bkAtualizarInfo(); }
 }
 function renderAdmin(){ if(curAdTab==='users') renderUList(); else renderAdEv(); }
 function renderUList(){
