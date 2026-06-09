@@ -1887,6 +1887,7 @@ function saveU(a){ localStorage.setItem(SK_U, JSON.stringify(a)); }
 function loadV(){ try{ return JSON.parse(localStorage.getItem(SK_V)||'[]'); }catch(e){ return []; } }
 function saveV(a){
   localStorage.setItem(SK_V, JSON.stringify(a));
+  if(typeof cloudSaveList==='function') cloudSaveList('visitas_lista', a);
 }
 
 /* ── FIRESTORE — salvar visita na nuvem ── */
@@ -1971,13 +1972,14 @@ function sincronizarTudo(onComplete){
   console.log('🔄 Sincronizando módulos da nuvem...');
 
   var modulos = [
-    { col:'fornecedores', sk:'vtp_fornecedores_v1' },
-    { col:'empresas',     sk:'vtp_empresas_v1' },
-    { col:'secretarias',  sk:'vtp_secretarias_v1' },
-    { col:'produtores',   sk:'vtp_produtores_v1' },
-    { col:'orcamentos',   sk:'vtp_orcamentos_v1' },
-    { col:'agenda',       sk:'vtp_agenda_v1' },
-    { col:'realizados',   sk:'vtp_realizados_v1' }
+    { col:'visitas_lista', sk:'vtp_visitas_v2' },
+    { col:'fornecedores',  sk:'vtp_fornecedores_v1' },
+    { col:'empresas',      sk:'vtp_empresas_v1' },
+    { col:'secretarias',   sk:'vtp_secretarias_v1' },
+    { col:'produtores',    sk:'vtp_produtores_v1' },
+    { col:'orcamentos',    sk:'vtp_orcamentos_v1' },
+    { col:'agenda',        sk:'vtp_agenda_v1' },
+    { col:'realizados',    sk:'vtp_realizados_v1' }
   ];
 
   var pendentes = modulos.length;
@@ -6713,13 +6715,14 @@ function enviarTudoParaNuvem(onComplete){
   console.log('☁️ Enviando todos os dados locais para a nuvem...');
 
   var modulos = [
-    { col:'fornecedores', sk:'vtp_fornecedores_v1' },
-    { col:'empresas',     sk:'vtp_empresas_v1' },
-    { col:'secretarias',  sk:'vtp_secretarias_v1' },
-    { col:'produtores',   sk:'vtp_produtores_v1' },
-    { col:'orcamentos',   sk:'vtp_orcamentos_v1' },
-    { col:'agenda',       sk:'vtp_agenda_v1' },
-    { col:'realizados',   sk:'vtp_realizados_v1' }
+    { col:'visitas_lista', sk:'vtp_visitas_v2' },
+    { col:'fornecedores',  sk:'vtp_fornecedores_v1' },
+    { col:'empresas',      sk:'vtp_empresas_v1' },
+    { col:'secretarias',   sk:'vtp_secretarias_v1' },
+    { col:'produtores',    sk:'vtp_produtores_v1' },
+    { col:'orcamentos',    sk:'vtp_orcamentos_v1' },
+    { col:'agenda',        sk:'vtp_agenda_v1' },
+    { col:'realizados',    sk:'vtp_realizados_v1' }
   ];
 
   var pendentes = modulos.length;
