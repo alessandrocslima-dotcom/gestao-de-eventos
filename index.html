@@ -3488,6 +3488,10 @@ if('serviceWorker' in navigator){
         <div class="fld"><label>Horário de término</label><input type="time" id="agEHoraFim"></div>
       </div>
       <div class="fld"><label>Local</label><input type="text" id="agELocal" placeholder="Endereço ou nome do local"></div>
+      <div class="row2">
+        <div class="fld"><label>Data da montagem</label><input type="date" id="agEMontData"></div>
+        <div class="fld"><label>Horário da montagem</label><input type="time" id="agEMontHora"></div>
+      </div>
       <div class="fld"><label>Secretaria</label>
         <select id="agESec">
           <option value="">Selecionar...</option>
@@ -4130,32 +4134,66 @@ function orcWACotacao(){
   var vs = loadV();
   var v = vs.find(function(x){ return x.id===orcCurrentVid; })||{};
   var itens = orcCollectItens();
-  var linha = '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━';
-  var m = '📋 *PEDIDO DE ORÇAMENTO*\n'+linha+'\n';
-  if(orc && orc.numOficial) m+='*Nº do evento:* '+orc.numOficial+'\n';
-  m+='*Evento:* '+(v.nome||'');
-  if(v.dataEvento) m+='\n*Data:* '+fmtDR(v.dataEvento, v.dataEventoFim);
-  if(v.horaEvento) m+=' às '+v.horaEvento;
-  if(v.local||v.end) m+='\n*Local:* '+(v.local||v.end);
-  // Link de localização
-  if(v.linkLoc) m+='\n🗺 '+v.linkLoc;
-  else if(v.gpsMain&&v.gpsMain.lat) m+='\n🗺 https://maps.google.com/?q='+v.gpsMain.lat+','+v.gpsMain.lng;
-  else if(v.local||v.end) m+='\n🗺 https://maps.google.com/?q='+encodeURIComponent((v.local||v.end||''));
-  m+='\n'+linha+'\n\n📦 *DEMANDA*\n\n';
-  var num=1;
+  var orcs = loadOrc();
+  var orc = orcs[orcCurrentVid]||{numOficial:''};
+  var pNome = (me&&(me.nome||me.login))||'Alessandro Lima';
+
+  // Saudação automática
+  var h = new Date().getHours();
+  var saud = h<12 ? 'Bom dia' : (h<18 ? 'Boa tarde' : 'Boa noite');
+
+  // Helper para formatar hora "06:30" → "06h30"
+  function fmtHora(hhmm){
+    if(!hhmm) return '';
+    var p = hhmm.split(':');
+    return p[0]+'h'+(p[1]||'00');
+  }
+
+  var m = saud + '! Segue abaixo o pedido de orçamento:\n\n';
+
+  // Dados do evento
+  if(orc.numOficial) m += 'Nº do Evento: ' + orc.numOficial + '\n';
+  m += 'Evento: ' + (v.nome||'—') + '\n';
+  if(v.dataEvento){
+    m += 'Data: ' + fmtDR(v.dataEvento, v.dataEventoFim);
+    if(v.horaEvento) m += ' às ' + fmtHora(v.horaEvento);
+    m += '\n';
+  }
+  if(v.local||v.end) m += 'Local: ' + (v.local||v.end) + '\n';
+
+  // Link de localização (Mapa)
+  var mapa = '';
+  if(v.gpsMain && v.gpsMain.lat) mapa = 'https://www.google.com/maps?q=' + v.gpsMain.lat + ',' + v.gpsMain.lng;
+  else if(v.linkLoc) mapa = v.linkLoc;
+  if(mapa) m += 'Mapa: ' + mapa + '\n';
+
+  // Montagem (se houver)
+  if(v.dataMont){
+    var partes = v.dataMont.split('-');
+    var dataMontFmt = partes.length===3 ? partes[2]+'/'+partes[1]+'/'+partes[0] : v.dataMont;
+    m += '\nMontagem: ' + dataMontFmt;
+    if(v.horaMont) m += ' às ' + fmtHora(v.horaMont);
+    m += '\n';
+  }
+
+  // Demanda
+  m += '\n► *DEMANDA*\n\n';
+  var num = 1;
   itens.forEach(function(it){
-    if(!it.srv&&!it.desc) return;
-    m+=num+'. *'+(it.desc||it.srv||'')+'*';
-    m+='\n   Quantidade: '+it.qty+' '+it.unidade;
-    if(it.freq>1) m+=' × '+it.freq+' dias';
-    m+='\n';
+    if(!it.srv && !it.desc) return;
+    m += num + '. ' + (it.desc || it.srv || '');
+    m += ' - Qtd: ' + it.qty + ' ' + it.unidade;
+    if(it.freq > 1) m += ' x ' + it.freq + ' dias';
+    m += '\n';
     num++;
   });
-  m+='\n'+linha;
-  m+='\n\nPor favor, verifique a disponibilidade.';
-  m+='\nAguardo retorno. Obrigado!';
-  m+='\n\n_'+pNome+'_';
-  window.open('https://wa.me/?text='+encodeURIComponent(m),'_blank');
+
+  // Encerramento
+  m += '\nPor favor, verifique a disponibilidade.';
+  m += '\nAguardo retorno. Obrigado!';
+  m += '\n\n' + pNome;
+
+  window.open('https://wa.me/?text=' + encodeURIComponent(m), '_blank');
 }
 
 function orcNovaVisita(){ irParaForm(); }
@@ -4467,28 +4505,44 @@ function orcAbrirCotacaoForn(){
     });
     html += '</div>';
 
-    // Montar mensagem
-    var linha = '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━';
-    var m = '📋 *PEDIDO DE ORÇAMENTO*\n'+linha+'\n';
-    if(orc.numOficial) m+='*Nº do evento:* '+orc.numOficial+'\n';
-    m+='*Evento:* '+(v.nome||'');
-    if(v.dataEvento) m+='\n*Data:* '+fmtDR(v.dataEvento, v.dataEventoFim);
-    if(v.horaEvento) m+=' às '+v.horaEvento;
-    if(v.local||v.end) m+='\n*Local:* '+(v.local||v.end);
-    if(v.linkLoc) m+='\n🗺 '+v.linkLoc;
-    else if(v.gpsMain&&v.gpsMain.lat) m+='\n🗺 https://maps.google.com/?q='+v.gpsMain.lat+','+v.gpsMain.lng;
-    else if(v.local||v.end) m+='\n🗺 https://maps.google.com/?q='+encodeURIComponent((v.local||v.end||''));
-    m+='\n'+linha+'\n\n📦 *DEMANDA*\n\n';
+    // Montar mensagem - formato profissional (cotação por fornecedor)
+    var h = new Date().getHours();
+    var saud = h<12 ? 'Bom dia' : (h<18 ? 'Boa tarde' : 'Boa noite');
+    function fmtH(hhmm){ if(!hhmm) return ''; var p=hhmm.split(':'); return p[0]+'h'+(p[1]||'00'); }
+    var m = saud + '! Segue abaixo o pedido de orçamento:\n\n';
+    if(orc.numOficial) m += 'Nº do Evento: ' + orc.numOficial + '\n';
+    m += 'Evento: ' + (v.nome||'—') + '\n';
+    if(v.dataEvento){
+      m += 'Data: ' + fmtDR(v.dataEvento, v.dataEventoFim);
+      if(v.horaEvento) m += ' às ' + fmtH(v.horaEvento);
+      m += '\n';
+    }
+    if(v.local||v.end) m += 'Local: ' + (v.local||v.end) + '\n';
+    // Link de localização (Mapa)
+    var mapa = '';
+    if(v.gpsMain && v.gpsMain.lat) mapa = 'https://www.google.com/maps?q=' + v.gpsMain.lat + ',' + v.gpsMain.lng;
+    else if(v.linkLoc) mapa = v.linkLoc;
+    if(mapa) m += 'Mapa: ' + mapa + '\n';
+    // Montagem (se houver na VT)
+    if(v.dataMont){
+      var partesM = v.dataMont.split('-');
+      var dataMontFmt = partesM.length===3 ? partesM[2]+'/'+partesM[1]+'/'+partesM[0] : v.dataMont;
+      m += '\nMontagem: ' + dataMontFmt;
+      if(v.horaMont) m += ' às ' + fmtH(v.horaMont);
+      m += '\n';
+    }
+    // Demanda
+    m += '\n► *DEMANDA*\n\n';
     itensForn.forEach(function(it,i){
-      m+=(i+1)+'. *'+esc(it.desc||it.srv||'')+'*';
-      m+='\n   Quantidade: '+it.qty+' '+it.unidade;
-      if(it.freq>1) m+=' × '+it.freq+' dias';
-      m+='\n';
+      m += (i+1) + '. ' + esc(it.desc||it.srv||'');
+      m += ' - Qtd: ' + it.qty + ' ' + it.unidade;
+      if(it.freq>1) m += ' x ' + it.freq + ' dias';
+      m += '\n';
     });
-    m+='\n'+linha;
-    m+='\n\nPor favor, verifique a disponibilidade.';
-    m+='\nAguardo retorno. Obrigado!';
-    m+='\n\n_'+pNome+'_';
+    // Encerramento
+    m += '\nPor favor, verifique a disponibilidade.';
+    m += '\nAguardo retorno. Obrigado!';
+    m += '\n\n' + pNome;
 
     var waUrl = 'https://wa.me/?text='+encodeURIComponent(m);
     html += '<button class="btn-wa-forn" onclick="window.open(\''+waUrl.replace(/'/g,"\\'")+'\')">';
@@ -5054,6 +5108,8 @@ function agAbrirModal(data){
   document.getElementById('agEData').value=data?data:'';
   document.getElementById('agEHora').value='';
   document.getElementById('agEHoraFim').value='';
+  document.getElementById('agEMontData').value='';
+  document.getElementById('agEMontHora').value='';
   document.getElementById('agELocal').value='';
   document.getElementById('agENum').value='';
   document.getElementById('agEObs').value='';
@@ -5072,6 +5128,8 @@ function agEditarEvento(id){
   document.getElementById('agEData').value=ev.data||'';
   document.getElementById('agEHora').value=ev.hora||'';
   document.getElementById('agEHoraFim').value=ev.horaFim||'';
+  document.getElementById('agEMontData').value=ev.montData||'';
+  document.getElementById('agEMontHora').value=ev.montHora||'';
   document.getElementById('agELocal').value=ev.local||'';
   document.getElementById('agENum').value=ev.numOfc||'';
   document.getElementById('agEObs').value=ev.obs||'';
@@ -5117,6 +5175,8 @@ function agSalvarEvento(){
     dataFim: document.getElementById('agEDataFim').value,
     hora: document.getElementById('agEHora').value,
     horaFim: document.getElementById('agEHoraFim').value,
+    montData: document.getElementById('agEMontData').value,
+    montHora: document.getElementById('agEMontHora').value,
     local: document.getElementById('agELocal').value.trim(),
     sec: document.getElementById('agESec').value,
     status: document.getElementById('agEStatus').value,
@@ -6415,65 +6475,79 @@ function agDmEnviarWA(){
 
   // Saudação automática por horário
   var h = new Date().getHours();
-  var saud = h<12 ? 'Bom dia!' : (h<18 ? 'Boa tarde!' : 'Boa noite!');
+  var saud = h<12 ? 'Bom dia' : (h<18 ? 'Boa tarde' : 'Boa noite');
 
   // Formatar data (com intervalo se houver dataFim)
   var dataFmt = ev.data ? agFmtDataR(ev.data, ev.dataFim) : '';
 
-  var linha = '━━━━━━━━━━━━━━━━━━━━━━';
-  var m = saud + '\n\n';
-
-  // === INFORMAÇÕES DO EVENTO (ordem do modelo original) ===
-  m += '📌 *INFORMAÇÕES DO EVENTO*\n' + linha + '\n';
-  m += '*Número do Evento:* ' + (ev.numOfc||'—') + '\n';
-  m += '*Data do Evento:* ' + (dataFmt||'—') + '\n';
-  // Horário do evento (início + término se houver)
-  if(ev.hora){
-    var horaTxt = ev.hora;
-    if(ev.horaFim) horaTxt += ' às ' + ev.horaFim;
-    m += '*Horário:* ' + horaTxt + '\n';
+  // Helper para formatar hora no padrão "06h30"
+  function fmtHora(hhmm){
+    if(!hhmm) return '';
+    var p = hhmm.split(':');
+    return p[0]+'h'+(p[1]||'00');
   }
-  m += '*Local:* ' + (ev.local||'—') + '\n';
-  var link = document.getElementById('agDmLink').value.trim();
-  if(link) m += '🗺 ' + link + '\n';
 
-  // === ÁREA DE RISCO ===
-  m += '\n';
+  // Frase de abertura
+  var m = saud + '! Segue abaixo as informações do evento:\n\n';
+
+  // === DADOS DO EVENTO (sem título, vai direto) ===
+  m += 'Número do Evento: ' + (ev.numOfc||'—') + '\n';
+  m += 'Data do Evento: ' + (dataFmt||'—') + '\n';
+  if(ev.hora){
+    var horaTxt = fmtHora(ev.hora);
+    if(ev.horaFim) horaTxt += ' às ' + fmtHora(ev.horaFim);
+    m += 'Horário: ' + horaTxt + '\n';
+  }
+  m += 'Local: ' + (ev.local||'—') + '\n';
+  var link = document.getElementById('agDmLink').value.trim();
+  if(link) m += 'Mapa: ' + link + '\n';
+
+  // === MONTAGEM (se houver) ===
+  if(ev.montData || ev.montHora){
+    var montTxt = '';
+    if(ev.montData){
+      var d = new Date(ev.montData+'T00:00:00');
+      montTxt = String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();
+    }
+    if(ev.montHora) montTxt += (montTxt?' às ':'')+fmtHora(ev.montHora);
+    m += 'Montagem: ' + montTxt + '\n';
+  }
+
+  // === ÁREA DE RISCO (só aparece quando TEM risco) ===
   if(document.getElementById('agDmRisco').value==='sim'){
     var rd = document.getElementById('agDmRiscoDesc').value.trim();
-    m += '⚠️ *ÁREA DE RISCO*\n';
+    m += '\n► ! ATENÇÃO ! ÁREA DE RISCO DE SEGURANÇA\n';
     if(rd) m += rd + '\n';
-  } else {
-    m += '✅ Sem área de risco identificada\n';
   }
 
-  // === LOGÍSTICA (termos do modelo original) ===
+  // === LOGÍSTICA (sem título) ===
   var saidaH = document.getElementById('agDmSaidaHora').value;
   var saidaL = document.getElementById('agDmSaidaLocal').value.trim();
   var retorno = document.getElementById('agDmRetorno').value;
   if(saidaH || saidaL || retorno){
-    m += '\n🚚 *LOGÍSTICA*\n' + linha + '\n';
-    if(saidaH) m += '*Horário de saída:* ' + saidaH + '\n';
-    if(saidaL) m += '*Local de saída:* ' + saidaL + '\n';
-    if(retorno) m += '*PREVISÃO de retorno:* ' + retorno + '\n';
+    m += '\n';
+    if(saidaH) m += 'Horário de Saída: ' + fmtHora(saidaH) + '\n';
+    if(saidaL) m += 'Local de Saída: ' + saidaL + '\n';
+    if(retorno) m += 'Previsão de Retorno: ' + fmtHora(retorno) + '\n';
   }
 
   // === DEMANDAS ===
-  m += '\n📦 *DEMANDAS*\n' + linha + '\n';
+  m += '\n► *DEMANDAS*\n\n';
   if(_agDmItens.length){
     _agDmItens.forEach(function(it){
-      m += '• ' + it.nome;
+      m += '- ' + it.nome;
       if(it.qtd) m += ' - ' + it.qtd;
       m += '\n';
     });
   } else {
-    m += '(nenhum item)\n';
+    m += 'Nenhuma demanda cadastrada.\n';
   }
 
   // === OBSERVAÇÕES (opcional) ===
   var obs = document.getElementById('agDmObs').value.trim();
   if(obs){
-    m += '\n📝 *Observações:*\n' + obs + '\n';
+    m += '\n► *OBSERVAÇÕES*\n\n';
+    m += obs + '\n';
   }
 
   var url = 'https://wa.me/?text=' + encodeURIComponent(m);
@@ -6598,6 +6672,8 @@ function agEvtImportarVT(){
   if(v.horaFim)      document.getElementById('agEHoraFim').value = v.horaFim;
   if(v.local)        document.getElementById('agELocal').value   = v.local;
   else if(v.end)     document.getElementById('agELocal').value   = v.end;
+  if(v.dataMont)     document.getElementById('agEMontData').value = v.dataMont;
+  if(v.horaMont)     document.getElementById('agEMontHora').value = v.horaMont;
 
   toast('Dados da VT importados!','ok');
 }
