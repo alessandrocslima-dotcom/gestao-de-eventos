@@ -1883,7 +1883,7 @@ const SK_V = 'vtp_visitas_v2';
 const SK_E = 'vtp_empresas_v1';
 
 function loadU(){ try{ return JSON.parse(localStorage.getItem(SK_U)||'[]'); }catch(e){ return []; } }
-function saveU(a){ localStorage.setItem(SK_U, JSON.stringify(a)); }
+function saveU(a){ localStorage.setItem(SK_U, JSON.stringify(a)); if(typeof cloudSaveList==='function') cloudSaveList('users_lista', a); }
 function loadV(){ try{ return JSON.parse(localStorage.getItem(SK_V)||'[]'); }catch(e){ return []; } }
 function saveV(a){
   localStorage.setItem(SK_V, JSON.stringify(a));
@@ -1972,6 +1972,7 @@ function sincronizarTudo(onComplete){
   console.log('🔄 Sincronizando módulos da nuvem...');
 
   var modulos = [
+    { col:'users_lista',   sk:'vtp_users_v2' },
     { col:'visitas_lista', sk:'vtp_visitas_v2' },
     { col:'fornecedores',  sk:'vtp_fornecedores_v1' },
     { col:'empresas',      sk:'vtp_empresas_v1' },
@@ -2052,29 +2053,82 @@ function toast(msg, type){
 }
 
 /* ── AUTH ── */
+/* Tenta validar credenciais contra a lista local de usuários */
+function _tryAuthLocal(u, p){
+  // Admin raiz
+  if(u === 'Alecesarlima' && p === '140117'){
+    return { id:'root', login:'Alecesarlima', pass:'140117', nome:'Alessandro Lima', role:'admin', ativo:1 };
+  }
+  try {
+    var ul = JSON.parse(localStorage.getItem('vtp_users_v2') || '[]');
+    for(var i=0; i<ul.length; i++){
+      var usr = ul[i];
+      if(usr.login !== u || usr.ativo == 0) continue;
+      if(usr.pass === p) return usr;
+      try{ if(atob(usr.pass||'') === p) return usr; }catch(e2){}
+    }
+  } catch(ex){}
+  return null;
+}
+
+/* Login efetivo (após achar o usuário) */
+function _aplicarLogin(found){
+  me = found;
+  document.getElementById('loginErr').classList.remove('on');
+  document.getElementById('pgLogin').style.display = 'none';
+  document.getElementById('pgLogin').classList.remove('on');
+  document.getElementById('pgApp').style.display = 'flex';
+  document.getElementById('uLabel').textContent = found.nome || found.login;
+  var admEl = document.getElementById('sbAdmItem');
+  if(admEl) admEl.style.display = found.role==='admin' ? 'flex' : 'none';
+  if(typeof sbSetUser === 'function') sbSetUser(found);
+  irParaDash();
+  _inatReset();
+  setTimeout(function(){
+    var admEl2 = document.getElementById('sbAdmItem');
+    if(admEl2 && me && me.role==='admin') admEl2.style.display = 'flex';
+  }, 200);
+}
+
 function doLogin(){
   var u = document.getElementById('lUser').value.trim();
   var p = document.getElementById('lPass').value.trim();
   var err = document.getElementById('loginErr');
 
-  var found = null;
+  // 1ª tentativa: validar localmente
+  var found = _tryAuthLocal(u, p);
 
-  // Admin raiz
-  if(u === 'Alecesarlima' && p === '140117'){
-    found = { id:'root', login:'Alecesarlima', pass:'140117', nome:'Alessandro Lima', role:'admin', ativo:1 };
-  } else {
-    // Outros usuários
-    try {
-      var ul = JSON.parse(localStorage.getItem('vtp_users_v2') || '[]');
-      for(var i=0; i<ul.length; i++){
-        var usr = ul[i];
-        if(usr.login !== u || usr.ativo == 0) continue;
-        if(usr.pass === p){ found = usr; break; }
-        try{ if(atob(usr.pass||'') === p){ found = usr; break; } }catch(e2){}
-      }
-    } catch(ex){}
+  if(found){
+    _aplicarLogin(found);
+    return;
   }
 
+  // 2ª tentativa: puxar usuários da nuvem e tentar de novo
+  // (caso seja um usuário novo cadastrado em outro dispositivo)
+  if(typeof db !== 'undefined' && db && typeof cloudLoadList === 'function'){
+    err.textContent = '🔄 Verificando usuários...';
+    err.classList.add('on');
+    cloudLoadList('users_lista', function(items){
+      if(items && items.length){
+        localStorage.setItem('vtp_users_v2', JSON.stringify(items));
+        var f2 = _tryAuthLocal(u, p);
+        if(f2){
+          _aplicarLogin(f2);
+          return;
+        }
+      }
+      err.textContent = 'Usuário ou senha incorretos';
+      err.classList.add('on');
+    });
+    return;
+  }
+
+  // Sem Firebase, falha mesmo
+  err.textContent = 'Usuário ou senha incorretos';
+  err.classList.add('on');
+  return;
+
+  // ↓↓ Bloco antigo (não executa - mantido só pra referência) ↓↓
   if(found){
     me = found;
     err.classList.remove('on');
@@ -6715,6 +6769,7 @@ function enviarTudoParaNuvem(onComplete){
   console.log('☁️ Enviando todos os dados locais para a nuvem...');
 
   var modulos = [
+    { col:'users_lista',   sk:'vtp_users_v2' },
     { col:'visitas_lista', sk:'vtp_visitas_v2' },
     { col:'fornecedores',  sk:'vtp_fornecedores_v1' },
     { col:'empresas',      sk:'vtp_empresas_v1' },
