@@ -7062,19 +7062,27 @@ function orcAtualizarBotaoAgendar(){
   var box = document.getElementById('orc-agendar-box');
   var btn = document.getElementById('orc-agendar-btn');
   var txt = document.getElementById('orc-agendar-txt');
+  console.log('[Agendar] box:', !!box, 'btn:', !!btn, 'txt:', !!txt);
   if(!box || !btn || !txt) return;
 
-  if(!orcCurrentVid){ box.style.display='none'; return; }
+  if(!orcCurrentVid){
+    console.log('[Agendar] orcCurrentVid vazio');
+    box.style.display='none';
+    return;
+  }
 
   // Pega status atual
   var orc = (loadOrc()||{})[orcCurrentVid] || {};
+  console.log('[Agendar] Status:', orc.status, '| vid:', orcCurrentVid);
 
   // Só mostra se aprovado
   if(orc.status !== 'aprovado'){
+    console.log('[Agendar] Status NÃO é aprovado, escondendo botão');
     box.style.display = 'none';
     return;
   }
 
+  console.log('[Agendar] Status APROVADO! Mostrando botão.');
   box.style.display = 'block';
 
   // Já está agendado?
