@@ -1470,6 +1470,13 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
                 <div class="orc-s-pill" data-status="adiado" onclick="orcSetStatus('adiado',this)">⏸ Adiado</div>
                 <div class="orc-s-pill" data-status="cancelado" onclick="orcSetStatus('cancelado',this)">❌ Cancelado</div>
               </div>
+              <!-- Botão Agendar - aparece quando status = aprovado -->
+              <div id="orc-agendar-box" style="margin-top:14px;display:none">
+                <button id="orc-agendar-btn" onclick="orcAgendar()" style="width:100%;padding:12px;background:#10B981;color:#fff;border:none;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s">
+                  <span style="font-size:18px">📅</span>
+                  <span id="orc-agendar-txt">Agendar este evento</span>
+                </button>
+              </div>
               <div id="orc-num-input-wrap" style="margin-top:12px;padding-top:12px;border-top:1px solid #E2E8F0">
                 <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
                   <div class="fld" style="flex:1;min-width:180px">
@@ -3179,7 +3186,9 @@ function renderUList(){
   document.getElementById('uList').innerHTML=h;
 }
 function renderAdEv(){
-  var vs=loadV(); var el=document.getElementById('adEvList');
+  var vs=loadV();
+  if(typeof filtrarVisitasVisiveis==='function') vs = filtrarVisitasVisiveis(vs);
+  var el=document.getElementById('adEvList');
   if(!vs.length){ el.innerHTML='<div class="empty"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><p>Nenhum registro</p></div>'; return; }
   var h='';
   vs.slice().reverse().forEach(function(v){
@@ -3565,6 +3574,62 @@ if('serviceWorker' in navigator){
     </div>
   </div>
 </div>
+
+
+</div>
+
+
+<!-- MODAL: NOVO ORÇAMENTO AVULSO (sem VT) -->
+<div id="orcAvulsoOv" class="ag-modal-ov" onclick="orcAvulsoFecharBg(event)">
+  <div class="ag-modal">
+    <div class="ag-modal-hdr">
+      <span class="ag-modal-title">📋 Novo orçamento (sem VT)</span>
+      <button class="ag-modal-x" onclick="orcAvulsoFechar()">&#x2715;</button>
+    </div>
+    <div class="ag-modal-body">
+      <div class="fld">
+        <label>Nome do evento *</label>
+        <input type="text" id="avNome" placeholder="Ex: Casamento do João" autocomplete="off">
+      </div>
+      <div class="row2">
+        <div class="fld">
+          <label>Data do evento</label>
+          <input type="date" id="avData">
+        </div>
+        <div class="fld">
+          <label>Horário</label>
+          <input type="time" id="avHora">
+        </div>
+      </div>
+      <div class="fld">
+        <label>Local</label>
+        <input type="text" id="avLocal" placeholder="Endereço do evento" autocomplete="off">
+      </div>
+      <div class="fld">
+        <label>Link do mapa (opcional)</label>
+        <input type="text" id="avMapa" placeholder="Cole o link do Google Maps" autocomplete="off">
+      </div>
+      <div class="row2">
+        <div class="fld">
+          <label>Data da montagem</label>
+          <input type="date" id="avMontData">
+        </div>
+        <div class="fld">
+          <label>Horário da montagem</label>
+          <input type="time" id="avMontHora">
+        </div>
+      </div>
+      <div style="margin-top:14px;padding:10px;background:#F0F9FF;border-radius:8px;font-size:12px;color:#075985;border-left:3px solid #0EA5E9">
+        💡 Depois de criar, você adiciona os itens da demanda na tela do orçamento.
+      </div>
+      <div style="display:flex;gap:10px;margin-top:18px;justify-content:flex-end">
+        <button onclick="orcAvulsoFechar()" style="padding:9px 18px;background:#fff;border:1.5px solid #E2E8F0;border-radius:8px;font-weight:600;color:#475569;cursor:pointer">Cancelar</button>
+        <button onclick="orcAvulsoSalvar()" style="padding:9px 18px;background:#2563EB;border:none;border-radius:8px;font-weight:600;color:#fff;cursor:pointer">Criar orçamento</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
 
@@ -3908,20 +3973,50 @@ function orcPopulateSelector(){
   var sel = document.getElementById('orc-visita-sel');
   if(!sel) return;
   var vs = loadV();
+  // Filtro de privacidade: cada um vê só suas visitas (admin vê todas)
+  if(typeof filtrarVisitasVisiveis==='function') vs = filtrarVisitasVisiveis(vs);
   var cur = sel.value;
-  sel.innerHTML = '<option value="">Selecionar visita técnica...</option>';
-  vs.forEach(function(v){
-    var opt = document.createElement('option');
-    opt.value = v.id;
-    opt.textContent = (v.nome||'Sem nome') + ' — ' + fmtD(v.dataEvento);
-    sel.appendChild(opt);
-  });
+  sel.innerHTML = '<option value="">Selecionar visita técnica...</option>'
+    + '<option value="__NOVO_AVULSO__">+ Novo orçamento (sem VT)</option>';
+  // Separar avulsos (sem VT) das VTs normais
+  var avulsos = vs.filter(function(v){ return v.tipo==='avulso'; });
+  var visitas = vs.filter(function(v){ return v.tipo!=='avulso'; });
+  // Avulsos primeiro (em grupo)
+  if(avulsos.length){
+    var ogA = document.createElement('optgroup');
+    ogA.label = '📋 Orçamentos sem VT';
+    avulsos.forEach(function(v){
+      var opt = document.createElement('option');
+      opt.value = v.id;
+      opt.textContent = (v.nome||'Sem nome') + ' — ' + (v.dataEvento ? fmtD(v.dataEvento) : 'sem data');
+      ogA.appendChild(opt);
+    });
+    sel.appendChild(ogA);
+  }
+  // Depois visitas técnicas
+  if(visitas.length){
+    var ogV = document.createElement('optgroup');
+    ogV.label = '📍 Visitas Técnicas';
+    visitas.forEach(function(v){
+      var opt = document.createElement('option');
+      opt.value = v.id;
+      opt.textContent = (v.nome||'Sem nome') + ' — ' + fmtD(v.dataEvento);
+      ogV.appendChild(opt);
+    });
+    sel.appendChild(ogV);
+  }
   if(cur) sel.value = cur;
 }
 
 /* ── Carregar visita no orçamento ── */
 function orcLoadVisita(vid){
   if(!vid){ document.getElementById('orc-body-panel').style.display='none'; document.getElementById('orc-visita-preview').style.display='none'; var bv=document.getElementById('orcVoltarBtn'); if(bv) bv.style.display='none'; return; }
+  // Caso especial: criar novo orçamento sem VT
+  if(vid === '__NOVO_AVULSO__'){
+    document.getElementById('orc-visita-sel').value = '';
+    orcAvulsoAbrirModal();
+    return;
+  }
   orcCurrentVid = vid;
   // Mostrar botão Voltar
   var bv=document.getElementById('orcVoltarBtn'); if(bv) bv.style.display='inline-flex';
@@ -3931,7 +4026,13 @@ function orcLoadVisita(vid){
   // Preview
   var prev = document.getElementById('orc-visita-preview');
   prev.style.display='block';
-  prev.innerHTML = '<strong>'+( v.nome||'Sem nome')+'</strong> · '+(v.empresa||'')+(v.local?' · '+v.local:'')+(v.dataEvento?' · '+fmtDR(v.dataEvento, v.dataEventoFim):'');
+  // Construir preview de forma inteligente (não mostrar separadores vazios)
+  var partes = ['<strong>'+(v.nome||'Sem nome')+'</strong>'];
+  if(v.tipo==='avulso') partes.push('<span style="font-size:11px;background:#FEF3C7;color:#92400E;padding:2px 8px;border-radius:6px;font-weight:600">SEM VT</span>');
+  if(v.empresa) partes.push(v.empresa);
+  if(v.local) partes.push(v.local);
+  if(v.dataEvento) partes.push(fmtDR(v.dataEvento, v.dataEventoFim));
+  prev.innerHTML = partes.join(' · ');
   // Cabeçalho
   orcRenderCabecalho(v);
   // Carregar itens salvos ou vazio
@@ -3950,6 +4051,8 @@ function orcLoadVisita(vid){
   document.getElementById('orc-saved-ts').textContent = orc.savedTs ? 'Salvo em '+orc.savedTs : '';
   document.getElementById('orc-subtitle').textContent = (v.nome||'Sem nome') + ' · ID: VTP-'+new Date(parseInt(vid,36)||Date.now()).getFullYear()+'-'+(String(loadV().findIndex(function(x){return x.id===vid;})+1).padStart(4,'0'));
   document.getElementById('orc-body-panel').style.display='block';
+  // Atualizar botão Agendar
+  if(typeof orcAtualizarBotaoAgendar==='function') orcAtualizarBotaoAgendar();
 }
 
 function orcRenderCabecalho(v){
@@ -4011,6 +4114,8 @@ function orcSetStatus(status, el){
   });
   el.classList.add('on'); el.classList.add(status);
   orcAutoSave();
+  // Atualizar botão Agendar
+  if(typeof orcAtualizarBotaoAgendar==='function') orcAtualizarBotaoAgendar();
 }
 
 function orcSaveNum(){
@@ -4146,6 +4251,8 @@ function orcAutoSave(){
 
 function orcSalvar(){
   orcAutoSave();
+  // Sincronizar evento vinculado se houver
+  if(typeof orcSincronizarEvento==='function') orcSincronizarEvento();
   var el = document.getElementById('orc-saved-ts');
   if(el) el.textContent = 'Salvo em '+nowTs();
   toast('Orçamento salvo!','ok');
@@ -5256,6 +5363,8 @@ function agPopulateModalSec(cur){
 function agPopulateModalVisitas(cur){
   var sel=document.getElementById('agEVisita');
   var vs=loadV();
+  // Filtro de privacidade: cada um vê só suas visitas (admin vê todas)
+  if(typeof filtrarVisitasVisiveis==='function') vs = filtrarVisitasVisiveis(vs);
   sel.innerHTML='<option value="">Nenhuma</option>';
   vs.forEach(function(v){
     var o=document.createElement('option');
@@ -6260,13 +6369,12 @@ function _inatExpirar(){
 function filtrarVisitasVisiveis(lista){
   if(!Array.isArray(lista)) return [];
   var souAdmin = (me && me.role==='admin');
-  if(souAdmin) return lista; // admin vê todas
+  if(souAdmin) return lista; // admin vê TODAS
   var meuId = (me && me.id) ? me.id : 'root';
   return lista.filter(function(v){
-    // Compatibilidade: visitas antigas sem participantes ficam visíveis para quem criou (usuario)
-    if(!Array.isArray(v.participantes)){
-      return v.usuario && me && v.usuario===me.login;
-    }
+    // REGRA RIGOROSA: usuário comum SÓ vê visitas onde é explicitamente participante
+    // Visitas antigas sem participantes NÃO ficam visíveis para usuários comuns
+    if(!Array.isArray(v.participantes)) return false;
     return v.participantes.indexOf(meuId)>=0;
   });
 }
@@ -6874,6 +6982,219 @@ function btnEnviarTudo(){
   });
 }
 window.btnEnviarTudo = btnEnviarTudo;
+
+
+
+/* ══ ORÇAMENTO AVULSO (sem VT) ══ */
+function orcAvulsoAbrirModal(){
+  // Limpar campos
+  ['avNome','avData','avHora','avLocal','avMapa','avMontData','avMontHora'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.value = '';
+  });
+  // Mostrar (usa classe 'open' igual aos outros modais)
+  document.getElementById('orcAvulsoOv').classList.add('open');
+  setTimeout(function(){
+    var n = document.getElementById('avNome');
+    if(n) n.focus();
+  }, 100);
+}
+
+function orcAvulsoFechar(){
+  document.getElementById('orcAvulsoOv').classList.remove('open');
+}
+
+function orcAvulsoFecharBg(ev){
+  if(ev.target.id === 'orcAvulsoOv') orcAvulsoFechar();
+}
+window.orcAvulsoFecharBg = orcAvulsoFecharBg;
+
+function orcAvulsoSalvar(){
+  var nome = document.getElementById('avNome').value.trim();
+  if(!nome){ toast('Informe o nome do evento','err'); return; }
+
+  // Criar uma "visita avulsa" - tipo especial sem fluxo completo de VT
+  var novaVisita = {
+    id: 'orc_av_' + uid(),
+    nome: nome,
+    tipo: 'avulso', // marcador especial
+    dataEvento: document.getElementById('avData').value,
+    horaEvento: document.getElementById('avHora').value,
+    local: document.getElementById('avLocal').value.trim(),
+    linkLoc: document.getElementById('avMapa').value.trim(),
+    dataMont: document.getElementById('avMontData').value,
+    horaMont: document.getElementById('avMontHora').value,
+    // Campos obrigatórios da estrutura de visita (vazios)
+    empresa: '',
+    end: '',
+    eqItens: [],
+    fotos: [],
+    historico: [],
+    // Privacidade - dono é quem criou
+    usuario: (me && me.login) ? me.login : 'Alecesarlima',
+    responsavel: (me && me.id) ? me.id : 'root',
+    participantes: [(me && me.id) ? me.id : 'root'],
+    criadoEm: new Date().toISOString()
+  };
+
+  var vs = loadV();
+  vs.push(novaVisita);
+  saveV(vs);
+
+  toast('Orçamento criado!','ok');
+  orcAvulsoFechar();
+
+  // Atualizar seletor e carregar o orçamento recém criado
+  orcPopulateSelector();
+  document.getElementById('orc-visita-sel').value = novaVisita.id;
+  orcLoadVisita(novaVisita.id);
+}
+
+window.orcAvulsoAbrirModal = orcAvulsoAbrirModal;
+window.orcAvulsoFechar = orcAvulsoFechar;
+window.orcAvulsoSalvar = orcAvulsoSalvar;
+
+
+
+/* ══ AGENDAR ORÇAMENTO COMO EVENTO (v15) ══ */
+/* Atualiza o botão "Agendar" baseado no status atual e se já tem evento vinculado */
+function orcAtualizarBotaoAgendar(){
+  var box = document.getElementById('orc-agendar-box');
+  var btn = document.getElementById('orc-agendar-btn');
+  var txt = document.getElementById('orc-agendar-txt');
+  if(!box || !btn || !txt) return;
+
+  if(!orcCurrentVid){ box.style.display='none'; return; }
+
+  // Pega status atual
+  var orc = (loadOrc()||{})[orcCurrentVid] || {};
+
+  // Só mostra se aprovado
+  if(orc.status !== 'aprovado'){
+    box.style.display = 'none';
+    return;
+  }
+
+  box.style.display = 'block';
+
+  // Já está agendado?
+  if(orc.eventoVinculado){
+    // Verificar se o evento ainda existe
+    var evs = agLoadEvs();
+    var ev = evs.find(function(e){ return e.id===orc.eventoVinculado; });
+    if(ev){
+      btn.style.background = '#64748B';
+      btn.style.cursor = 'default';
+      var dt = ev.data ? (function(){ var p=ev.data.split('-'); return p[2]+'/'+p[1]+'/'+p[0]; })() : '—';
+      txt.textContent = 'Já agendado em ' + dt;
+      btn.onclick = null;
+      return;
+    } else {
+      // Evento foi deletado, desvincular
+      orc.eventoVinculado = null;
+      var orcs = loadOrc(); orcs[orcCurrentVid] = orc; saveOrc(orcs);
+    }
+  }
+
+  // Não agendado ainda
+  btn.style.background = '#10B981';
+  btn.style.cursor = 'pointer';
+  txt.textContent = 'Agendar este evento';
+  btn.onclick = orcAgendar;
+}
+
+/* Cria evento na agenda a partir do orçamento atual */
+function orcAgendar(){
+  if(!orcCurrentVid){ toast('Selecione um orçamento','err'); return; }
+  var v = loadV().find(function(x){ return x.id===orcCurrentVid; });
+  if(!v){ toast('Visita não encontrada','err'); return; }
+  var orc = (loadOrc()||{})[orcCurrentVid] || {};
+
+  // Confirmar
+  var dtFmt = v.dataEvento ? (function(){ var p=v.dataEvento.split('-'); return p[2]+'/'+p[1]+'/'+p[0]; })() : 'sem data';
+  if(!confirm('Promover este orçamento para evento da agenda?\n\nEvento: '+(v.nome||'Sem nome')+'\nData: '+dtFmt)) return;
+
+  // Criar evento
+  var novoEvento = {
+    id: 'ev_orc_' + uid(),
+    nome: v.nome || 'Sem nome',
+    data: v.dataEvento || '',
+    dataFim: v.dataEventoFim || '',
+    hora: v.horaEvento || '',
+    horaFim: v.horaFim || '',
+    montData: v.dataMont || '',
+    montHora: v.horaMont || '',
+    local: v.local || v.end || '',
+    sec: '',
+    status: 'aprovado',
+    numOfc: orc.numOficial || '',
+    visitaId: orcCurrentVid,
+    obs: '',
+    // Demanda: copia os itens do orçamento como demanda
+    demanda: (orc.itens||[]).filter(function(it){return it.srv||it.desc;}).map(function(it){
+      return { nome: it.desc||it.srv||'Item', qtd: it.qty||'' };
+    }),
+    dmLink: v.linkLoc || (v.gpsMain&&v.gpsMain.lat ? 'https://maps.google.com/?q='+v.gpsMain.lat+','+v.gpsMain.lng : ''),
+    dmRisco: 'nao',
+    dmRiscoDesc: '',
+    dmSaidaHora: '',
+    dmSaidaLocal: '',
+    dmRetorno: '',
+    dmObs: '',
+    criadoEm: new Date().toISOString(),
+    orcVinculado: orcCurrentVid, // marca origem
+    owner: (typeof _meuId==='function') ? _meuId() : null
+  };
+
+  var evs = agLoadEvs();
+  evs.push(novoEvento);
+  agSaveEvs(evs);
+
+  // Vincular no orçamento
+  var orcs = loadOrc();
+  orcs[orcCurrentVid] = orcs[orcCurrentVid] || {};
+  orcs[orcCurrentVid].eventoVinculado = novoEvento.id;
+  saveOrc(orcs);
+
+  toast('Evento agendado com sucesso!','ok');
+  orcAtualizarBotaoAgendar();
+
+  // Re-render agenda se estiver aberta
+  if(typeof agRenderAll==='function') try{ agRenderAll(); }catch(e){}
+}
+
+/* Sincroniza evento vinculado quando o orçamento é atualizado */
+function orcSincronizarEvento(){
+  if(!orcCurrentVid) return;
+  var orc = (loadOrc()||{})[orcCurrentVid];
+  if(!orc || !orc.eventoVinculado) return;
+  var v = loadV().find(function(x){ return x.id===orcCurrentVid; });
+  if(!v) return;
+  var evs = agLoadEvs();
+  var ev = evs.find(function(e){ return e.id===orc.eventoVinculado; });
+  if(!ev) return;
+
+  // Atualizar dados que vêm da visita/orçamento
+  ev.nome = v.nome || ev.nome;
+  ev.data = v.dataEvento || ev.data;
+  ev.dataFim = v.dataEventoFim || ev.dataFim;
+  ev.hora = v.horaEvento || ev.hora;
+  ev.horaFim = v.horaFim || ev.horaFim;
+  ev.montData = v.dataMont || ev.montData;
+  ev.montHora = v.horaMont || ev.montHora;
+  ev.local = v.local || v.end || ev.local;
+  ev.numOfc = orc.numOficial || ev.numOfc;
+  // Atualizar demanda (sempre que orçamento mudar)
+  ev.demanda = (orc.itens||[]).filter(function(it){return it.srv||it.desc;}).map(function(it){
+    return { nome: it.desc||it.srv||'Item', qtd: it.qty||'' };
+  });
+
+  agSaveEvs(evs);
+}
+
+window.orcAtualizarBotaoAgendar = orcAtualizarBotaoAgendar;
+window.orcAgendar = orcAgendar;
+window.orcSincronizarEvento = orcSincronizarEvento;
 
 </script>
 <datalist id="dl-fornecedores"></datalist>
