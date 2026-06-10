@@ -2040,9 +2040,25 @@ function sincronizarTudo(onComplete){
     cloudLoadList(m.col, function(items){
       if(items !== null){
         try {
-          localStorage.setItem(m.sk, JSON.stringify(items));
-          atualizados++;
-          console.log('  ✓ '+m.col+' ('+items.length+' itens)');
+          // PROTEÇÃO: comparar com dados locais antes de sobrescrever
+          var localRaw = localStorage.getItem(m.sk);
+          var localData = null;
+          try { localData = localRaw ? JSON.parse(localRaw) : null; } catch(e){}
+          var localCount = 0;
+          if(Array.isArray(localData)) localCount = localData.length;
+          else if(localData && typeof localData==='object') localCount = Object.keys(localData).length;
+          var cloudCount = 0;
+          if(Array.isArray(items)) cloudCount = items.length;
+          else if(items && typeof items==='object') cloudCount = Object.keys(items).length;
+
+          // Se nuvem tem MENOS itens que local, NÃO sobrescreve (protege contra perda)
+          if(cloudCount < localCount && localCount > 0){
+            console.warn('  ⚠ '+m.col+' IGNORADO - nuvem tem '+cloudCount+' itens vs local com '+localCount+' itens');
+          } else {
+            localStorage.setItem(m.sk, JSON.stringify(items));
+            atualizados++;
+            console.log('  ✓ '+m.col+' ('+cloudCount+' itens)');
+          }
         } catch(e){ console.error('Erro local '+m.col+':', e); }
       }
       pendentes--;
@@ -4114,8 +4130,10 @@ function orcSetStatus(status, el){
   });
   el.classList.add('on'); el.classList.add(status);
   orcAutoSave();
-  // Atualizar botão Agendar
-  if(typeof orcAtualizarBotaoAgendar==='function') orcAtualizarBotaoAgendar();
+  // Atualizar botão Agendar (com delay pra garantir que o save terminou)
+  setTimeout(function(){
+    if(typeof orcAtualizarBotaoAgendar==='function') orcAtualizarBotaoAgendar();
+  }, 100);
 }
 
 function orcSaveNum(){
@@ -7062,28 +7080,29 @@ function orcAtualizarBotaoAgendar(){
   var box = document.getElementById('orc-agendar-box');
   var btn = document.getElementById('orc-agendar-btn');
   var txt = document.getElementById('orc-agendar-txt');
-  console.log('[Agendar] box:', !!box, 'btn:', !!btn, 'txt:', !!txt);
   if(!box || !btn || !txt) return;
 
-  if(!orcCurrentVid){
-    console.log('[Agendar] orcCurrentVid vazio');
-    box.style.display='none';
-    return;
+  if(!orcCurrentVid){ box.style.display='none'; return; }
+
+  // IMPORTANTE: olhar primeiro o status VISÍVEL na tela, depois cair pro salvo
+  var statusAtual = null;
+  var active = document.querySelector('.orc-s-pill.on');
+  if(active) statusAtual = active.getAttribute('data-status');
+  if(!statusAtual){
+    var orc = (loadOrc()||{})[orcCurrentVid] || {};
+    statusAtual = orc.status;
   }
 
-  // Pega status atual
-  var orc = (loadOrc()||{})[orcCurrentVid] || {};
-  console.log('[Agendar] Status:', orc.status, '| vid:', orcCurrentVid);
-
   // Só mostra se aprovado
-  if(orc.status !== 'aprovado'){
-    console.log('[Agendar] Status NÃO é aprovado, escondendo botão');
+  if(statusAtual !== 'aprovado'){
     box.style.display = 'none';
     return;
   }
 
-  console.log('[Agendar] Status APROVADO! Mostrando botão.');
   box.style.display = 'block';
+
+  // Buscar dados salvos para verificar evento vinculado
+  var orc = (loadOrc()||{})[orcCurrentVid] || {};
 
   // Já está agendado?
   if(orc.eventoVinculado){
