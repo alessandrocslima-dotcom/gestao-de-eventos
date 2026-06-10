@@ -1370,7 +1370,6 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
         <button class="atab" onclick="adTab('events')" id="at-events">📋 Registros</button>
         <button class="atab" onclick="adTab('empresas')" id="at-empresas">🏢 Empresas</button>
         <button class="atab" onclick="adTab('secretarias')" id="at-secretarias">🏛 Secretarias</button>
-        <button class="atab" onclick="adTab('produtores')" id="at-produtores">🎬 Produtores</button>
         <button class="atab" onclick="adTab('backup')" id="at-backup">💾 Backup</button>
       </div>
       <div id="adSecretariasP" style="display:none">
@@ -1963,6 +1962,50 @@ function cloudLoadList(colecao, callback){
 }
 window.cloudSaveList = cloudSaveList;
 window.cloudLoadList = cloudLoadList;
+
+
+/* ══ HELPERS DE PRIVACIDADE (v15) ══ */
+/* Retorna o ID do usuário logado, ou 'root' pro admin raiz */
+function _meuId(){
+  if(!me) return null;
+  return me.id || me.login;
+}
+
+/* Adiciona owner se ainda não tiver (pra dados que estão sem dono) */
+function _setOwner(obj){
+  if(!obj) return obj;
+  if(!obj.owner) obj.owner = _meuId();
+  return obj;
+}
+
+/* Filtra uma lista pra mostrar só do usuário logado.
+   Itens sem owner ficam visíveis pra todos (compatibilidade com dados antigos) */
+function _meusItens(lista){
+  if(!Array.isArray(lista)) return [];
+  var meu = _meuId();
+  if(!meu) return [];
+  return lista.filter(function(it){
+    if(!it.owner) return true; // dados antigos: todos veem (até serem editados)
+    return it.owner === meu;
+  });
+}
+
+/* Filtra um OBJETO de orçamentos (chave = visitaId) - dono no próprio orçamento */
+function _meusOrcs(obj){
+  if(!obj || typeof obj !== 'object') return {};
+  var meu = _meuId();
+  if(!meu) return {};
+  var res = {};
+  Object.keys(obj).forEach(function(k){
+    var o = obj[k];
+    if(!o.owner || o.owner === meu) res[k] = o;
+  });
+  return res;
+}
+window._meuId = _meuId;
+window._setOwner = _setOwner;
+window._meusItens = _meusItens;
+window._meusOrcs = _meusOrcs;
 
 
 /* ══ SINCRONIZAÇÃO COMPLETA AO ABRIR (v14) ══ */
@@ -3053,7 +3096,8 @@ function saveEmp(){
     tel: document.getElementById('eTel').value.trim(),
     resp: document.getElementById('eResp').value.trim(),
     email: document.getElementById('eEmail').value.trim(),
-    obs: document.getElementById('eObs').value.trim()
+    obs: document.getElementById('eObs').value.trim(),
+    owner: (typeof _meuId==='function') ? _meuId() : null
   };
   if(editEid){
     var ix = emps.findIndex(function(e){ return e.id===editEid; });
@@ -3100,7 +3144,6 @@ function adTab(t){
     'events':'adEventsP',
     'empresas':'adEmpresasP',
     'secretarias':'adSecretariasP',
-    'produtores':'adProdutoresP',
     'backup':'adBackupP'
   };
   Object.keys(paineis).forEach(function(k){
@@ -3108,7 +3151,7 @@ function adTab(t){
     if(el) el.style.display = (t===k ? 'block' : 'none');
   });
   // Atualizar abas (highlight)
-  ['users','events','empresas','secretarias','produtores','backup'].forEach(function(k){
+  ['users','events','empresas','secretarias','backup'].forEach(function(k){
     var btn = document.getElementById('at-'+k);
     if(btn) btn.className = 'atab' + (t===k ? ' on' : '');
   });
@@ -3116,7 +3159,6 @@ function adTab(t){
   if(t==='users' || t==='events') renderAdmin();
   if(t==='empresas')    { if(typeof renderEmpList==='function')  renderEmpList(); }
   if(t==='secretarias') { if(typeof renderSecList==='function')  renderSecList(); }
-  if(t==='produtores')  { if(typeof renderProdList==='function') renderProdList(); }
   if(t==='backup')      { if(typeof bkAtualizarInfo==='function') bkAtualizarInfo(); }
 }
 function renderAdmin(){ if(curAdTab==='users') renderUList(); else renderAdEv(); }
@@ -4097,6 +4139,7 @@ function orcAutoSave(){
     aprovData: (document.getElementById('orc-aprov-data')||{}).value||'',
     verbaProd: 0,
     savedTs: nowTs(),
+    owner: (typeof _meuId==='function') ? _meuId() : null
   };
   saveOrc(orcs);
 }
@@ -4270,7 +4313,7 @@ function saveSecretaria(){
   var sigla = document.getElementById('sSigla').value.trim().toUpperCase();
   if(!nome){ toast('Informe o nome da secretaria','err'); return; }
   var secs = loadSec();
-  var sec = { id: orcEditSecId||uid(), nome:nome, sigla:sigla, resp:document.getElementById('sResp').value.trim() };
+  var sec = { id: orcEditSecId||uid(), nome:nome, sigla:sigla, resp:document.getElementById('sResp').value.trim(), owner: (typeof _meuId==='function') ? _meuId() : null };
   if(orcEditSecId){ var ix=secs.findIndex(function(s){return s.id===orcEditSecId;}); if(ix>=0) secs[ix]=sec; else secs.push(sec); }
   else secs.push(sec);
   saveSec(secs);
@@ -4653,7 +4696,7 @@ function saveFornDb(a){ localStorage.setItem('vtp_fornecedores_v1', JSON.stringi
 
 /* ══ AUTOCOMPLETE FORNECEDOR ══ */
 function orcFornAcOpen(inp){
-  var forns = loadForn();
+  var forns = (typeof _meusItens==='function') ? _meusItens(loadForn()) : loadForn();
   var wrap = inp.closest('.forn-ac-wrap');
   var drop = wrap.querySelector('.forn-ac-drop');
   // Posicionar o drop
@@ -4666,7 +4709,7 @@ function orcFornAcOpen(inp){
 }
 
 function orcFornAcInput(inp){
-  var forns = loadForn();
+  var forns = (typeof _meusItens==='function') ? _meusItens(loadForn()) : loadForn();
   var wrap = inp.closest('.forn-ac-wrap');
   var drop = wrap.querySelector('.forn-ac-drop');
   var rect = inp.getBoundingClientRect();
@@ -4754,6 +4797,7 @@ function saveFornecedor(){
     servicos: document.getElementById('fnServicos').value.trim(),
     prazo: document.getElementById('fnPrazo').value,
     obs: document.getElementById('fnObsForn').value.trim(),
+    owner: (typeof _meuId==='function') ? _meuId() : null,
   };
   if(_editFornId){ var ix=forns.findIndex(function(f){return f.id===_editFornId;}); if(ix>=0)forns[ix]=forn; else forns.push(forn); }
   else forns.push(forn);
@@ -4773,7 +4817,7 @@ function delFornecedor(id){
 function renderFornList(){
   var el = document.getElementById('fornList');
   if(!el) return;
-  var forns = loadForn();
+  var forns = (typeof _meusItens==='function') ? _meusItens(loadForn()) : loadForn();
   var q = ((document.getElementById('filtro-forn')||{}).value||'').toLowerCase();
   if(q) forns = forns.filter(function(f){ return f.nome.toLowerCase().includes(q)||(f.servicos&&f.servicos.toLowerCase().includes(q)); });
   if(!forns.length){
@@ -4968,6 +5012,8 @@ function agSaveEvs(a){ localStorage.setItem(SK_AG, JSON.stringify(a)); if(typeof
 
 function agFiltered(){
   var evs = agLoadEvs();
+  // Filtro de privacidade (cada usuário vê só os seus)
+  if(typeof _meusItens==='function') evs = _meusItens(evs);
   var sec = (document.getElementById('agFilSec')||{}).value||'';
   var st  = (document.getElementById('agFilStatus')||{}).value||'';
   return evs.filter(function(e){
@@ -4999,7 +5045,7 @@ function agRenderAll(){
 }
 
 function agPopulateSecFilter(){
-  var evs = agLoadEvs();
+  var evs = (typeof _meusItens==='function') ? _meusItens(agLoadEvs()) : agLoadEvs();
   var secs = [];
   evs.forEach(function(e){ if(e.sec && secs.indexOf(e.sec)<0) secs.push(e.sec); });
   // Também adicionar secretarias cadastradas
@@ -5240,6 +5286,7 @@ function agSalvarEvento(){
     visitaId: document.getElementById('agEVisita').value,
     obs: document.getElementById('agEObs').value.trim(),
     criadoEm: new Date().toISOString(),
+    owner: (typeof _meuId==='function') ? _meuId() : null
   };
   if(agEditId){ var ix=evs.findIndex(function(e){return e.id===agEditId;}); if(ix>=0)evs[ix]=ev; else evs.push(ev); }
   else evs.push(ev);
@@ -5308,6 +5355,7 @@ function saveProd(){
     esp:   document.getElementById('pEsp').value.trim(),
     obs:   document.getElementById('pObs').value.trim(),
     criadoEm: new Date().toISOString(),
+    owner: (typeof _meuId==='function') ? _meuId() : null
   };
   if(_editProdId){ var ix=prods.findIndex(function(p){return p.id===_editProdId;}); if(ix>=0)prods[ix]=prod; else prods.push(prod); }
   else prods.push(prod);
@@ -5327,7 +5375,7 @@ function delProd(id){
 function renderProdList(){
   var el = document.getElementById('prodList');
   if(!el) return;
-  var prods = loadProd();
+  var prods = (typeof _meusItens==='function') ? _meusItens(loadProd()) : loadProd();
   var q = ((document.getElementById('filtro-prod')||{}).value||'').toLowerCase();
   if(q) prods = prods.filter(function(p){
     return p.nome.toLowerCase().includes(q)||(p.doc&&p.doc.includes(q))||(p.esp&&p.esp.toLowerCase().includes(q));
@@ -5536,12 +5584,9 @@ function erRender(){
   var tbody = document.getElementById('erTbody');
   if(!tbody) return;
   var evs = erLoad();
-  // Eventos realizados são PESSOAIS: cada um vê só os seus (admin vê todos)
+  // Eventos realizados são PESSOAIS: cada um vê só os seus (inclusive admin)
   var meuId = (me && me.id) ? me.id : 'root';
-  var souAdmin = (me && me.role==='admin');
-  if(!souAdmin){
-    evs = evs.filter(function(e){ return (e.dono||'root')===meuId; });
-  }
+  evs = evs.filter(function(e){ return (e.dono||'root')===meuId; });
   var MESES_NOME = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 
   // Popular select de anos (dinâmico, com base em TODOS os eventos)
