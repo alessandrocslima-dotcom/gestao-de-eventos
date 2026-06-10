@@ -1470,12 +1470,12 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
                 <div class="orc-s-pill" data-status="adiado" onclick="orcSetStatus('adiado',this)">⏸ Adiado</div>
                 <div class="orc-s-pill" data-status="cancelado" onclick="orcSetStatus('cancelado',this)">❌ Cancelado</div>
               </div>
-              <!-- Botão Agendar - aparece quando status = aprovado -->
-              <div id="orc-agendar-box" style="margin-top:14px;display:none">
-                <button id="orc-agendar-btn" onclick="orcAgendar()" style="width:100%;padding:12px;background:#10B981;color:#fff;border:none;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s">
-                  <span style="font-size:18px">📅</span>
+              <!-- Botão Agendar - aparece quando status = aprovado (estilo link discreto) -->
+              <div id="orc-agendar-box" style="margin-top:12px;padding-top:12px;border-top:1px solid #E2E8F0;display:none;justify-content:flex-end">
+                <a id="orc-agendar-btn" href="#" onclick="orcAgendar();return false;" style="font-size:13px;color:#0F6E56;text-decoration:none;display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-weight:600;transition:opacity .15s">
+                  <span style="font-size:14px">📅</span>
                   <span id="orc-agendar-txt">Agendar este evento</span>
-                </button>
+                </a>
               </div>
               <div id="orc-num-input-wrap" style="margin-top:12px;padding-top:12px;border-top:1px solid #E2E8F0">
                 <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
@@ -7099,7 +7099,7 @@ function orcAtualizarBotaoAgendar(){
     return;
   }
 
-  box.style.display = 'block';
+  box.style.display = 'flex';
 
   // Buscar dados salvos para verificar evento vinculado
   var orc = (loadOrc()||{})[orcCurrentVid] || {};
@@ -7110,10 +7110,11 @@ function orcAtualizarBotaoAgendar(){
     var evs = agLoadEvs();
     var ev = evs.find(function(e){ return e.id===orc.eventoVinculado; });
     if(ev){
-      btn.style.background = '#64748B';
+      btn.style.color = '#94A3B8';
       btn.style.cursor = 'default';
+      btn.style.pointerEvents = 'none';
       var dt = ev.data ? (function(){ var p=ev.data.split('-'); return p[2]+'/'+p[1]+'/'+p[0]; })() : '—';
-      txt.textContent = 'Já agendado em ' + dt;
+      txt.textContent = '✓ Já agendado em ' + dt;
       btn.onclick = null;
       return;
     } else {
@@ -7124,10 +7125,11 @@ function orcAtualizarBotaoAgendar(){
   }
 
   // Não agendado ainda
-  btn.style.background = '#10B981';
+  btn.style.color = '#0F6E56';
   btn.style.cursor = 'pointer';
+  btn.style.pointerEvents = 'auto';
   txt.textContent = 'Agendar este evento';
-  btn.onclick = orcAgendar;
+  btn.onclick = function(){ orcAgendar(); return false; };
 }
 
 /* Cria evento na agenda a partir do orçamento atual */
