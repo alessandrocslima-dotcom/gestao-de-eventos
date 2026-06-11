@@ -1370,6 +1370,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
         <button class="atab" onclick="adTab('events')" id="at-events">📋 Registros</button>
         <button class="atab" onclick="adTab('empresas')" id="at-empresas">🏢 Empresas</button>
         <button class="atab" onclick="adTab('secretarias')" id="at-secretarias">🏛 Secretarias</button>
+        <button class="atab" onclick="adTab('catalogo')" id="at-catalogo">📦 Catálogo</button>
         <button class="atab" onclick="adTab('backup')" id="at-backup">💾 Backup</button>
       </div>
       <div id="adSecretariasP" style="display:none">
@@ -1388,6 +1389,19 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
           </button>
         </div>
         <div id="prodAdmList"></div>
+      </div>
+      <div id="adCatalogoP" style="display:none">
+        <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;align-items:center">
+          <input id="filtro-cat" placeholder="🔍 Buscar item..." oninput="renderCatList()" style="flex:1;min-width:180px;padding:9px 14px;border:1.5px solid #E2E8F0;border-radius:8px;font-size:13px;outline:none;font-family:'Inter',sans-serif">
+          <select id="filtro-cat-cat" onchange="renderCatList()" style="padding:9px 14px;border:1.5px solid #E2E8F0;border-radius:8px;font-size:13px;outline:none;font-family:'Inter',sans-serif;background:#fff">
+            <option value="">Todas as categorias</option>
+          </select>
+          <button class="btn-outline-blue" onclick="openCatModal()">
+            <svg viewBox="0 0 24 24" style="width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round"><path d="M12 5v14M5 12h14"/></svg>
+            Novo item
+          </button>
+        </div>
+        <div id="catList"></div>
       </div>
       <div id="adBackupP" style="display:none">
         <div style="background:#EFF6FF;border:1.5px solid #BFDBFE;border-radius:12px;padding:16px;margin-bottom:16px">
@@ -2030,7 +2044,8 @@ function sincronizarTudo(onComplete){
     { col:'produtores',    sk:'vtp_produtores_v1' },
     { col:'orcamentos',    sk:'vtp_orcamentos_v1' },
     { col:'agenda',        sk:'vtp_agenda_v1' },
-    { col:'realizados',    sk:'vtp_realizados_v1' }
+    { col:'realizados',    sk:'vtp_realizados_v1' },
+    { col:'catalogo',      sk:'vtp_catalogo_v1' }
   ];
 
   var pendentes = modulos.length;
@@ -2153,6 +2168,8 @@ function _aplicarLogin(found){
   setTimeout(function(){
     var admEl2 = document.getElementById('sbAdmItem');
     if(admEl2 && me && me.role==='admin') admEl2.style.display = 'flex';
+    // Seed inicial do catálogo (só na primeira vez)
+    if(typeof _autoSeedCatalogo==='function') _autoSeedCatalogo();
   }, 200);
 }
 
@@ -3167,6 +3184,7 @@ function adTab(t){
     'events':'adEventsP',
     'empresas':'adEmpresasP',
     'secretarias':'adSecretariasP',
+    'catalogo':'adCatalogoP',
     'backup':'adBackupP'
   };
   Object.keys(paineis).forEach(function(k){
@@ -3174,7 +3192,7 @@ function adTab(t){
     if(el) el.style.display = (t===k ? 'block' : 'none');
   });
   // Atualizar abas (highlight)
-  ['users','events','empresas','secretarias','backup'].forEach(function(k){
+  ['users','events','empresas','secretarias','catalogo','backup'].forEach(function(k){
     var btn = document.getElementById('at-'+k);
     if(btn) btn.className = 'atab' + (t===k ? ' on' : '');
   });
@@ -3182,6 +3200,7 @@ function adTab(t){
   if(t==='users' || t==='events') renderAdmin();
   if(t==='empresas')    { if(typeof renderEmpList==='function')  renderEmpList(); }
   if(t==='secretarias') { if(typeof renderSecList==='function')  renderSecList(); }
+  if(t==='catalogo')    { if(typeof renderCatList==='function') renderCatList(); }
   if(t==='backup')      { if(typeof bkAtualizarInfo==='function') bkAtualizarInfo(); }
 }
 function renderAdmin(){ if(curAdTab==='users') renderUList(); else renderAdEv(); }
@@ -3646,6 +3665,67 @@ if('serviceWorker' in navigator){
   </div>
 </div>
 
+
+<!-- MODAL: NOVO/EDITAR ITEM DO CATÁLOGO -->
+<div id="catModalOv" class="ag-modal-ov" onclick="catCloseModalBg(event)">
+  <div class="ag-modal">
+    <div class="ag-modal-hdr">
+      <span class="ag-modal-title" id="catModalTit">Novo item</span>
+      <button class="ag-modal-x" onclick="closeCatModal()">&#x2715;</button>
+    </div>
+    <div class="ag-modal-body">
+      <div class="fld">
+        <label>Nome do item *</label>
+        <input type="text" id="catNome" placeholder="Ex: Cadeira PVC" autocomplete="off">
+      </div>
+      <div class="row2">
+        <div class="fld">
+          <label>Categoria *</label>
+          <select id="catCategoria">
+            <option value="">Selecionar...</option>
+            <option value="Mobiliário">Mobiliário</option>
+            <option value="Estruturas">Estruturas</option>
+            <option value="Cobertura e Proteção">Cobertura e Proteção</option>
+            <option value="Comunicação Visual">Comunicação Visual</option>
+            <option value="Energia Elétrica">Energia Elétrica</option>
+            <option value="Equipamentos">Equipamentos</option>
+            <option value="Sanitários">Sanitários</option>
+            <option value="Segurança">Segurança</option>
+            <option value="Organização e Acesso">Organização e Acesso</option>
+            <option value="Alimentação e Apoio">Alimentação e Apoio</option>
+            <option value="Serviços">Serviços</option>
+            <option value="Outros">Outros</option>
+          </select>
+        </div>
+        <div class="fld">
+          <label>Unidade</label>
+          <select id="catUnidade">
+            <option value="Unid">Unid</option>
+            <option value="Dia">Dia</option>
+            <option value="Hora">Hora</option>
+            <option value="Metro">Metro</option>
+            <option value="M²">M²</option>
+            <option value="Pacote">Pacote</option>
+            <option value="Kit">Kit</option>
+          </select>
+        </div>
+      </div>
+      <div class="fld">
+        <label>Medida (opcional)</label>
+        <input type="text" id="catMedida" placeholder="Ex: 3x3m, 6x4m" autocomplete="off">
+      </div>
+      <div class="fld">
+        <label>Observações (opcional)</label>
+        <textarea id="catObs" style="min-height:60px" placeholder="Detalhes ou notas..."></textarea>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:18px;justify-content:flex-end">
+        <button onclick="closeCatModal()" style="padding:9px 18px;background:#fff;border:1.5px solid #E2E8F0;border-radius:8px;font-weight:600;color:#475569;cursor:pointer">Cancelar</button>
+        <button onclick="saveCatItem()" style="padding:9px 18px;background:#2563EB;border:none;border-radius:8px;font-weight:600;color:#fff;cursor:pointer">Salvar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
 
@@ -3715,6 +3795,9 @@ var _pageMeta = {
   'admin-users':   {title:'Usuários',             bread:'Administração',    btn:false},
   'admin-events':  {title:'Registros',            bread:'Administração',    btn:false},
   'admin-empresas':{title:'Empresas (Admin)',     bread:'Administração',    btn:false},
+  'admin-secretarias':{title:'Secretarias',       bread:'Administração',    btn:false},
+  'admin-catalogo':{title:'Catálogo de Itens',    bread:'Administração',    btn:false},
+  'admin-backup':  {title:'Backup',                bread:'Administração',    btn:false},
   'orcamentos':    {title:'Orçamentos',           bread:'Operacional',      btn:true},
   'eventos':       {title:'Agenda de Eventos',    bread:'Eventos',          btn:false},
   'programacao':   {title:'Programação',          bread:'Eventos',          btn:false},
@@ -3733,7 +3816,7 @@ var _pageMap = {
   'admin-events':   'vpAdmin',
   'admin-empresas': 'vpAdmin',
   'admin-secretarias': 'vpAdmin',
-  'admin-produtores':  'vpAdmin',
+  'admin-catalogo':    'vpAdmin',
   'admin-backup':      'vpAdmin',
   'orcamentos':     'vpOrcamentos',
   'eventos':        'vpEventos',
@@ -3781,7 +3864,7 @@ function sbGo(page, el) {
   if(page === 'admin-events')   { renderAdmin(); adTab('events'); }
   if(page === 'admin-empresas') { renderAdmin(); adTab('empresas'); }
   if(page === 'admin-secretarias') { renderAdmin(); adTab('secretarias'); }
-  if(page === 'admin-produtores')  { renderAdmin(); adTab('produtores'); }
+  if(page === 'admin-catalogo')    { renderAdmin(); adTab('catalogo'); }
   if(page === 'admin-backup')      { renderAdmin(); adTab('backup'); }
   if(page === 'empresas-cad')   { renderEmpListCad(); }
   if(page === 'rel-visitas')    { renderRelVisitas(); }
@@ -4174,8 +4257,8 @@ function orcAddItemRow(tbody, it){
   var uns = ['Dia','Unid','Hora','Evento','Serviço','Diária'];
   var pgtos = ['30D','45D','60D','À Vista','15D','28D'];
   tr.innerHTML = [
-    '<td><input type="text" value="'+esc(it.srv)+'" placeholder="Serviço" oninput="orcAutoSave()"></td>',
-    '<td><input type="text" value="'+esc(it.desc)+'" placeholder="Descrição" oninput="orcAutoSave()"></td>',
+    '<td style="position:relative"><input type="text" value="'+esc(it.srv)+'" placeholder="Serviço" class="orc-srv" oninput="orcAutoSave()" autocomplete="off"></td>',
+    '<td style="position:relative"><input type="text" value="'+esc(it.desc)+'" placeholder="Descrição" class="orc-desc-cat" oninput="catAcInput(this);orcAutoSave()" onfocus="catAcOpen(this)" onblur="setTimeout(function(){catAcClose();},150)" autocomplete="off"></td>',
     '<td><input type="number" value="'+(it.qty||1)+'" min="0" step="1" class="orc-qty" oninput="orcRecalcRow(this)" style="text-align:center"></td>',
     '<td><input type="text" value="'+esc(it.price)+'" placeholder="0,00" class="orc-price" oninput="orcRecalcRow(this)"></td>',
     '<td><input type="number" value="'+(it.freq||1)+'" min="1" step="1" class="orc-freq" oninput="orcRecalcRow(this)" style="text-align:center"></td>',
@@ -5613,6 +5696,441 @@ window.renderSecListPg=renderSecListPg;
 
 /* ══ EVENTOS REALIZADOS ══ */
 var SK_REAL = 'vtp_realizados_v1';
+var SK_CAT = 'vtp_catalogo_v1';
+
+/* ══ CATÁLOGO DE ITENS (v15) ══ */
+function loadCat(){ try{ return JSON.parse(localStorage.getItem(SK_CAT)||'[]'); }catch(e){ return []; } }
+function saveCat(a){
+  localStorage.setItem(SK_CAT, JSON.stringify(a));
+  if(typeof cloudSaveList==='function') cloudSaveList('catalogo', a);
+}
+
+/* Seed inicial - itens hardcoded da VT viram catálogo */
+function _catSeedInicial(){
+  var atual = loadCat();
+  if(atual.length > 0) return;
+  var inicial = [
+  {
+    "id": "cat_init_000",
+    "nome": "Cadeira PVC",
+    "categoria": "Mobiliário",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_001",
+    "nome": "Mesa PVC",
+    "categoria": "Mobiliário",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_002",
+    "nome": "Cadeira Tiffany",
+    "categoria": "Mobiliário",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_003",
+    "nome": "Mesa Pranchão",
+    "categoria": "Mobiliário",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_004",
+    "nome": "Aparador",
+    "categoria": "Mobiliário",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_005",
+    "nome": "Toalha de Mesa",
+    "categoria": "Mobiliário",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_006",
+    "nome": "Palco",
+    "categoria": "Estruturas",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_007",
+    "nome": "Praticável",
+    "categoria": "Estruturas",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_008",
+    "nome": "Tenda Piramidal",
+    "categoria": "Estruturas",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_009",
+    "nome": "Tenda Galpão",
+    "categoria": "Estruturas",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_010",
+    "nome": "Tenda Chapéu de Bruxa",
+    "categoria": "Estruturas",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_011",
+    "nome": "Cavalete",
+    "categoria": "Estruturas",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_012",
+    "nome": "Placa de Inauguração",
+    "categoria": "Estruturas",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_013",
+    "nome": "Púlpito",
+    "categoria": "Estruturas",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_014",
+    "nome": "Tablado",
+    "categoria": "Estruturas",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_015",
+    "nome": "Carpete",
+    "categoria": "Estruturas",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_016",
+    "nome": "Guarda-Corpo",
+    "categoria": "Estruturas",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_017",
+    "nome": "Porta Banner",
+    "categoria": "Comunicação Visual",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_018",
+    "nome": "Banner",
+    "categoria": "Comunicação Visual",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_019",
+    "nome": "Faixa",
+    "categoria": "Comunicação Visual",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_020",
+    "nome": "Pano de Placa",
+    "categoria": "Comunicação Visual",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_021",
+    "nome": "Backdrop",
+    "categoria": "Comunicação Visual",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_022",
+    "nome": "Totem",
+    "categoria": "Comunicação Visual",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_023",
+    "nome": "LED",
+    "categoria": "Comunicação Visual",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_024",
+    "nome": "TV / Monitor",
+    "categoria": "Equipamentos",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_025",
+    "nome": "Notebook",
+    "categoria": "Equipamentos",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_026",
+    "nome": "Rádio Comunicador",
+    "categoria": "Equipamentos",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_027",
+    "nome": "Ventilador",
+    "categoria": "Equipamentos",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_028",
+    "nome": "Climatizador",
+    "categoria": "Equipamentos",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_029",
+    "nome": "Gerador",
+    "categoria": "Equipamentos",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_030",
+    "nome": "Água Copo 200ml",
+    "categoria": "Alimentação e Apoio",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_031",
+    "nome": "Cooler",
+    "categoria": "Alimentação e Apoio",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_032",
+    "nome": "Tina",
+    "categoria": "Alimentação e Apoio",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_033",
+    "nome": "Café",
+    "categoria": "Alimentação e Apoio",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_034",
+    "nome": "Açúcar",
+    "categoria": "Alimentação e Apoio",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_035",
+    "nome": "Adoçante",
+    "categoria": "Alimentação e Apoio",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_036",
+    "nome": "Copo Descartável",
+    "categoria": "Alimentação e Apoio",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_037",
+    "nome": "Banheiro Químico",
+    "categoria": "Sanitários",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_038",
+    "nome": "Banheiro Químico VIP",
+    "categoria": "Sanitários",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_039",
+    "nome": "Extensão Elétrica",
+    "categoria": "Energia Elétrica",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_040",
+    "nome": "Passa Cabo",
+    "categoria": "Energia Elétrica",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_041",
+    "nome": "Quadro Elétrico",
+    "categoria": "Energia Elétrica",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_042",
+    "nome": "Ponto de Energia",
+    "categoria": "Energia Elétrica",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_043",
+    "nome": "Gradil de Isolamento",
+    "categoria": "Organização e Acesso",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_044",
+    "nome": "Fechamento Metálico",
+    "categoria": "Organização e Acesso",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_045",
+    "nome": "Cone de Sinalização",
+    "categoria": "Organização e Acesso",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_046",
+    "nome": "Fita Zebrada",
+    "categoria": "Organização e Acesso",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_047",
+    "nome": "Unifila",
+    "categoria": "Organização e Acesso",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_048",
+    "nome": "Extintor",
+    "categoria": "Segurança",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_049",
+    "nome": "Iluminação de Emergência",
+    "categoria": "Segurança",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_050",
+    "nome": "Ombrelone",
+    "categoria": "Cobertura e Proteção",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  },
+  {
+    "id": "cat_init_051",
+    "nome": "Cobertura de Palco",
+    "categoria": "Cobertura e Proteção",
+    "unidade": "Unid",
+    "medida": "",
+    "obs": ""
+  }
+];
+  saveCat(inicial);
+  console.log('Catálogo inicial criado com ' + inicial.length + ' itens');
+}
+
 var _erEditId = null;
 
 function erLoad(){ try{ return JSON.parse(localStorage.getItem(SK_REAL)||'[]'); }catch(e){ return []; } }
@@ -6948,7 +7466,8 @@ function enviarTudoParaNuvem(onComplete){
     { col:'produtores',    sk:'vtp_produtores_v1' },
     { col:'orcamentos',    sk:'vtp_orcamentos_v1' },
     { col:'agenda',        sk:'vtp_agenda_v1' },
-    { col:'realizados',    sk:'vtp_realizados_v1' }
+    { col:'realizados',    sk:'vtp_realizados_v1' },
+    { col:'catalogo',      sk:'vtp_catalogo_v1' }
   ];
 
   var pendentes = modulos.length;
@@ -7224,6 +7743,249 @@ function orcSincronizarEvento(){
 window.orcAtualizarBotaoAgendar = orcAtualizarBotaoAgendar;
 window.orcAgendar = orcAgendar;
 window.orcSincronizarEvento = orcSincronizarEvento;
+
+
+
+/* ══ CRUD CATÁLOGO (v15) ══ */
+var _catEditId = null;
+
+function _catPopulateFilterCat(){
+  var sel = document.getElementById('filtro-cat-cat');
+  if(!sel) return;
+  var cur = sel.value;
+  var cats = {};
+  loadCat().forEach(function(it){ if(it.categoria) cats[it.categoria]=1; });
+  sel.innerHTML = '<option value="">Todas as categorias</option>';
+  Object.keys(cats).sort().forEach(function(c){
+    sel.innerHTML += '<option value="'+c.replace(/"/g,'&quot;')+'">'+c+'</option>';
+  });
+  if(cur) sel.value = cur;
+}
+
+function renderCatList(){
+  var el = document.getElementById('catList');
+  if(!el) return;
+  _catPopulateFilterCat();
+  var items = loadCat();
+  var q = ((document.getElementById('filtro-cat')||{}).value||'').toLowerCase();
+  var fCat = ((document.getElementById('filtro-cat-cat')||{}).value||'');
+  if(q) items = items.filter(function(it){ return (it.nome||'').toLowerCase().includes(q) || (it.categoria||'').toLowerCase().includes(q); });
+  if(fCat) items = items.filter(function(it){ return it.categoria === fCat; });
+
+  if(!items.length){
+    el.innerHTML = '<div class="empty" style="text-align:center;padding:30px 20px;color:#94A3B8"><div style="font-size:32px;margin-bottom:8px">📦</div><div style="font-size:14px">Nenhum item no catálogo</div><div style="font-size:12px;margin-top:4px">Clique em "Novo item" para começar</div></div>';
+    return;
+  }
+
+  // Agrupar por categoria
+  var porCat = {};
+  items.forEach(function(it){
+    var c = it.categoria||'Outros';
+    if(!porCat[c]) porCat[c]=[];
+    porCat[c].push(it);
+  });
+
+  var html = '';
+  Object.keys(porCat).sort().forEach(function(cat){
+    html += '<div style="margin-bottom:18px"><div style="font-size:11px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;padding:0 4px">'+cat+' <span style="color:#94A3B8;font-weight:500">('+porCat[cat].length+')</span></div>';
+    porCat[cat].forEach(function(it){
+      var medida = it.medida ? ' <span style="color:#94A3B8">('+it.medida+')</span>' : '';
+      var unid = it.unidade ? ' · '+it.unidade : '';
+      html += '<div class="ad-row" style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#fff;border:1px solid #E2E8F0;border-radius:8px;margin-bottom:6px">'
+        + '<div style="flex:1;min-width:0">'
+        + '<div style="font-size:13.5px;font-weight:600;color:#0F172A">'+it.nome+medida+'</div>'
+        + '<div style="font-size:11.5px;color:#64748B;margin-top:2px">'+unid+(it.obs?' · '+it.obs.substring(0,40)+(it.obs.length>40?'…':''):'')+'</div>'
+        + '</div>'
+        + '<button onclick="openCatModal(\''+it.id+'\')" title="Editar" style="padding:6px 10px;background:#F1F5F9;border:1px solid #E2E8F0;border-radius:6px;cursor:pointer;font-size:12px;color:#475569">✏️</button>'
+        + '<button onclick="delCatItem(\''+it.id+'\')" title="Excluir" style="padding:6px 10px;background:#FEF2F2;border:1px solid #FECACA;border-radius:6px;cursor:pointer;font-size:12px;color:#DC2626">🗑️</button>'
+        + '</div>';
+    });
+    html += '</div>';
+  });
+  el.innerHTML = html;
+}
+
+function openCatModal(id){
+  _catEditId = id || null;
+  document.getElementById('catModalTit').textContent = id ? 'Editar item' : 'Novo item';
+  ['catNome','catCategoria','catUnidade','catMedida','catObs'].forEach(function(f){
+    var el=document.getElementById(f); if(el) el.value='';
+  });
+  if(id){
+    var it = loadCat().find(function(x){ return x.id===id; });
+    if(it){
+      document.getElementById('catNome').value = it.nome||'';
+      document.getElementById('catCategoria').value = it.categoria||'';
+      document.getElementById('catUnidade').value = it.unidade||'Unid';
+      document.getElementById('catMedida').value = it.medida||'';
+      document.getElementById('catObs').value = it.obs||'';
+    }
+  } else {
+    document.getElementById('catUnidade').value = 'Unid';
+  }
+  document.getElementById('catModalOv').classList.add('open');
+  setTimeout(function(){
+    var n = document.getElementById('catNome');
+    if(n) n.focus();
+  }, 100);
+}
+
+function closeCatModal(){
+  document.getElementById('catModalOv').classList.remove('open');
+}
+
+function catCloseModalBg(ev){
+  if(ev.target.id === 'catModalOv') closeCatModal();
+}
+
+function saveCatItem(){
+  var nome = document.getElementById('catNome').value.trim();
+  if(!nome){ toast('Informe o nome do item','err'); return; }
+  var cat = document.getElementById('catCategoria').value;
+  if(!cat){ toast('Selecione a categoria','err'); return; }
+
+  var items = loadCat();
+  var item = {
+    id: _catEditId || ('cat_'+uid()),
+    nome: nome,
+    categoria: cat,
+    unidade: document.getElementById('catUnidade').value || 'Unid',
+    medida: document.getElementById('catMedida').value.trim(),
+    obs: document.getElementById('catObs').value.trim()
+  };
+
+  if(_catEditId){
+    var ix = items.findIndex(function(x){ return x.id===_catEditId; });
+    if(ix>=0) items[ix] = item;
+    else items.push(item);
+  } else {
+    items.push(item);
+  }
+
+  saveCat(items);
+  toast(_catEditId ? 'Item atualizado!' : 'Item adicionado ao catálogo!','ok');
+  closeCatModal();
+  renderCatList();
+}
+
+function delCatItem(id){
+  var it = loadCat().find(function(x){ return x.id===id; });
+  if(!it) return;
+  if(!confirm('Excluir "'+it.nome+'" do catálogo?')) return;
+  var items = loadCat().filter(function(x){ return x.id!==id; });
+  saveCat(items);
+  toast('Item removido','ok');
+  renderCatList();
+}
+
+window.renderCatList = renderCatList;
+window.openCatModal = openCatModal;
+window.closeCatModal = closeCatModal;
+window.catCloseModalBg = catCloseModalBg;
+window.saveCatItem = saveCatItem;
+window.delCatItem = delCatItem;
+
+/* Auto-seed do catálogo quando o admin logar (apenas 1 vez) */
+function _autoSeedCatalogo(){
+  if(!me || me.role!=='admin') return;
+  if(localStorage.getItem('vtp_catalogo_seed_done')) return;
+  _catSeedInicial();
+  localStorage.setItem('vtp_catalogo_seed_done','1');
+}
+
+
+
+/* ══ AUTOCOMPLETE DO CATÁLOGO (v15) ══ */
+var _catAcEl = null; // elemento dropdown ativo
+
+function catAcOpen(inp){
+  catAcClose();
+  catAcRender(inp, inp.value||'');
+}
+
+function catAcInput(inp){
+  catAcRender(inp, inp.value||'');
+}
+
+function catAcClose(){
+  if(_catAcEl){
+    try{ _catAcEl.remove(); }catch(e){}
+    _catAcEl = null;
+  }
+}
+
+function catAcRender(inp, q){
+  catAcClose();
+  var items = loadCat();
+  var qLow = (q||'').toLowerCase().trim();
+  if(qLow){
+    items = items.filter(function(it){
+      return (it.nome||'').toLowerCase().includes(qLow)
+        || (it.categoria||'').toLowerCase().includes(qLow);
+    });
+  }
+  items = items.slice(0, 10); // limite
+
+  // Criar dropdown
+  var dd = document.createElement('div');
+  dd.style.cssText = 'position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #E2E8F0;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,0.08);z-index:100;max-height:240px;overflow:auto;margin-top:2px;font-size:12.5px';
+
+  if(!items.length){
+    if(qLow){
+      // Sugestão pra criar item livre
+      dd.innerHTML = '<div style="padding:10px 12px;color:#64748B;font-size:12px">✏️ Item livre: <strong>"'+esc(q)+'"</strong><div style="font-size:11px;color:#94A3B8;margin-top:2px">Continue digitando ou clique fora</div></div>';
+    } else {
+      dd.innerHTML = '<div style="padding:10px 12px;color:#94A3B8;font-size:12px">Nenhum item no catálogo</div>';
+    }
+  } else {
+    items.forEach(function(it){
+      var row = document.createElement('div');
+      row.style.cssText = 'padding:8px 12px;cursor:pointer;border-bottom:1px solid #F1F5F9;display:flex;align-items:center;gap:8px';
+      var medida = it.medida ? ' <span style="color:#94A3B8;font-size:11px">('+it.medida+')</span>' : '';
+      row.innerHTML = '<span style="color:#10B981;font-size:11px" title="Do catálogo">📚</span>'
+        + '<div style="flex:1;min-width:0">'
+        + '<div style="font-weight:500;color:#0F172A">'+esc(it.nome)+medida+'</div>'
+        + '<div style="font-size:11px;color:#64748B;margin-top:1px">'+esc(it.categoria||'')+' · '+esc(it.unidade||'Unid')+'</div>'
+        + '</div>';
+      row.onmouseenter = function(){ row.style.background='#F8FAFC'; };
+      row.onmouseleave = function(){ row.style.background='#fff'; };
+      row.onmousedown = function(ev){
+        ev.preventDefault();
+        // Preencher campos
+        var tr = inp.closest('tr');
+        if(tr){
+          var srvInp = tr.querySelector('.orc-srv');
+          var descInp = tr.querySelector('.orc-desc-cat');
+          var unSel = tr.querySelector('.orc-un');
+          if(srvInp) srvInp.value = it.categoria || '';
+          if(descInp){
+            descInp.value = it.nome + (it.medida ? ' ('+it.medida+')' : '');
+          }
+          if(unSel && it.unidade){
+            // Achar opção e selecionar
+            for(var i=0; i<unSel.options.length; i++){
+              if(unSel.options[i].value === it.unidade || unSel.options[i].text === it.unidade){
+                unSel.selectedIndex = i;
+                break;
+              }
+            }
+          }
+        }
+        catAcClose();
+        if(typeof orcAutoSave==='function') orcAutoSave();
+      };
+      dd.appendChild(row);
+    });
+  }
+
+  inp.parentNode.appendChild(dd);
+  _catAcEl = dd;
+}
+
+window.catAcOpen = catAcOpen;
+window.catAcInput = catAcInput;
+window.catAcClose = catAcClose;
+window.catAcRender = catAcRender;
 
 </script>
 <datalist id="dl-fornecedores"></datalist>
