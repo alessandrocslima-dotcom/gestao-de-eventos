@@ -1192,7 +1192,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div class="fstep" id="fs2">
         <div class="fsec"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Demanda</div>
         <div class="eq-bar">
-          <select id="eqSel"><option value="">Selecionar item...</option><optgroup label="Mobiliário"><option>Cadeira PVC</option><option>Mesa PVC</option><option>Cadeira Tiffany</option><option>Mesa Pranchão</option><option>Aparador</option><option>Toalha de Mesa</option></optgroup><optgroup label="Estruturas"><option>Palco</option><option>Praticável</option><option>Tenda Piramidal</option><option>Tenda Galpão</option><option>Tenda Chapéu de Bruxa</option><option>Cavalete</option><option>Placa de Inauguração</option><option>Púlpito</option><option>Tablado</option><option>Carpete</option><option>Guarda-Corpo</option></optgroup><optgroup label="Comunicação Visual"><option>Porta Banner</option><option>Banner</option><option>Faixa</option><option>Pano de Placa</option><option>Backdrop</option><option>Totem</option><option>LED</option></optgroup><optgroup label="Equipamentos"><option>TV / Monitor</option><option>Notebook</option><option>Rádio Comunicador</option><option>Ventilador</option><option>Climatizador</option><option>Gerador</option></optgroup><optgroup label="Alimentação e Apoio"><option>Água Copo 200ml</option><option>Cooler</option><option>Tina</option><option>Café</option><option>Açúcar</option><option>Adoçante</option><option>Copo Descartável</option></optgroup><optgroup label="Sanitários"><option>Banheiro Químico</option><option>Banheiro Químico VIP</option></optgroup><optgroup label="Energia Elétrica"><option>Extensão Elétrica</option><option>Passa Cabo</option><option>Quadro Elétrico</option><option>Ponto de Energia</option></optgroup><optgroup label="Organização e Acesso"><option>Gradil de Isolamento</option><option>Fechamento Metálico</option><option>Cone de Sinalização</option><option>Fita Zebrada</option><option>Unifila</option></optgroup><optgroup label="Segurança"><option>Extintor</option><option>Iluminação de Emergência</option></optgroup><optgroup label="Cobertura e Proteção"><option>Ombrelone</option><option>Cobertura de Palco</option></optgroup></select>
+          <select id="eqSel"><option value="">Selecionar item...</option></select>
           <button class="btn-eq-add" onclick="addEq()"><svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round"><path d="M12 5v14M5 12h14"/></svg>Add</button>
         </div>
         <div id="eqList"></div>
@@ -1884,6 +1884,7 @@ window.addEventListener('load', function(){
               if(typeof renderDash==='function' && me) try{ renderDash(); }catch(e){}
               if(typeof agRenderAll==='function') try{ agRenderAll(); }catch(e){}
               if(typeof renderForns==='function') try{ renderForns(); }catch(e){}
+              if(typeof eqPopulateSelect==='function') try{ eqPopulateSelect(); }catch(e){}
             }
           });
         }, 1000);
@@ -2170,6 +2171,8 @@ function _aplicarLogin(found){
     if(admEl2 && me && me.role==='admin') admEl2.style.display = 'flex';
     // Seed inicial do catálogo (só na primeira vez)
     if(typeof _autoSeedCatalogo==='function') _autoSeedCatalogo();
+    // Popular select da VT com itens do catálogo
+    if(typeof eqPopulateSelect==='function') eqPopulateSelect();
   }, 200);
 }
 
@@ -3772,6 +3775,24 @@ if('serviceWorker' in navigator){
       <div class="fld"><label>Visita técnica vinculada</label>
         <select id="agEVisita" onchange="agEvtImportarVT()"><option value="">Nenhuma</option></select>
       </div>
+
+      <!-- DEMANDA (opcional) -->
+      <div class="fld">
+        <label style="display:flex;align-items:center;justify-content:space-between">
+          <span>Demanda <span style="font-weight:400;color:#94A3B8;font-size:11px">(opcional)</span></span>
+          <span id="agEDmContador" style="font-size:11px;color:#64748B;font-weight:500"></span>
+        </label>
+        <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">
+          <select id="agEDmItem" style="flex:2;min-width:180px"><option value="">Selecionar item do catálogo...</option></select>
+          <input type="number" id="agEDmQtd" placeholder="Qtd" min="0" style="flex:1;min-width:70px;max-width:90px">
+          <button type="button" onclick="agEDmAddItem()" style="padding:8px 14px;background:#2563EB;color:#fff;border:none;border-radius:6px;font-weight:600;font-size:13px;cursor:pointer;white-space:nowrap">+ Add</button>
+        </div>
+        <div id="agEDmLista" style="max-height:180px;overflow-y:auto;padding:0"></div>
+        <div style="margin-top:6px">
+          <button type="button" onclick="agEDmAddLivre()" style="font-size:12px;color:#475569;background:#F8FAFC;border:1px dashed #CBD5E1;padding:6px 10px;border-radius:6px;cursor:pointer">+ Adicionar item livre (não catalogado)</button>
+        </div>
+      </div>
+
       <div class="fld"><label>Observações</label><textarea id="agEObs" style="min-height:60px" placeholder="Detalhes adicionais..."></textarea></div>
       <div style="display:flex;gap:8px;margin-top:4px">
         <button class="btn-success" style="flex:1" onclick="agSalvarEvento()">Salvar evento</button>
@@ -5426,6 +5447,9 @@ function agAbrirModal(data){
   document.getElementById('agEStatus').value='elaboracao';
   agPopulateModalSec();
   agPopulateModalVisitas();
+  // Demanda: zerar e popular select do catálogo
+  if(typeof agEDmReset==='function') agEDmReset();
+  if(typeof agEDmPopulateSelect==='function') agEDmPopulateSelect();
   document.getElementById('agModalOv').classList.add('open');
 }
 
@@ -5446,6 +5470,10 @@ function agEditarEvento(id){
   agPopulateModalSec(ev.sec);
   agPopulateModalVisitas(ev.visitaId);
   document.getElementById('agEStatus').value=ev.status||'elaboracao';
+  // Demanda: carregar existente
+  if(typeof agEDmPopulateSelect==='function') agEDmPopulateSelect();
+  _agEDmItens = Array.isArray(ev.demanda) ? ev.demanda.slice() : [];
+  if(typeof agEDmRender==='function') agEDmRender();
   document.getElementById('agModalOv').classList.add('open');
 }
 
@@ -5493,6 +5521,7 @@ function agSalvarEvento(){
     sec: document.getElementById('agESec').value,
     status: document.getElementById('agEStatus').value,
     numOfc: document.getElementById('agENum').value.trim(),
+    demanda: (typeof _agEDmItens!=='undefined' && Array.isArray(_agEDmItens)) ? _agEDmItens.slice() : [],
     visitaId: document.getElementById('agEVisita').value,
     obs: document.getElementById('agEObs').value.trim(),
     criadoEm: new Date().toISOString(),
@@ -7138,8 +7167,12 @@ function agDmRenderItens(){
   }
   el.innerHTML = '';
   _agDmItens.forEach(function(it, i){
+    var card = document.createElement('div');
+    card.style.cssText = 'background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:8px 10px;margin-bottom:6px';
+
+    // Linha superior: nome + qtd + remover
     var row = document.createElement('div');
-    row.style.cssText = 'display:flex;align-items:center;gap:8px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:8px 10px;margin-bottom:6px';
+    row.style.cssText = 'display:flex;align-items:center;gap:8px';
     row.innerHTML = '<span style="flex:1;font-size:13px;font-weight:600;color:#0F172A">'+esc(it.nome)+'</span>'
       +'<span style="font-size:12px;color:#64748B">'+(it.qtd?esc(String(it.qtd)):'—')+'</span>';
     var rm = document.createElement('button');
@@ -7147,7 +7180,20 @@ function agDmRenderItens(){
     rm.style.cssText = 'width:24px;height:24px;border-radius:6px;border:1px solid #FCA5A5;background:#FEF2F2;color:#DC2626;cursor:pointer;flex-shrink:0';
     rm.onclick = (function(idx){ return function(){ _agDmItens.splice(idx,1); agDmRenderItens(); }; })(i);
     row.appendChild(rm);
-    el.appendChild(row);
+    card.appendChild(row);
+
+    // Campo de observação inline (sempre presente, com placeholder)
+    var obsInp = document.createElement('input');
+    obsInp.type = 'text';
+    obsInp.value = it.obs || '';
+    obsInp.placeholder = '+ adicionar observação';
+    obsInp.style.cssText = 'margin-top:6px;width:100%;padding:5px 8px;font-size:11.5px;border:none;border-bottom:1px dashed #CBD5E1;background:transparent;outline:none;color:#64748B;font-family:inherit;box-sizing:border-box';
+    obsInp.oninput = (function(idx){
+      return function(ev){ _agDmItens[idx].obs = ev.target.value; };
+    })(i);
+    card.appendChild(obsInp);
+
+    el.appendChild(card);
   });
 }
 
@@ -7866,6 +7912,8 @@ function saveCatItem(){
   toast(_catEditId ? 'Item atualizado!' : 'Item adicionado ao catálogo!','ok');
   closeCatModal();
   renderCatList();
+  // Repopular select da VT com a lista atualizada
+  if(typeof eqPopulateSelect==='function') eqPopulateSelect();
 }
 
 function delCatItem(id){
@@ -7876,6 +7924,7 @@ function delCatItem(id){
   saveCat(items);
   toast('Item removido','ok');
   renderCatList();
+  if(typeof eqPopulateSelect==='function') eqPopulateSelect();
 }
 
 window.renderCatList = renderCatList;
@@ -7986,6 +8035,170 @@ window.catAcOpen = catAcOpen;
 window.catAcInput = catAcInput;
 window.catAcClose = catAcClose;
 window.catAcRender = catAcRender;
+
+
+
+/* ══ POPULAR SELECT DA VT (DEMANDA) A PARTIR DO CATÁLOGO (v15) ══ */
+function eqPopulateSelect(){
+  var sel = document.getElementById('eqSel');
+  if(!sel) return;
+  var cur = sel.value;
+  var items = loadCat();
+
+  sel.innerHTML = '<option value="">Selecionar item...</option>';
+
+  if(!items.length){
+    sel.innerHTML += '<option disabled>Nenhum item no catálogo</option>';
+    return;
+  }
+
+  // Agrupar por categoria
+  var porCat = {};
+  items.forEach(function(it){
+    var c = it.categoria || 'Outros';
+    if(!porCat[c]) porCat[c] = [];
+    porCat[c].push(it);
+  });
+
+  // Ordem das categorias (alfabética)
+  Object.keys(porCat).sort().forEach(function(cat){
+    var og = document.createElement('optgroup');
+    og.label = cat;
+    porCat[cat].forEach(function(it){
+      var opt = document.createElement('option');
+      // Valor: nome + medida se houver (compatível com o resto da app)
+      var nomeCompleto = it.nome + (it.medida ? ' ('+it.medida+')' : '');
+      opt.value = nomeCompleto;
+      opt.textContent = nomeCompleto;
+      // Guardar metadados pra uso futuro (unidade, etc)
+      opt.dataset.unidade = it.unidade || 'Unid';
+      opt.dataset.medida = it.medida || '';
+      og.appendChild(opt);
+    });
+    sel.appendChild(og);
+  });
+
+  if(cur){
+    // Restaurar seleção anterior (se ainda existe)
+    sel.value = cur;
+  }
+}
+
+/* Re-popular quando: app carrega, login completa, catálogo é editado */
+window.eqPopulateSelect = eqPopulateSelect;
+
+
+
+/* ══ DEMANDA NO MODAL DE EVENTO (v15) ══ */
+var _agEDmItens = []; // lista temporária enquanto edita
+
+function agEDmPopulateSelect(){
+  var sel = document.getElementById('agEDmItem');
+  if(!sel) return;
+  var items = loadCat();
+  sel.innerHTML = '<option value="">Selecionar item do catálogo...</option>';
+
+  if(!items.length){
+    sel.innerHTML += '<option disabled>Nenhum item no catálogo</option>';
+    return;
+  }
+
+  // Agrupar por categoria
+  var porCat = {};
+  items.forEach(function(it){
+    var c = it.categoria || 'Outros';
+    if(!porCat[c]) porCat[c] = [];
+    porCat[c].push(it);
+  });
+
+  Object.keys(porCat).sort().forEach(function(cat){
+    var og = document.createElement('optgroup');
+    og.label = cat;
+    porCat[cat].forEach(function(it){
+      var opt = document.createElement('option');
+      var nomeCompleto = it.nome + (it.medida ? ' ('+it.medida+')' : '');
+      opt.value = nomeCompleto;
+      opt.textContent = nomeCompleto;
+      og.appendChild(opt);
+    });
+    sel.appendChild(og);
+  });
+}
+
+function agEDmRender(){
+  var el = document.getElementById('agEDmLista');
+  var ct = document.getElementById('agEDmContador');
+  if(!el) return;
+
+  if(ct){
+    ct.textContent = _agEDmItens.length ? _agEDmItens.length + ' iten' + (_agEDmItens.length>1?'s':'') : '';
+  }
+
+  if(!_agEDmItens.length){
+    el.innerHTML = '<div style="font-size:12px;color:#94A3B8;padding:8px 12px;background:#F8FAFC;border-radius:6px;text-align:center">Nenhum item adicionado</div>';
+    return;
+  }
+
+  el.innerHTML = _agEDmItens.map(function(it, i){
+    var qtdHtml = it.qtd ? '<span style="font-weight:600;color:#0F172A">'+it.qtd+'</span>' : '<span style="color:#94A3B8">—</span>';
+    var obsVal = (it.obs||'').replace(/"/g,'&quot;');
+    var obsPlaceholder = '+ adicionar observação';
+    return '<div style="padding:8px 10px;background:#fff;border:1px solid #E2E8F0;border-radius:6px;margin-bottom:5px">'
+      + '<div style="display:flex;align-items:center;gap:8px">'
+      + '  <div style="flex:1;min-width:0;font-size:13px;color:#0F172A">'+(it.nome||'')+'</div>'
+      + '  <div style="font-size:12px;min-width:30px;text-align:right">'+qtdHtml+'</div>'
+      + '  <button type="button" onclick="agEDmRemover('+i+')" title="Remover" style="background:#FEF2F2;border:1px solid #FECACA;color:#DC2626;padding:3px 8px;border-radius:5px;cursor:pointer;font-size:13px;line-height:1">×</button>'
+      + '</div>'
+      + '<input type="text" value="'+obsVal+'" placeholder="'+obsPlaceholder+'" oninput="agEDmSetObs('+i+',this.value)" style="margin-top:6px;width:100%;padding:5px 8px;font-size:11.5px;border:none;border-bottom:1px dashed #E2E8F0;background:transparent;outline:none;color:#64748B;font-family:inherit" />'
+      + '</div>';
+  }).join('');
+}
+
+function agEDmSetObs(idx, val){
+  if(idx>=0 && idx<_agEDmItens.length){
+    _agEDmItens[idx].obs = val;
+  }
+}
+window.agEDmSetObs = agEDmSetObs;
+
+function agEDmAddItem(){
+  var sel = document.getElementById('agEDmItem');
+  var qtdInp = document.getElementById('agEDmQtd');
+  if(!sel || !sel.value){ toast('Selecione um item do catálogo','err'); return; }
+  var qtd = (qtdInp.value||'').trim();
+  _agEDmItens.push({ nome: sel.value, qtd: qtd });
+  // Reset
+  sel.value = '';
+  qtdInp.value = '';
+  agEDmRender();
+}
+
+function agEDmAddLivre(){
+  var nome = prompt('Digite o nome do item livre:');
+  if(!nome || !nome.trim()) return;
+  var qtd = prompt('Quantidade (opcional):');
+  _agEDmItens.push({ nome: nome.trim(), qtd: (qtd||'').trim() });
+  agEDmRender();
+}
+
+function agEDmRemover(idx){
+  if(idx>=0 && idx<_agEDmItens.length){
+    _agEDmItens.splice(idx,1);
+    agEDmRender();
+  }
+}
+
+function agEDmReset(){
+  _agEDmItens = [];
+  agEDmRender();
+}
+
+window.agEDmPopulateSelect = agEDmPopulateSelect;
+window.agEDmAddItem = agEDmAddItem;
+window.agEDmAddLivre = agEDmAddLivre;
+window.agEDmRemover = agEDmRemover;
+window.agEDmReset = agEDmReset;
+window.agEDmRender = agEDmRender;
 
 </script>
 <datalist id="dl-fornecedores"></datalist>
