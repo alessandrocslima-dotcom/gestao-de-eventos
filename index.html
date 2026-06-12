@@ -838,6 +838,12 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 @media(max-width:600px){
   .btn-voltar{top:4px;padding:10px 14px;font-size:13px}
 }
+
+/* Indicador de sincronização */
+@keyframes syncSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
 </style>
 </head>
 <body>
@@ -997,6 +1003,10 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
           <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:none;stroke:#fff;stroke-width:2.5;stroke-linecap:round"><path d="M12 5v14M5 12h14"/></svg>
           <span class="tb-nova-lbl">Nova Visita</span>
         </button>
+        <div id="syncIndicator" title="Sincronizando..." style="display:none;align-items:center;gap:4px;color:#94A3B8;font-size:11px;padding:4px 8px;margin-right:8px">
+          <svg id="syncIcon" viewBox="0 0 24 24" style="width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;animation:syncSpin 1s linear infinite"><path d="M21 12a9 9 0 1 1-3.6-7.2L21 8M21 3v5h-5"/></svg>
+          <span id="syncText">sincronizando</span>
+        </div>
         <div class="tb-chip" onclick="doLogout()" id="uChip">
           <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
           <span id="uLabel">—</span>
@@ -1957,10 +1967,15 @@ function loadVisitasCloud(callback){
 function cloudSaveList(colecao, lista){
   if(!db){ return; }
   try {
-    // Limitar tamanho: Firestore aceita doc até 1MB
-    var docData = { items: lista, atualizadoEm: new Date().toISOString() };
+    var nowIso = new Date().toISOString();
+    var docData = { items: lista, atualizadoEm: nowIso };
     db.collection(colecao).doc('_lista').set(docData)
-      .then(function(){ console.log(colecao+' sincronizado na nuvem ('+lista.length+' itens)'); })
+      .then(function(){
+        // Marcar localmente o timestamp do último save (pra comparar na sincronização)
+        try { localStorage.setItem('vtp_sync_ts_'+colecao, nowIso); } catch(e){}
+        var cnt = Array.isArray(lista) ? lista.length : (lista && typeof lista==='object' ? Object.keys(lista).length : 0);
+        console.log(colecao+' sincronizado na nuvem ('+cnt+' itens)');
+      })
       .catch(function(e){ console.error('Erro cloud '+colecao+':', e.message); });
   } catch(err) { console.error('Erro ao preparar cloud '+colecao+':', err); }
 }
@@ -1972,14 +1987,18 @@ function cloudLoadList(colecao, callback){
     .then(function(doc){
       if(doc.exists){
         var d = doc.data();
-        callback(Array.isArray(d.items) ? d.items : null);
+        // Retorna items (array OU objeto) e timestamp da nuvem
+        var items = null;
+        if(Array.isArray(d.items)) items = d.items;
+        else if(d.items && typeof d.items==='object') items = d.items;
+        callback(items, d.atualizadoEm || null);
       } else {
-        callback(null);
+        callback(null, null);
       }
     })
     .catch(function(e){
       console.error('Erro load cloud '+colecao+':', e.message);
-      callback(null);
+      callback(null, null);
     });
 }
 window.cloudSaveList = cloudSaveList;
@@ -2053,25 +2072,26 @@ function sincronizarTudo(onComplete){
   var atualizados = 0;
 
   modulos.forEach(function(m){
-    cloudLoadList(m.col, function(items){
+    cloudLoadList(m.col, function(items, cloudTs){
       if(items !== null){
         try {
-          // PROTEÇÃO: comparar com dados locais antes de sobrescrever
-          var localRaw = localStorage.getItem(m.sk);
-          var localData = null;
-          try { localData = localRaw ? JSON.parse(localRaw) : null; } catch(e){}
-          var localCount = 0;
-          if(Array.isArray(localData)) localCount = localData.length;
-          else if(localData && typeof localData==='object') localCount = Object.keys(localData).length;
-          var cloudCount = 0;
-          if(Array.isArray(items)) cloudCount = items.length;
-          else if(items && typeof items==='object') cloudCount = Object.keys(items).length;
-
-          // Se nuvem tem MENOS itens que local, NÃO sobrescreve (protege contra perda)
-          if(cloudCount < localCount && localCount > 0){
-            console.warn('  ⚠ '+m.col+' IGNORADO - nuvem tem '+cloudCount+' itens vs local com '+localCount+' itens');
-          } else {
+          var cloudCount = Array.isArray(items) ? items.length : (items && typeof items==='object' ? Object.keys(items).length : 0);
+          // LÓGICA DE TIMESTAMP: comparar quando foi a última sincronização local com o timestamp da nuvem
+          // Se a nuvem é mais recente OU mesmo tempo OU se não temos histórico → atualiza
+          // Se o local foi salvo DEPOIS da nuvem → mantém local (nosso save vai prevalecer no próximo upload)
+          var localTs = localStorage.getItem('vtp_sync_ts_'+m.col);
+          var devoBaixar = true;
+          if(localTs && cloudTs){
+            // Se o save local é mais recente que a nuvem, não sobrescreve
+            if(localTs > cloudTs){
+              devoBaixar = false;
+              console.warn('  ⏭ '+m.col+' PULADO - local mais recente ('+localTs+' > '+cloudTs+')');
+            }
+          }
+          if(devoBaixar){
             localStorage.setItem(m.sk, JSON.stringify(items));
+            // Atualizar timestamp pra refletir o que está local agora
+            if(cloudTs) try { localStorage.setItem('vtp_sync_ts_'+m.col, cloudTs); } catch(e){}
             atualizados++;
             console.log('  ✓ '+m.col+' ('+cloudCount+' itens)');
           }
@@ -2173,6 +2193,8 @@ function _aplicarLogin(found){
     if(typeof _autoSeedCatalogo==='function') _autoSeedCatalogo();
     // Popular select da VT com itens do catálogo
     if(typeof eqPopulateSelect==='function') eqPopulateSelect();
+    // Iniciar sincronização automática em background (a cada 2 min)
+    if(typeof iniciarSyncAutomatico==='function') iniciarSyncAutomatico();
   }, 200);
 }
 
@@ -2243,6 +2265,7 @@ document.getElementById('lPass').addEventListener('keydown', function(e){ if(e.k
 document.getElementById('lUser').addEventListener('keydown', function(e){ if(e.key==='Enter') document.getElementById('lPass').focus(); });
 
 function doLogout(){
+  if(typeof pararSyncAutomatico==='function') pararSyncAutomatico();
   if(!confirm('Deseja sair do sistema?')) return;
   me = null;
   document.getElementById('pgApp').style.display = 'none';
@@ -8199,6 +8222,61 @@ window.agEDmAddLivre = agEDmAddLivre;
 window.agEDmRemover = agEDmRemover;
 window.agEDmReset = agEDmReset;
 window.agEDmRender = agEDmRender;
+
+
+
+/* ══ SINCRONIZAÇÃO AUTOMÁTICA EM BACKGROUND (v15) ══ */
+var _syncAutoTimer = null;
+var _syncAutoInterval = 2 * 60 * 1000; // 2 minutos
+
+function _syncIndicatorShow(){
+  var el = document.getElementById('syncIndicator');
+  if(el) el.style.display = 'inline-flex';
+}
+
+function _syncIndicatorHide(){
+  var el = document.getElementById('syncIndicator');
+  if(el) el.style.display = 'none';
+}
+
+function sincronizarBackground(){
+  if(!db){ return; }
+  if(!me){ return; } // só sincroniza se estiver logado
+  _syncIndicatorShow();
+  sincronizarTudo(function(ok){
+    _syncIndicatorHide();
+    if(ok){
+      // Re-render telas que possam ter dados novos (sem barulho)
+      try{ if(typeof renderDash==='function') renderDash(); }catch(e){}
+      try{ if(typeof agRenderAll==='function') agRenderAll(); }catch(e){}
+      try{ if(typeof renderForns==='function') renderForns(); }catch(e){}
+      try{ if(typeof erRender==='function') erRender(); }catch(e){}
+      try{ if(typeof renderEmpList==='function') renderEmpList(); }catch(e){}
+      try{ if(typeof renderSecList==='function') renderSecList(); }catch(e){}
+    }
+  });
+}
+
+function iniciarSyncAutomatico(){
+  if(_syncAutoTimer) clearInterval(_syncAutoTimer);
+  _syncAutoTimer = setInterval(function(){
+    // Só sincroniza se a aba está visível (economiza bateria/dados)
+    if(document.hidden) return;
+    sincronizarBackground();
+  }, _syncAutoInterval);
+  console.log('🔄 Sincronização automática iniciada (a cada 2 min)');
+}
+
+function pararSyncAutomatico(){
+  if(_syncAutoTimer){
+    clearInterval(_syncAutoTimer);
+    _syncAutoTimer = null;
+  }
+}
+
+window.sincronizarBackground = sincronizarBackground;
+window.iniciarSyncAutomatico = iniciarSyncAutomatico;
+window.pararSyncAutomatico = pararSyncAutomatico;
 
 </script>
 <datalist id="dl-fornecedores"></datalist>
