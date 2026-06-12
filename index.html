@@ -719,8 +719,8 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 .filter-input:focus{border-color:#1A56DB}
 
 /* ══ EVENTOS REALIZADOS ══ */
-.er-kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:18px}
-@media(max-width:1000px){.er-kpis{grid-template-columns:repeat(3,1fr)}}
+.er-kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:18px}
+@media(max-width:1200px){.er-kpis{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:700px){.er-kpis{grid-template-columns:repeat(2,1fr)}}
 .er-kpi{background:#fff;border:1.5px solid #E2E8F0;border-radius:12px;padding:14px;position:relative;overflow:hidden}
 .er-kpi-bar{position:absolute;bottom:0;left:0;right:0;height:3px}
@@ -739,6 +739,48 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 .er-cache{font-weight:700;font-family:'JetBrains Mono',monospace;text-align:right;white-space:nowrap}
 .er-cache-edit{cursor:pointer;border-radius:6px;transition:background .12s}
 .er-cache-edit:hover{background:#EFF6FF}
+
+/* ══ FINANCEIRO (PC: tabela com mini-grade verba/cachê) ══ */
+.er-fin{display:flex;gap:14px;align-items:flex-start;font-variant-numeric:tabular-nums}
+.er-fin-col{min-width:90px}
+.er-fin-lbl{font-size:9.5px;color:#64748B;font-weight:700;text-transform:uppercase;letter-spacing:.3px;margin-bottom:2px;display:flex;align-items:center;gap:3px}
+.er-fin-val{font-weight:700;color:#0F172A;font-size:13.5px;line-height:1.1;cursor:pointer;font-family:'JetBrains Mono',monospace}
+.er-fin-val:hover{color:#1A56DB}
+.er-fin-st{display:inline-block;padding:1px 7px;border-radius:4px;font-size:10px;font-weight:600;margin-top:3px;line-height:1.4}
+.er-fin-st.pago{background:#DCFCE7;color:#166534}
+.er-fin-st.pendente{background:#FEF3C7;color:#92400E}
+.er-fin-st.parcial{background:#DBEAFE;color:#1E40AF}
+.er-fin-vazio{color:#CBD5E1;font-size:13px}
+
+/* ══ CARDS (mobile) ══ */
+.er-cards-wrap{display:none}
+.er-card{background:#fff;border:1px solid #E2E8F0;border-radius:10px;padding:12px 14px;margin-bottom:8px;box-shadow:0 1px 2px rgba(0,0,0,0.04)}
+.er-card-hdr{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:10px}
+.er-card-info{flex:1;min-width:0}
+.er-card-nome{font-weight:600;color:#0F172A;font-size:14px;line-height:1.3;margin-bottom:2px}
+.er-card-meta{font-size:11.5px;color:#64748B;line-height:1.4}
+.er-card-acts{display:flex;gap:5px;flex-shrink:0}
+.er-card-acts button{width:30px;height:30px;border-radius:6px;border:1px solid #E2E8F0;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+.er-card-acts button.del{border-color:#FECACA;background:#FEF2F2;color:#DC2626}
+.er-card-fin{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.er-card-fin-box{padding:8px 10px;border-radius:7px;border-left:3px solid #94A3B8;background:#F8FAFC}
+.er-card-fin-box.pago{border-color:#10B981;background:#F0FDF4}
+.er-card-fin-box.pendente{border-color:#F59E0B;background:#FFFBEB}
+.er-card-fin-box.parcial{border-color:#3B82F6;background:#EFF6FF}
+.er-card-fin-box.vazio{border-color:#E2E8F0;background:#F8FAFC;opacity:.6}
+.er-card-fin-lbl{font-size:10px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.3px;display:flex;align-items:center;gap:3px;margin-bottom:3px}
+.er-card-fin-val{font-weight:700;color:#0F172A;font-size:14.5px;line-height:1.1;font-variant-numeric:tabular-nums;cursor:pointer;font-family:'JetBrains Mono',monospace}
+.er-card-fin-val:hover{color:#1A56DB}
+.er-card-fin-st{font-size:10.5px;font-weight:600;margin-top:3px}
+.er-card-fin-st.pago{color:#166534}
+.er-card-fin-st.pendente{color:#92400E}
+.er-card-fin-st.parcial{color:#1E40AF}
+
+/* Switch: PC mostra tabela / Mobile mostra cards */
+@media(max-width:768px){
+  .er-tabela-wrap{display:none}
+  .er-cards-wrap{display:block}
+}
 .er-badge{font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;border:1px solid;white-space:nowrap;cursor:pointer;transition:all .12s}
 .er-badge:hover{filter:brightness(0.95);transform:scale(1.05)}
 .er-b-pago{background:#EAF3DE;color:#27500A;border-color:#97C459}
@@ -1675,6 +1717,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
           <div class="er-kpi"><div class="er-kpi-bar" style="background:#639922"></div><div class="er-kpi-lbl">Total recebido</div><div class="er-kpi-val" id="erRecebido" style="color:#27500A">R$ 0</div><div class="er-kpi-sub" id="erRecebidoSub">0 pagos</div></div>
           <div class="er-kpi"><div class="er-kpi-bar" style="background:#EF9F27"></div><div class="er-kpi-lbl">A receber</div><div class="er-kpi-val" id="erReceber" style="color:#92400E">R$ 0</div><div class="er-kpi-sub" id="erReceberSub">0 pendentes</div></div>
           <div class="er-kpi"><div class="er-kpi-bar" style="background:#7C3AED"></div><div class="er-kpi-lbl">Cachê total</div><div class="er-kpi-val" id="erTotal">R$ 0</div><div class="er-kpi-sub">faturamento</div></div>
+          <div class="er-kpi"><div class="er-kpi-bar" id="erVerbaBar" style="background:#F59E0B"></div><div class="er-kpi-lbl">Verba de produção</div><div class="er-kpi-val" id="erVerbaRec" style="color:#92400E">R$ 0</div><div class="er-kpi-sub" id="erVerbaSub">sem verbas</div></div>
         </div>
 
         <!-- Filtros -->
@@ -1731,14 +1774,17 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
             <span>📊 Eventos realizados</span>
             <span id="erCount" style="font-size:11px;color:#64748B;font-weight:400"></span>
           </div>
-          <div style="overflow-x:auto">
+          <!-- TABELA - PC -->
+          <div class="er-tabela-wrap" style="overflow-x:auto">
             <table class="er-table">
               <thead><tr>
-                <th>Data</th><th>Nº evento</th><th>Nome do evento</th><th>Empresa</th><th style="text-align:right">Cachê</th><th>Pagamento</th><th style="width:40px"></th>
+                <th>Data</th><th>Nº evento</th><th>Nome do evento</th><th>Empresa</th><th>Financeiro</th><th style="width:40px"></th>
               </tr></thead>
               <tbody id="erTbody"></tbody>
             </table>
           </div>
+          <!-- CARDS - Celular -->
+          <div class="er-cards-wrap" id="erCardsList"></div>
         </div>
       </div>
 
@@ -3518,7 +3564,28 @@ window.openEmpModal=openEmpModal; window.closeEmpModal=closeEmpModal; window.sav
       <div class="fld"><label>Forma de pagamento</label><input type="text" id="erForma" placeholder="Ex: Transferência, PIX"></div>
       <div class="fld"><label>Data do pagamento</label><input type="date" id="erDataPgto"></div>
     </div>
-    <div class="fld"><label>Observações</label><textarea id="erObs" style="min-height:50px" placeholder="Anotações..."></textarea></div>
+    <!-- VERBA DE PRODUÇÃO -->
+    <div style="margin-top:14px;padding:12px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px">
+      <div style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">
+        💼 Verba de Produção <span style="font-weight:400;color:#94A3B8;text-transform:none;letter-spacing:0;font-size:11px">(opcional)</span>
+      </div>
+      <div class="row2">
+        <div class="fld"><label>Valor (R$)</label><input type="text" id="erVerba" placeholder="0,00" inputmode="decimal"></div>
+        <div class="fld"><label>Situação</label>
+          <select id="erVerbaStatus">
+            <option value="">—</option>
+            <option value="pendente">Pendente</option>
+            <option value="pago">Pago</option>
+          </select>
+        </div>
+      </div>
+      <div class="row2">
+        <div class="fld"><label>Data do pagamento</label><input type="date" id="erVerbaDataPgto"></div>
+        <div class="fld"><label>Observações</label><input type="text" id="erVerbaObs" placeholder="Detalhes..."></div>
+      </div>
+    </div>
+
+    <div class="fld" style="margin-top:14px"><label>Observações</label><textarea id="erObs" style="min-height:50px" placeholder="Anotações..."></textarea></div>
     <button class="btn-primary" onclick="erSalvar()">Salvar evento</button>
   </div>
 </div>
@@ -6218,6 +6285,10 @@ function erAbrirModal(){
   document.getElementById('erForma').value='';
   document.getElementById('erDataPgto').value='';
   document.getElementById('erObs').value='';
+  document.getElementById('erVerba').value='';
+  document.getElementById('erVerbaStatus').value='';
+  document.getElementById('erVerbaDataPgto').value='';
+  document.getElementById('erVerbaObs').value='';
   document.getElementById('erParcialWrap').style.display='none';
   document.getElementById('erModalOv').classList.add('on');
 }
@@ -6237,6 +6308,10 @@ function erEditar(id){
   document.getElementById('erForma').value=ev.forma||'';
   document.getElementById('erDataPgto').value=ev.dataPgto||'';
   document.getElementById('erObs').value=ev.obs||'';
+  document.getElementById('erVerba').value=ev.verba||'';
+  document.getElementById('erVerbaStatus').value=ev.verbaStatus||'';
+  document.getElementById('erVerbaDataPgto').value=ev.verbaDataPgto||'';
+  document.getElementById('erVerbaObs').value=ev.verbaObs||'';
   document.getElementById('erParcialWrap').style.display = ev.status==='parcial'?'block':'none';
   document.getElementById('erModalOv').classList.add('on');
 }
@@ -6260,6 +6335,10 @@ function erSalvar(){
     forma: document.getElementById('erForma').value.trim(),
     dataPgto: document.getElementById('erDataPgto').value,
     obs: document.getElementById('erObs').value.trim(),
+    verba: document.getElementById('erVerba').value.trim(),
+    verbaStatus: document.getElementById('erVerbaStatus').value,
+    verbaDataPgto: document.getElementById('erVerbaDataPgto').value,
+    verbaObs: document.getElementById('erVerbaObs').value.trim(),
   };
   if(_erEditId){ var ix=evs.findIndex(function(e){return e.id===_erEditId;}); if(ix>=0)evs[ix]=ev; else evs.push(ev); }
   else evs.push(ev);
@@ -6343,12 +6422,19 @@ function erRender(){
 
   // ── KPIs calculados sobre a lista FILTRADA ──
   var qtd=filtered.length, recebido=0, receber=0, total=0, nPagos=0, nPend=0;
+  var verbaPaga=0, verbaPendente=0, nVerbaPend=0;
   filtered.forEach(function(e){
     var c = erParseMoney(e.cache);
     total += c;
     if(e.status==='pago'){ recebido += c; nPagos++; }
     else if(e.status==='parcial'){ var r=erParseMoney(e.recebido); recebido+=r; receber+=(c-r); nPend++; }
     else { receber += c; nPend++; }
+    // Verba de produção
+    var v = erParseMoney(e.verba);
+    if(v > 0){
+      if(e.verbaStatus==='pago'){ verbaPaga += v; }
+      else { verbaPendente += v; nVerbaPend++; }
+    }
   });
 
   // Card 1 — reflete o período filtrado (ou mês atual se sem filtro de mês/ano)
@@ -6385,8 +6471,32 @@ function erRender(){
   document.getElementById('erRecebido').textContent = erFmtMoneyShort(recebido);
   document.getElementById('erRecebidoSub').textContent = nPagos+' pago'+(nPagos!==1?'s':'');
   document.getElementById('erReceber').textContent = erFmtMoneyShort(receber);
-  document.getElementById('erReceberSub').textContent = nPend+' pendente'+(nPend!==1?'s':'');
+  // Proposta B: "5 pendentes · R$ 62.675 pago"
+  var pagoTxt = recebido>0 ? ' · '+erFmtMoneyShort(recebido)+' pago' : '';
+  document.getElementById('erReceberSub').innerHTML = nPend+' pendente'+(nPend!==1?'s':'')+'<span style="color:#0F6E56">'+pagoTxt+'</span>';
   document.getElementById('erTotal').textContent = erFmtMoneyShort(total);
+  // Verba de produção - mostra PENDENTE em destaque (mais útil pra acompanhar)
+  var elVR = document.getElementById('erVerbaRec');
+  var elVS = document.getElementById('erVerbaSub');
+  var elVBar = document.getElementById('erVerbaBar');
+  if(elVR) elVR.textContent = erFmtMoneyShort(verbaPendente);
+  if(elVS){
+    if(verbaPendente > 0){
+      // Proposta B: "3 pendentes · R$ 400 pago"
+      var verbaPagoTxt = verbaPaga>0 ? ' · <span style="color:#0F6E56">'+erFmtMoneyShort(verbaPaga)+' pago</span>' : '';
+      elVS.innerHTML = nVerbaPend+' pendente'+(nVerbaPend!==1?'s':'')+verbaPagoTxt;
+      if(elVR) elVR.style.color = '#92400E';
+      if(elVBar) elVBar.style.background = '#F59E0B';
+    } else if(verbaPaga > 0){
+      elVS.textContent = 'tudo recebido · '+erFmtMoneyShort(verbaPaga);
+      if(elVR) elVR.style.color = '#0F6E56';
+      if(elVBar) elVBar.style.background = '#10B981';
+    } else {
+      elVS.textContent = 'sem verbas';
+      if(elVR) elVR.style.color = '#94A3B8';
+      if(elVBar) elVBar.style.background = '#94A3B8';
+    }
+  }
 
   document.getElementById('erCount').textContent = filtered.length + ' evento'+(filtered.length!==1?'s':'');
 
@@ -6396,68 +6506,133 @@ function erRender(){
   }
 
   tbody.innerHTML = '';
+  var cardsWrap = document.getElementById('erCardsList');
+  if(cardsWrap) cardsWrap.innerHTML = '';
+
+  // Helpers
+  function _erStAlt(id){ return function(ev){ ev.stopPropagation(); erAlternarStatus(id); }; }
+  function _erEditarCache(id, cell, campo){
+    return function(ev){
+      ev.stopPropagation();
+      if(cell.querySelector('input')) return;
+      var atual = '';
+      var evx = erLoad().find(function(x){return x.id===id;});
+      if(evx) atual = evx[campo]||'';
+      cell.innerHTML = '';
+      var inp = document.createElement('input');
+      inp.type = 'text'; inp.value = atual; inp.inputMode = 'decimal';
+      inp.style.cssText = 'width:90px;padding:4px 6px;border:1.5px solid #1A56DB;border-radius:6px;font-size:12px;text-align:right;font-family:inherit;outline:none';
+      cell.appendChild(inp); inp.focus(); inp.select();
+      function salvar(){
+        var evs = erLoad();
+        var item = evs.find(function(x){return x.id===id;});
+        if(item){ item[campo] = inp.value.trim(); erSave(evs); }
+        erRender();
+      }
+      inp.addEventListener('blur', salvar);
+      inp.addEventListener('keydown', function(e){
+        if(e.key==='Enter'){ inp.blur(); }
+        if(e.key==='Escape'){ erRender(); }
+      });
+    };
+  }
+  function _erVerbaAltStatus(id){
+    return function(ev){
+      ev.stopPropagation();
+      var evs = erLoad();
+      var item = evs.find(function(x){return x.id===id;});
+      if(item){
+        item.verbaStatus = item.verbaStatus==='pago' ? 'pendente' : 'pago';
+        if(item.verbaStatus==='pago' && !item.verbaDataPgto){
+          var hoje = new Date();
+          item.verbaDataPgto = hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0')+'-'+String(hoje.getDate()).padStart(2,'0');
+        }
+        erSave(evs);
+        erRender();
+      }
+    };
+  }
+
   filtered.forEach(function(e){
-    var tr = document.createElement('tr');
     var d = e.data ? new Date(e.data+'T00:00:00') : null;
     var dataStr = d ? String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear() : '—';
     var mesStr = d ? MESES_NOME[d.getMonth()] : '';
     var cacheNum = erParseMoney(e.cache);
+    var verbaNum = erParseMoney(e.verba);
+    var verbaSt = (e.verbaStatus==='pago') ? 'pago' : (verbaNum>0 ? 'pendente' : '');
+    var cacheSt = e.status||'pendente';
+
+    // ═════════ TABELA (PC) ═════════
+    var tr = document.createElement('tr');
 
     var tdData = document.createElement('td');
     tdData.innerHTML = dataStr + (mesStr?'<div class="er-num">'+mesStr+'</div>':'');
     tr.appendChild(tdData);
+
     var tdNum = document.createElement('td');
     tdNum.innerHTML = '<span class="er-num">'+(e.num?esc(e.num):'—')+'</span>';
     tr.appendChild(tdNum);
+
     var tdNome = document.createElement('td');
     tdNome.innerHTML = '<div class="er-nome">'+esc(e.nome)+'</div>';
     tr.appendChild(tdNome);
+
     var tdEmp = document.createElement('td');
     tdEmp.textContent = e.empresa||'—';
     tr.appendChild(tdEmp);
-    var tdCache = document.createElement('td');
-    tdCache.className = 'er-cache er-cache-edit';
-    tdCache.textContent = erFmtMoney(cacheNum);
-    tdCache.title = 'Clique para editar o valor';
-    tdCache.onclick = (function(id, cell){
-      return function(ev){
-        ev.stopPropagation();
-        if(cell.querySelector('input')) return; // já está editando
-        var atual = '';
-        var evx = erLoad().find(function(x){return x.id===id;});
-        if(evx) atual = evx.cache||'';
-        cell.innerHTML = '';
-        var inp = document.createElement('input');
-        inp.type = 'text';
-        inp.value = atual;
-        inp.inputMode = 'decimal';
-        inp.style.cssText = 'width:90px;padding:4px 6px;border:1.5px solid #1A56DB;border-radius:6px;font-size:12px;text-align:right;font-family:inherit;outline:none';
-        cell.appendChild(inp);
-        inp.focus(); inp.select();
-        function salvar(){
-          var evs = erLoad();
-          var item = evs.find(function(x){return x.id===id;});
-          if(item){ item.cache = inp.value.trim(); erSave(evs); }
-          erRender();
-        }
-        inp.addEventListener('blur', salvar);
-        inp.addEventListener('keydown', function(e){
-          if(e.key==='Enter'){ inp.blur(); }
-          if(e.key==='Escape'){ erRender(); }
-        });
-      };
-    })(e.id, tdCache);
-    tr.appendChild(tdCache);
-    var tdSt = document.createElement('td');
-    var stCls = e.status==='pago'?'er-b-pago':(e.status==='parcial'?'er-b-parcial':'er-b-pendente');
-    var badge = document.createElement('span');
-    badge.className = 'er-badge '+stCls;
-    badge.innerHTML = ER_ST_LBL[e.status];
-    badge.title = 'Clique para alternar pago/pendente';
-    badge.style.userSelect = 'none';
-    badge.onclick = (function(id){ return function(ev){ ev.stopPropagation(); erAlternarStatus(id); }; })(e.id);
-    tdSt.appendChild(badge);
-    tr.appendChild(tdSt);
+
+    // ═══ Coluna FINANCEIRO (verba + cachê lado a lado) ═══
+    var tdFin = document.createElement('td');
+    var finWrap = document.createElement('div'); finWrap.className='er-fin';
+
+    // Verba
+    var verbaCol = document.createElement('div'); verbaCol.className='er-fin-col';
+    var verbaLbl = document.createElement('div'); verbaLbl.className='er-fin-lbl';
+    verbaLbl.innerHTML = '💼 Verba';
+    verbaCol.appendChild(verbaLbl);
+    var verbaVal = document.createElement('div');
+    if(verbaNum > 0){
+      verbaVal.className='er-fin-val';
+      verbaVal.textContent = erFmtMoney(verbaNum);
+      verbaVal.title = 'Clique para editar o valor';
+      verbaVal.onclick = _erEditarCache(e.id, verbaVal, 'verba');
+      verbaCol.appendChild(verbaVal);
+      var verbaBadge = document.createElement('span');
+      verbaBadge.className = 'er-fin-st '+verbaSt;
+      verbaBadge.textContent = verbaSt==='pago' ? '✓ Pago' : '⏳ Pendente';
+      verbaBadge.title = 'Clique para alternar pago/pendente';
+      verbaBadge.style.cursor = 'pointer';
+      verbaBadge.onclick = _erVerbaAltStatus(e.id);
+      verbaCol.appendChild(verbaBadge);
+    } else {
+      verbaVal.className='er-fin-vazio';
+      verbaVal.textContent = '—';
+      verbaCol.appendChild(verbaVal);
+    }
+    // Cachê PRIMEIRO
+    var cacheCol = document.createElement('div'); cacheCol.className='er-fin-col';
+    var cacheLbl = document.createElement('div'); cacheLbl.className='er-fin-lbl';
+    cacheLbl.innerHTML = '💰 Cachê';
+    cacheCol.appendChild(cacheLbl);
+    var cacheVal = document.createElement('div'); cacheVal.className='er-fin-val';
+    cacheVal.textContent = erFmtMoney(cacheNum);
+    cacheVal.title = 'Clique para editar o valor';
+    cacheVal.onclick = _erEditarCache(e.id, cacheVal, 'cache');
+    cacheCol.appendChild(cacheVal);
+    var cacheBadge = document.createElement('span');
+    cacheBadge.className = 'er-fin-st '+cacheSt;
+    cacheBadge.textContent = cacheSt==='pago' ? '✓ Pago' : (cacheSt==='parcial' ? '◐ Parcial' : '⏳ Pendente');
+    cacheBadge.title = 'Clique para alternar pago/pendente';
+    cacheBadge.style.cursor = 'pointer';
+    cacheBadge.onclick = _erStAlt(e.id);
+    cacheCol.appendChild(cacheBadge);
+    finWrap.appendChild(cacheCol);
+    finWrap.appendChild(verbaCol);
+
+    tdFin.appendChild(finWrap);
+    tr.appendChild(tdFin);
+
+    // Ações
     var tdAct = document.createElement('td');
     var acts = document.createElement('div'); acts.className='er-acts';
     var bEdit = document.createElement('div'); bEdit.className='er-act'; bEdit.title='Editar';
@@ -6471,6 +6646,83 @@ function erRender(){
     tr.appendChild(tdAct);
 
     tbody.appendChild(tr);
+
+    // ═════════ CARDS (Mobile) ═════════
+    if(cardsWrap){
+      var card = document.createElement('div'); card.className='er-card';
+
+      // Header
+      var hdr = document.createElement('div'); hdr.className='er-card-hdr';
+      var info = document.createElement('div'); info.className='er-card-info';
+      var nomeDiv = document.createElement('div'); nomeDiv.className='er-card-nome';
+      nomeDiv.textContent = e.nome||'—';
+      info.appendChild(nomeDiv);
+      var metaDiv = document.createElement('div'); metaDiv.className='er-card-meta';
+      var metaParts = [dataStr];
+      if(e.num) metaParts.push('Nº '+e.num);
+      if(e.empresa) metaParts.push(e.empresa);
+      metaDiv.textContent = metaParts.join(' · ');
+      info.appendChild(metaDiv);
+      hdr.appendChild(info);
+
+      var actsC = document.createElement('div'); actsC.className='er-card-acts';
+      var bEditC = document.createElement('button'); bEditC.title='Editar';
+      bEditC.innerHTML='<svg viewBox="0 0 24 24" style="width:15px;height:15px;fill:none;stroke:#475569;stroke-width:2;stroke-linecap:round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
+      bEditC.onclick=(function(id){return function(){ erEditar(id); };})(e.id);
+      var bDelC = document.createElement('button'); bDelC.className='del'; bDelC.title='Excluir';
+      bDelC.innerHTML='<svg viewBox="0 0 24 24" style="width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>';
+      bDelC.onclick=(function(id){return function(){ erExcluir(id); };})(e.id);
+      actsC.appendChild(bEditC); actsC.appendChild(bDelC);
+      hdr.appendChild(actsC);
+      card.appendChild(hdr);
+
+      // Financeiro (verba + cachê)
+      var fin = document.createElement('div'); fin.className='er-card-fin';
+
+      // Verba
+      var vBox = document.createElement('div');
+      vBox.className = 'er-card-fin-box ' + (verbaNum>0 ? verbaSt : 'vazio');
+      var vLbl = document.createElement('div'); vLbl.className='er-card-fin-lbl';
+      vLbl.innerHTML = '💼 Verba';
+      vBox.appendChild(vLbl);
+      if(verbaNum > 0){
+        var vVal = document.createElement('div'); vVal.className='er-card-fin-val';
+        vVal.textContent = erFmtMoney(verbaNum);
+        vVal.onclick = _erEditarCache(e.id, vVal, 'verba');
+        vBox.appendChild(vVal);
+        var vSt = document.createElement('div');
+        vSt.className = 'er-card-fin-st ' + verbaSt;
+        vSt.textContent = verbaSt==='pago' ? '✓ Pago' : '⏳ Pendente';
+        vSt.style.cursor = 'pointer';
+        vSt.onclick = _erVerbaAltStatus(e.id);
+        vBox.appendChild(vSt);
+      } else {
+        var vEmpty = document.createElement('div'); vEmpty.style.cssText='color:#CBD5E1;font-size:14px;font-weight:600';
+        vEmpty.textContent = '—';
+        vBox.appendChild(vEmpty);
+      }
+      // Cachê PRIMEIRO
+      var cBox = document.createElement('div');
+      cBox.className = 'er-card-fin-box ' + cacheSt;
+      var cLbl = document.createElement('div'); cLbl.className='er-card-fin-lbl';
+      cLbl.innerHTML = '💰 Cachê';
+      cBox.appendChild(cLbl);
+      var cVal = document.createElement('div'); cVal.className='er-card-fin-val';
+      cVal.textContent = erFmtMoney(cacheNum);
+      cVal.onclick = _erEditarCache(e.id, cVal, 'cache');
+      cBox.appendChild(cVal);
+      var cSt = document.createElement('div');
+      cSt.className = 'er-card-fin-st ' + cacheSt;
+      cSt.textContent = cacheSt==='pago' ? '✓ Pago' : (cacheSt==='parcial' ? '◐ Parcial' : '⏳ Pendente');
+      cSt.style.cursor = 'pointer';
+      cSt.onclick = _erStAlt(e.id);
+      cBox.appendChild(cSt);
+      fin.appendChild(cBox);
+      fin.appendChild(vBox);
+
+      card.appendChild(fin);
+      cardsWrap.appendChild(card);
+    }
   });
 }
 
@@ -6709,9 +6961,14 @@ function erExportar(){
   var ST_TXT = {pago:'Pago', pendente:'Pendente', parcial:'Parcial'};
   var MESES_NOME = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 
-  // Cabeçalho: DATA | MÊS | Nº DO PROJETO | NOME DO EVENTO | VALOR DIÁRIA | PAGAMENTO
-  var aoa = [['DATA','MÊS','Nº DO PROJETO','NOME DO EVENTO','VALOR DIÁRIA','PAGAMENTO','EMPRESA']];
+  // Cabeçalho: DATA | MÊS | Nº DO PROJETO | NOME DO EVENTO | VALOR DIÁRIA | PAGAMENTO | EMPRESA | VERBA PRODUÇÃO | STATUS VERBA | DATA PGTO VERBA
+  var aoa = [['DATA','MÊS','Nº DO PROJETO','NOME DO EVENTO','VALOR DIÁRIA','PAGAMENTO','EMPRESA','VERBA PRODUÇÃO','STATUS VERBA','DATA PGTO VERBA']];
   var totalCache = 0;
+  var totalVerba = 0;
+  var totalVerbaPaga = 0;
+  var totalVerbaPend = 0;
+
+  var VERBA_ST = { pago:'Pago', pendente:'Pendente' };
 
   // Ordenar por data crescente para o financeiro
   var ordenada = lista.slice().sort(function(a,b){
@@ -6728,6 +6985,21 @@ function erExportar(){
     }
     var cacheNum = erParseMoney(e.cache);
     totalCache += cacheNum;
+
+    // Verba de produção
+    var verbaNum = erParseMoney(e.verba);
+    totalVerba += verbaNum;
+    if(verbaNum > 0){
+      if(e.verbaStatus === 'pago') totalVerbaPaga += verbaNum;
+      else totalVerbaPend += verbaNum;
+    }
+    var verbaStatusTxt = verbaNum > 0 ? (VERBA_ST[e.verbaStatus] || 'Pendente') : '';
+    var verbaDataBr = '';
+    if(e.verbaDataPgto){
+      var dv = new Date(e.verbaDataPgto+'T00:00:00');
+      verbaDataBr = String(dv.getDate()).padStart(2,'0')+'/'+String(dv.getMonth()+1).padStart(2,'0')+'/'+dv.getFullYear();
+    }
+
     aoa.push([
       dataBr,
       mesNome,
@@ -6735,29 +7007,37 @@ function erExportar(){
       e.nome||'',
       cacheNum,
       ST_TXT[e.status]||'Pendente',
-      e.empresa||''
+      e.empresa||'',
+      verbaNum,
+      verbaStatusTxt,
+      verbaDataBr
     ]);
   });
 
   // Linha de total
   aoa.push([]);
-  aoa.push(['','','','TOTAL', totalCache, '', '']);
+  aoa.push(['','','','TOTAL CACHÊ', totalCache, '', '', totalVerba, '', '']);
+  aoa.push(['','','','TOTAL VERBA PAGA', '', '', '', totalVerbaPaga, '', '']);
+  aoa.push(['','','','TOTAL VERBA PENDENTE', '', '', '', totalVerbaPend, '', '']);
+  aoa.push(['','','','TOTAL GERAL (CACHÊ + VERBA)', totalCache + totalVerba, '', '', '', '', '']);
 
   var ws = XLSX.utils.aoa_to_sheet(aoa);
-  ws['!cols'] = [{wch:12},{wch:12},{wch:16},{wch:38},{wch:16},{wch:13},{wch:20}];
+  ws['!cols'] = [{wch:12},{wch:12},{wch:16},{wch:38},{wch:16},{wch:13},{wch:20},{wch:16},{wch:14},{wch:16}];
 
-  // Formatar coluna VALOR DIÁRIA (coluna E, índice 4) como moeda R$
+  // Formatar colunas de valor como moeda R$ (E=4 Cachê, H=7 Verba)
   var range = XLSX.utils.decode_range(ws['!ref']);
   for(var R=1; R<=range.e.r; R++){
-    var cellRef = XLSX.utils.encode_cell({r:R, c:4});
-    if(ws[cellRef] && typeof ws[cellRef].v === 'number'){
-      ws[cellRef].t = 'n';
-      ws[cellRef].z = 'R$ #,##0.00';
-    }
+    [4, 7].forEach(function(col){
+      var cellRef = XLSX.utils.encode_cell({r:R, c:col});
+      if(ws[cellRef] && typeof ws[cellRef].v === 'number'){
+        ws[cellRef].t = 'n';
+        ws[cellRef].z = 'R$ #,##0.00';
+      }
+    });
   }
 
-  // Negrito no cabeçalho (linha 1) - aplica estilo de fonte
-  for(var C=0; C<=6; C++){
+  // Negrito no cabeçalho (linha 1)
+  for(var C=0; C<=9; C++){
     var hRef = XLSX.utils.encode_cell({r:0, c:C});
     if(ws[hRef]){ ws[hRef].s = {font:{bold:true}}; }
   }
