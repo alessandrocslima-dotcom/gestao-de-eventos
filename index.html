@@ -1251,60 +1251,17 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
         <button class="btn-custom" onclick="addEqCustom()"><svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Adicionar item personalizado</button>
         <div class="fsec" style="margin-top:1.5rem"><svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>Sonorização</div>
         <div class="fld"><label>Tipo de sonorização</label>
-          <select id="fSom"><option value="">Selecionar...</option><optgroup label="Sonorização Padrão"><option>Sonorização 2 Caixas (3 Mic Sem Fio + 2 Mic com Fio)</option><option>Sonorização 2 Caixas + Retorno (3 Mic Sem Fio + 2 Mic com Fio)</option><option>Sonorização 4 Caixas + Retorno (3 Mic Sem Fio + 2 Mic com Fio)</option></optgroup><optgroup label="Sonorização Especial"><option>Sonorização para palco / show</option><option>Sonorização para cerimônia</option><option>Sonorização para evento corporativo</option><option>Sonorização para evento ao ar livre</option></optgroup><option>Sem necessidade de sonorização</option><option>Outro</option></select>
+          <select id="fSom"><option value="">Selecionar...</option></select>
         </div>
         <div class="fld"><label>Detalhes da sonorização</label><textarea id="fSomDet" placeholder="Potência, posição das caixas, DJ, banda ao vivo, microfones..."></textarea></div>
         <div class="fld"><label>Obs. gerais da demanda</label><textarea id="fObsEst" placeholder="Necessidades operacionais, ajustes, acessibilidade, pontos de energia, sinalização..."></textarea></div>
 
         <div class="fsec" style="margin-top:1.5rem">
           <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          Equipe
+          Equipe e Serviços
         </div>
         <div class="eq-bar">
-          <select id="equipesSel">
-            <option value="">Selecionar serviço...</option>
-            <optgroup label="Coordenação">
-              <option>Coordenador de Produção</option>
-              <option>Assistente de Produção</option>
-              <option>Runner</option>
-              <option>Staff Geral</option>
-            </optgroup>
-            <optgroup label="Segurança">
-              <option>Segurança Patrimonial</option>
-              <option>Segurança Pessoal (Bodyguard)</option>
-              <option>Coordenador de Segurança</option>
-              <option>Controle de Acesso</option>
-              <option>Brigadista</option>
-            </optgroup>
-            <optgroup label="Recepção">
-              <option>Recepcionista</option>
-              <option>Hostess</option>
-              <option>Mestre de Cerimônias</option>
-              <option>Promoter</option>
-            </optgroup>
-            <optgroup label="Operação">
-              <option>Carregador / Ajudante</option>
-              <option>Montador</option>
-              <option>Desmontador</option>
-              <option>Motorista</option>
-            </optgroup>
-            <optgroup label="Limpeza">
-              <option>Auxiliar de Limpeza</option>
-              <option>Supervisor de Limpeza</option>
-            </optgroup>
-            <optgroup label="Técnico">
-              <option>Técnico de Som</option>
-              <option>Técnico de Luz</option>
-              <option>Operador de Gerador</option>
-              <option>Técnico de TI / Transmissão</option>
-              <option>Técnico de Palco</option>
-            </optgroup>
-            <optgroup label="Hospitalidade">
-              <option>Garçom</option>
-              <option>Copeiro</option>
-              <option>Bartender</option>
-            </optgroup>
-          </select>
+          <select id="equipesSel"><option value="">Selecionar...</option></select>
           <button class="btn-eq-add" onclick="addEquipe()">
             <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round"><path d="M12 5v14M5 12h14"/></svg>Add
           </button>
@@ -1312,64 +1269,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
         <div id="equipeList"></div>
         <button class="btn-custom" onclick="addEquipeCustom()">
           <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-          Adicionar profissional personalizado
-        </button>
-
-        <div class="fsec" style="margin-top:1.5rem">
-          <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
-          Serviços contratados
-        </div>
-        <div class="eq-bar">
-          <select id="servicosSel">
-            <option value="">Selecionar serviço...</option>
-            <optgroup label="Áudio e Vídeo">
-              <option>Sonorização</option>
-              <option>Iluminação Cênica</option>
-              <option>Transmissão ao Vivo</option>
-              <option>Filmagem / Cobertura</option>
-              <option>Fotografia</option>
-              <option>DJ</option>
-              <option>Banda ao Vivo</option>
-            </optgroup>
-            <optgroup label="Estrutura e Logística">
-              <option>Locação de Estrutura</option>
-              <option>Locação de Mobiliário</option>
-              <option>Gerador de Energia</option>
-              <option>Transporte de Equipamentos</option>
-              <option>Montagem e Desmontagem</option>
-            </optgroup>
-            <optgroup label="Alimentação">
-              <option>Buffet</option>
-              <option>Coffee Break</option>
-              <option>Open Bar</option>
-              <option>Food Truck</option>
-            </optgroup>
-            <optgroup label="Comunicação e Cenografia">
-              <option>Cenografia</option>
-              <option>Decoração</option>
-              <option>Identidade Visual</option>
-              <option>Impressão Gráfica</option>
-            </optgroup>
-            <optgroup label="Limpeza e Infraestrutura">
-              <option>Limpeza Terceirizada</option>
-              <option>Banheiro Químico</option>
-              <option>Controle de Resíduos</option>
-            </optgroup>
-            <optgroup label="Outros">
-              <option>Seguro do Evento</option>
-              <option>Alvará / Licença</option>
-              <option>ECAD / Direitos Autorais</option>
-              <option>Assessoria de Imprensa</option>
-            </optgroup>
-          </select>
-          <button class="btn-eq-add" onclick="addServico()">
-            <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round"><path d="M12 5v14M5 12h14"/></svg>Add
-          </button>
-        </div>
-        <div id="servicoList"></div>
-        <button class="btn-custom" onclick="addServicoCustom()">
-          <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-          Adicionar serviço personalizado
+          Adicionar item personalizado
         </button>
       </div>
 
@@ -1940,7 +1840,7 @@ window.addEventListener('load', function(){
               if(typeof renderDash==='function' && me) try{ renderDash(); }catch(e){}
               if(typeof agRenderAll==='function') try{ agRenderAll(); }catch(e){}
               if(typeof renderForns==='function') try{ renderForns(); }catch(e){}
-              if(typeof eqPopulateSelect==='function') try{ eqPopulateSelect(); }catch(e){}
+              if(typeof eqPopulateSelect==='function') try{ eqPopulateSelect(); }catch(e){} if(typeof somPopulateSelect==='function') try{ somPopulateSelect(); }catch(e){} if(typeof equipesPopulateSelect==='function') try{ equipesPopulateSelect(); }catch(e){} if(typeof servicosPopulateSelect==='function') try{ servicosPopulateSelect(); }catch(e){}
             }
           });
         }, 1000);
@@ -2238,7 +2138,7 @@ function _aplicarLogin(found){
     // Seed inicial do catálogo (só na primeira vez)
     if(typeof _autoSeedCatalogo==='function') _autoSeedCatalogo();
     // Popular select da VT com itens do catálogo
-    if(typeof eqPopulateSelect==='function') eqPopulateSelect();
+    if(typeof eqPopulateSelect==='function') eqPopulateSelect(); if(typeof somPopulateSelect==='function') somPopulateSelect(); if(typeof equipesPopulateSelect==='function') equipesPopulateSelect(); if(typeof servicosPopulateSelect==='function') servicosPopulateSelect();
     // Iniciar sincronização automática em background (a cada 2 min)
     if(typeof iniciarSyncAutomatico==='function') iniciarSyncAutomatico();
   }, 200);
@@ -2536,6 +2436,7 @@ function renderFStep(){
     }
   }
 
+  if(fStep === 2) setTimeout(function(){ if(typeof eqPopulateSelect==='function') eqPopulateSelect(); if(typeof somPopulateSelect==='function') somPopulateSelect(); if(typeof equipesPopulateSelect==='function') equipesPopulateSelect(); if(typeof servicosPopulateSelect==='function') servicosPopulateSelect(); }, 50);
   if(fStep === 4) setTimeout(initSig, 100);
   window.scrollTo(0, 0);
 }
@@ -2632,30 +2533,11 @@ function addEquipeCustom(){
 }
 function rmEquipe(i){ equipeItens.splice(i,1); renderEquipe(); }
 
-/* ── SERVIÇOS ── */
-function addServico(){
-  var s=document.getElementById('servicosSel');
-  if(!s.value) return;
-  servicoItens.push({nome:s.value, obs:''});
-  renderServico(); s.value='';
-}
-function addServicoCustom(){
-  var n=prompt('Nome do serviço:');
-  if(!n||!n.trim()) return;
-  servicoItens.push({nome:n.trim(), obs:''});
-  renderServico();
-}
-function rmServico(i){ servicoItens.splice(i,1); renderServico(); }
-function renderServico(){
-  var h='';
-  servicoItens.forEach(function(it,i){
-    h+='<div class="eq-card"><div class="eq-head"><span class="eq-nm">'+it.nome+'</span>';
-    h+='<button class="btn-rm" onclick="rmServico('+i+')"><svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>';
-    h+='<div class="fld" style="margin-bottom:0"><input type="text" placeholder="Fornecedor, valor ou observação..." value="'+it.obs+'" oninput="servicoItens['+i+'].obs=this.value" style="font-size:12px;padding:7px 9px;background:#F8FAFC"></div>';
-    h+='</div>';
-  });
-  document.getElementById('servicoList').innerHTML=h;
-}
+/* ── SERVIÇOS (unificado em Equipe e Serviços) ── */
+function addServico(){ addEquipe(); }
+function addServicoCustom(){ addEquipeCustom(); }
+function rmServico(i){ rmEquipe(i); }
+function renderServico(){ renderEquipe(); }
 function renderEquipe(){
   var h='';
   equipeItens.forEach(function(it,i){
@@ -3786,7 +3668,8 @@ if('serviceWorker' in navigator){
             <option value="Segurança">Segurança</option>
             <option value="Organização e Acesso">Organização e Acesso</option>
             <option value="Alimentação e Apoio">Alimentação e Apoio</option>
-            <option value="Serviços">Serviços</option>
+            <option value="Equipe e Serviços">Equipe e Serviços</option>
+            <option value="Sonorização">Sonorização</option>
             <option value="Outros">Outros</option>
           </select>
         </div>
@@ -6244,7 +6127,42 @@ function _catSeedInicial(){
     "unidade": "Unid",
     "medida": "",
     "obs": ""
-  }
+  },
+  {"id":"cat_init_060","nome":"Coordenador de Produção","categoria":"Equipe e Serviços","unidade":"Dia","medida":"","obs":""},
+  {"id":"cat_init_061","nome":"Assistente de Produção","categoria":"Equipe e Serviços","unidade":"Dia","medida":"","obs":""},
+  {"id":"cat_init_062","nome":"Runner","categoria":"Equipe e Serviços","unidade":"Dia","medida":"","obs":""},
+  {"id":"cat_init_063","nome":"Staff Geral","categoria":"Equipe e Serviços","unidade":"Dia","medida":"","obs":""},
+  {"id":"cat_init_064","nome":"Segurança Patrimonial","categoria":"Equipe e Serviços","unidade":"Dia","medida":"","obs":""},
+  {"id":"cat_init_065","nome":"Brigadista","categoria":"Equipe e Serviços","unidade":"Dia","medida":"","obs":""},
+  {"id":"cat_init_066","nome":"Controle de Acesso","categoria":"Equipe e Serviços","unidade":"Dia","medida":"","obs":""},
+  {"id":"cat_init_067","nome":"Técnico de Som","categoria":"Equipe e Serviços","unidade":"Dia","medida":"","obs":""},
+  {"id":"cat_init_068","nome":"Técnico de Luz","categoria":"Equipe e Serviços","unidade":"Dia","medida":"","obs":""},
+  {"id":"cat_init_069","nome":"Operador de Gerador","categoria":"Equipe e Serviços","unidade":"Dia","medida":"","obs":""},
+  {"id":"cat_init_070","nome":"Montador","categoria":"Equipe e Serviços","unidade":"Dia","medida":"","obs":""},
+  {"id":"cat_init_071","nome":"Carregador / Ajudante","categoria":"Equipe e Serviços","unidade":"Dia","medida":"","obs":""},
+  {"id":"cat_init_072","nome":"Motorista","categoria":"Equipe e Serviços","unidade":"Dia","medida":"","obs":""},
+  {"id":"cat_init_073","nome":"Garçom","categoria":"Equipe e Serviços","unidade":"Dia","medida":"","obs":""},
+  {"id":"cat_init_074","nome":"Copeiro","categoria":"Equipe e Serviços","unidade":"Dia","medida":"","obs":""},
+  {"id":"cat_init_075","nome":"Sonorização 2 Caixas (3 Mic Sem Fio + 2 Mic com Fio)","categoria":"Sonorização","unidade":"Dia","medida":"","obs":""},
+  {"id":"cat_init_076","nome":"Sonorização 4 Caixas + Retorno","categoria":"Sonorização","unidade":"Dia","medida":"","obs":""},
+  {"id":"cat_init_077","nome":"Sonorização para Palco / Show","categoria":"Sonorização","unidade":"Dia","medida":"","obs":""},
+  {"id":"cat_init_078","nome":"Sonorização para Cerimônia","categoria":"Sonorização","unidade":"Dia","medida":"","obs":""},
+  {"id":"cat_init_079","nome":"Sem necessidade de sonorização","categoria":"Sonorização","unidade":"Dia","medida":"","obs":""},
+  {"id":"cat_init_080","nome":"DJ","categoria":"Equipe e Serviços","unidade":"Dia","medida":"","obs":""},
+  {"id":"cat_init_081","nome":"Banda ao Vivo","categoria":"Equipe e Serviços","unidade":"Dia","medida":"","obs":""},
+  {"id":"cat_init_082","nome":"Iluminação Cênica","categoria":"Equipe e Serviços","unidade":"Dia","medida":"","obs":""},
+  {"id":"cat_init_083","nome":"Filmagem / Cobertura","categoria":"Equipe e Serviços","unidade":"Dia","medida":"","obs":""},
+  {"id":"cat_init_084","nome":"Fotografia","categoria":"Equipe e Serviços","unidade":"Dia","medida":"","obs":""},
+  {"id":"cat_init_085","nome":"Transmissão ao Vivo","categoria":"Equipe e Serviços","unidade":"Dia","medida":"","obs":""},
+  {"id":"cat_init_086","nome":"Locação de Estrutura","categoria":"Equipe e Serviços","unidade":"Dia","medida":"","obs":""},
+  {"id":"cat_init_087","nome":"Locação de Mobiliário","categoria":"Equipe e Serviços","unidade":"Dia","medida":"","obs":""},
+  {"id":"cat_init_088","nome":"Gerador de Energia","categoria":"Equipe e Serviços","unidade":"Dia","medida":"","obs":""},
+  {"id":"cat_init_089","nome":"Montagem e Desmontagem","categoria":"Equipe e Serviços","unidade":"Dia","medida":"","obs":""},
+  {"id":"cat_init_090","nome":"Buffet","categoria":"Equipe e Serviços","unidade":"Dia","medida":"","obs":""},
+  {"id":"cat_init_091","nome":"Coffee Break","categoria":"Equipe e Serviços","unidade":"Dia","medida":"","obs":""},
+  {"id":"cat_init_092","nome":"Seguro do Evento","categoria":"Equipe e Serviços","unidade":"Dia","medida":"","obs":""},
+  {"id":"cat_init_093","nome":"Alvará / Licença","categoria":"Equipe e Serviços","unidade":"Dia","medida":"","obs":""},
+  {"id":"cat_init_094","nome":"Assessoria de Imprensa","categoria":"Equipe e Serviços","unidade":"Dia","medida":"","obs":""}
 ];
   saveCat(inicial);
   console.log('Catálogo inicial criado com ' + inicial.length + ' itens');
@@ -8215,8 +8133,11 @@ function saveCatItem(){
   toast(_catEditId ? 'Item atualizado!' : 'Item adicionado ao catálogo!','ok');
   closeCatModal();
   renderCatList();
-  // Repopular select da VT com a lista atualizada
+  // Repopular selects da VT com a lista atualizada
   if(typeof eqPopulateSelect==='function') eqPopulateSelect();
+  if(typeof somPopulateSelect==='function') somPopulateSelect();
+  if(typeof equipesPopulateSelect==='function') equipesPopulateSelect();
+  if(typeof servicosPopulateSelect==='function') servicosPopulateSelect();
 }
 
 function delCatItem(id){
@@ -8228,6 +8149,9 @@ function delCatItem(id){
   toast('Item removido','ok');
   renderCatList();
   if(typeof eqPopulateSelect==='function') eqPopulateSelect();
+  if(typeof somPopulateSelect==='function') somPopulateSelect();
+  if(typeof equipesPopulateSelect==='function') equipesPopulateSelect();
+  if(typeof servicosPopulateSelect==='function') servicosPopulateSelect();
 }
 
 window.renderCatList = renderCatList;
@@ -8342,53 +8266,140 @@ window.catAcRender = catAcRender;
 
 
 /* ══ POPULAR SELECT DA VT (DEMANDA) A PARTIR DO CATÁLOGO (v15) ══ */
+/* Helper: popula um <select> com itens do catálogo filtrados por categoria(s) */
+function _catPopulateSelect(selId, categorias, placeholder, fallbackHtml){
+  var sel = document.getElementById(selId);
+  if(!sel) return;
+  var cur = sel.value;
+  var cats = Array.isArray(categorias) ? categorias : [categorias];
+  var items = loadCat().filter(function(it){ return cats.indexOf(it.categoria) !== -1; });
+
+  sel.innerHTML = '<option value="">' + (placeholder||'Selecionar...') + '</option>';
+
+  if(items.length){
+    // Agrupar por categoria se houver mais de uma
+    var porCat = {};
+    items.forEach(function(it){
+      var c = it.categoria || 'Outros';
+      if(!porCat[c]) porCat[c] = [];
+      porCat[c].push(it);
+    });
+    var catKeys = Object.keys(porCat).sort();
+    catKeys.forEach(function(cat){
+      var og = document.createElement('optgroup');
+      og.label = cat;
+      porCat[cat].forEach(function(it){
+        var opt = document.createElement('option');
+        var nome = it.nome + (it.medida ? ' ('+it.medida+')' : '');
+        opt.value = nome;
+        opt.textContent = nome;
+        opt.dataset.unidade = it.unidade || 'Unid';
+        opt.dataset.medida = it.medida || '';
+        og.appendChild(opt);
+      });
+      sel.appendChild(og);
+    });
+  } else if(fallbackHtml){
+    sel.innerHTML += fallbackHtml;
+  }
+
+  if(cur) sel.value = cur;
+}
+
+/* DEMANDA — todas as categorias exceto Equipe/Serviços Contratados/Sonorização */
+var _CAT_EXCLUIDAS_DEMANDA = ['Equipe','Serviços Contratados','Sonorização'];
 function eqPopulateSelect(){
   var sel = document.getElementById('eqSel');
   if(!sel) return;
   var cur = sel.value;
-  var items = loadCat();
+  var items = loadCat().filter(function(it){
+    return _CAT_EXCLUIDAS_DEMANDA.indexOf(it.categoria) === -1;
+  });
 
   sel.innerHTML = '<option value="">Selecionar item...</option>';
-
   if(!items.length){
     sel.innerHTML += '<option disabled>Nenhum item no catálogo</option>';
     return;
   }
-
-  // Agrupar por categoria
   var porCat = {};
   items.forEach(function(it){
     var c = it.categoria || 'Outros';
     if(!porCat[c]) porCat[c] = [];
     porCat[c].push(it);
   });
-
-  // Ordem das categorias (alfabética)
   Object.keys(porCat).sort().forEach(function(cat){
     var og = document.createElement('optgroup');
     og.label = cat;
     porCat[cat].forEach(function(it){
       var opt = document.createElement('option');
-      // Valor: nome + medida se houver (compatível com o resto da app)
       var nomeCompleto = it.nome + (it.medida ? ' ('+it.medida+')' : '');
       opt.value = nomeCompleto;
       opt.textContent = nomeCompleto;
-      // Guardar metadados pra uso futuro (unidade, etc)
       opt.dataset.unidade = it.unidade || 'Unid';
       opt.dataset.medida = it.medida || '';
       og.appendChild(opt);
     });
     sel.appendChild(og);
   });
-
-  if(cur){
-    // Restaurar seleção anterior (se ainda existe)
-    sel.value = cur;
-  }
+  if(cur) sel.value = cur;
 }
-
-/* Re-popular quando: app carrega, login completa, catálogo é editado */
 window.eqPopulateSelect = eqPopulateSelect;
+
+/* EQUIPE E SERVIÇOS — categoria "Equipe e Serviços" do catálogo, sem fallback */
+function equipesPopulateSelect(){
+  var sel = document.getElementById('equipesSel');
+  if(!sel) return;
+  var cur = sel.value;
+  var items = loadCat().filter(function(it){ return it.categoria === 'Equipe e Serviços'; });
+  sel.innerHTML = '<option value="">Selecionar...</option>';
+  if(!items.length){
+    var opt = document.createElement('option');
+    opt.disabled = true;
+    opt.textContent = 'Cadastre itens no Catálogo';
+    sel.appendChild(opt);
+    return;
+  }
+  items.forEach(function(it){
+    var opt = document.createElement('option');
+    var nome = it.nome + (it.medida ? ' ('+it.medida+')' : '');
+    opt.value = nome;
+    opt.textContent = nome;
+    sel.appendChild(opt);
+  });
+  if(cur) sel.value = cur;
+}
+window.equipesPopulateSelect = equipesPopulateSelect;
+
+function servicosPopulateSelect(){ /* unificado em equipesPopulateSelect */ }
+window.servicosPopulateSelect = servicosPopulateSelect;
+
+/* ══ POPULAR SELECT DE SONORIZAÇÃO A PARTIR DO CATÁLOGO (v15-22) ══ */
+function somPopulateSelect(){
+  var sel = document.getElementById('fSom');
+  if(!sel) return;
+  var cur = sel.value;
+  var items = loadCat().filter(function(it){ return it.categoria === 'Sonorização'; });
+
+  sel.innerHTML = '<option value="">Selecionar...</option>';
+
+  if(!items.length){
+    var opt = document.createElement('option');
+    opt.disabled = true;
+    opt.textContent = 'Cadastre itens no Catálogo';
+    sel.appendChild(opt);
+  } else {
+    items.forEach(function(it){
+      var opt = document.createElement('option');
+      var nome = it.nome + (it.medida ? ' ('+it.medida+')' : '');
+      opt.value = nome;
+      opt.textContent = nome;
+      sel.appendChild(opt);
+    });
+  }
+
+  if(cur) sel.value = cur;
+}
+window.somPopulateSelect = somPopulateSelect;
 
 
 

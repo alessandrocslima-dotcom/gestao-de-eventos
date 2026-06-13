@@ -1,6 +1,6 @@
 /* Service Worker — Gestão de Eventos Pro */
 /* Versão do cache: mude este número quando atualizar o app para forçar atualização */
-const CACHE_VERSION = 'gep-v15-20';
+const CACHE_VERSION = 'gep-v15-24';
 const CACHE_NAME = 'gestao-eventos-' + CACHE_VERSION;
 
 /* Instala e ativa imediatamente */
