@@ -4338,47 +4338,86 @@ function orcBuildCatOpts(selVal){
 
 function orcAddItemRow(tbody, it){
   it = it||{srv:'',desc:'',qty:1,price:'',freq:1,unidade:'Dia',forn:'',pgto:'45D',obs:''};
-  var tr = document.createElement('tr');
   var uns = ['Dia','Unid','Hora','Evento','Serviço','Diária'];
   var pgtos = ['30D','45D','60D','À Vista','15D','28D'];
-  tr.innerHTML = [
-    (function(){
-      var srvVal = it.srv||'';
-      var isCustom = srvVal && srvVal.startsWith('__CUSTOM__');
-      var customVal = isCustom ? srvVal.replace('__CUSTOM__','') : '';
-      var selVal = isCustom ? '__CUSTOM__' : srvVal;
-      var opts = orcBuildCatOpts(selVal);
-      if(isCustom){
-        return '<td style="position:relative">'
-          +'<input type="text" value="'+esc(customVal)+'" placeholder="Descreva o serviço" class="orc-srv orc-srv-custom" oninput="orcAutoSave()" autocomplete="off" style="border-color:#F59E0B">'
-          +'<div style="font-size:10px;color:#92400e;margin-top:2px;padding-left:2px">item personalizado <span onclick="orcSrvVoltarSelect(this)" style="cursor:pointer;text-decoration:underline;color:#1D4ED8">usar catálogo</span></div>'
-          +'</td>';
-      }
-      return '<td style="position:relative">'
-        +'<select class="orc-srv" onchange="orcSrvSelChange(this)" style="font-size:12px;min-width:0">'+opts+'</select>'
-        +'</td>';
-    })(),
-    '<td style="position:relative"><input type="text" value="'+esc(it.desc)+'" placeholder="Descrição" class="orc-desc-cat" oninput="catAcInput(this);orcAutoSave()" onfocus="catAcOpen(this)" onblur="setTimeout(function(){catAcClose();},150)" autocomplete="off"></td>',
-    '<td><input type="number" value="'+(it.qty||1)+'" min="0" step="1" class="orc-qty" oninput="orcRecalcRow(this)" style="text-align:center"></td>',
-    '<td><input type="text" value="'+esc(it.price)+'" placeholder="0,00" class="orc-price" oninput="orcRecalcRow(this)"></td>',
-    '<td><input type="number" value="'+(it.freq||1)+'" min="1" step="1" class="orc-freq" oninput="orcRecalcRow(this)" style="text-align:center"></td>',
-    '<td><select class="orc-un" onchange="orcAutoSave()">'+ uns.map(function(u){ return '<option'+(u===it.unidade?' selected':'')+'>'+u+'</option>'; }).join('')+'</select></td>',
-    (function(){var vf=(it.qty||0)*parseMoney(it.price)*(it.freq||1); return '<td class="orc-vf'+(vf===0?' orc-vf-zero':'')+'">' + fmtM2(vf) + '</td>'; })(),
-    (function(){
-    var w=document.createElement('div'); w.style.width='100%';
-    var b=document.createElement('button'); b.type='button';
-    b.className='pk-btn'+(it.forn?' pk-filled':'');
-    b.setAttribute('data-forn-nome',it.forn||'');
-    b.innerHTML='<span class="pk-btn-lbl">'+(it.forn?esc(it.forn):'Selecionar...')+'</span><svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:none;stroke:#94A3B8;stroke-width:2;stroke-linecap:round"><path d="m6 9 6 6 6-6"/></svg>';
-    b.addEventListener('click',function(){ pkOpen(this); });
-    w.appendChild(b);
-    var td=document.createElement('td'); td.appendChild(w); return td.outerHTML;
-  })(),
-    '<td><select class="orc-pgto" onchange="orcAutoSave()">'+ pgtos.map(function(p){ return '<option'+(p===it.pgto?' selected':'')+'>'+p+'</option>'; }).join('')+'</select></td>',
-    '<td><input type="text" value="'+esc(it.obs)+'" placeholder="Obs" oninput="orcAutoSave()"></td>',
-    '<td><button class="btn-rm" onclick="orcDelRow(this)" title="Remover"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></button></td>',
-  ].join('');
-  tbody.appendChild(tr);
+  var vf = (it.qty||0)*parseMoney(it.price)*(it.freq||1);
+
+  var tr = tbody.insertRow();
+
+  // TD Serviço
+  var tdSrv = tr.insertCell();
+  tdSrv.style.position = 'relative';
+  var srvVal = it.srv||'';
+  var isCustom = srvVal && srvVal.startsWith('__CUSTOM__');
+  if(isCustom){
+    var customVal = srvVal.replace('__CUSTOM__','');
+    tdSrv.innerHTML = '<input type="text" value="'+esc(customVal)+'" placeholder="Descreva o serviço" class="orc-srv orc-srv-custom" oninput="orcAutoSave()" autocomplete="off" style="border-color:#F59E0B;width:100%">'
+      +'<div style="font-size:10px;color:#92400e;margin-top:2px;padding-left:2px">item personalizado <span onclick="orcSrvVoltarSelect(this)" style="cursor:pointer;text-decoration:underline;color:#1D4ED8">usar catálogo</span></div>';
+  } else {
+    var selSrv = document.createElement('select');
+    selSrv.className = 'orc-srv';
+    selSrv.style.cssText = 'font-size:12px;min-width:0;width:100%';
+    selSrv.innerHTML = orcBuildCatOpts(srvVal);
+    selSrv.onchange = function(){ orcSrvSelChange(this); };
+    tdSrv.appendChild(selSrv);
+  }
+
+  // TD Descrição
+  var tdDesc = tr.insertCell();
+  tdDesc.style.position = 'relative';
+  tdDesc.innerHTML = '<input type="text" value="'+esc(it.desc)+'" placeholder="Descrição" class="orc-desc-cat" oninput="catAcInput(this);orcAutoSave()" onfocus="catAcOpen(this)" onblur="setTimeout(function(){catAcClose();},150)" autocomplete="off">';
+
+  // TD Qtde
+  var tdQty = tr.insertCell();
+  tdQty.innerHTML = '<input type="number" value="'+(it.qty||1)+'" min="0" step="1" class="orc-qty" oninput="orcRecalcRow(this)" style="text-align:center">';
+
+  // TD Preço
+  var tdPrice = tr.insertCell();
+  tdPrice.innerHTML = '<input type="text" value="'+esc(it.price)+'" placeholder="0,00" class="orc-price" oninput="orcRecalcRow(this)">';
+
+  // TD Freq
+  var tdFreq = tr.insertCell();
+  tdFreq.innerHTML = '<input type="number" value="'+(it.freq||1)+'" min="1" step="1" class="orc-freq" oninput="orcRecalcRow(this)" style="text-align:center">';
+
+  // TD Unidade
+  var tdUn = tr.insertCell();
+  var selUn = document.createElement('select');
+  selUn.className = 'orc-un';
+  selUn.onchange = function(){ orcAutoSave(); };
+  uns.forEach(function(u){ var o=document.createElement('option'); o.textContent=u; if(u===it.unidade) o.selected=true; selUn.appendChild(o); });
+  tdUn.appendChild(selUn);
+
+  // TD Valor Final
+  var tdVf = tr.insertCell();
+  tdVf.className = 'orc-vf'+(vf===0?' orc-vf-zero':'');
+  tdVf.textContent = fmtM2(vf);
+
+  // TD Fornecedor
+  var tdForn = tr.insertCell();
+  var w = document.createElement('div'); w.style.width='100%';
+  var b = document.createElement('button'); b.type='button';
+  b.className = 'pk-btn'+(it.forn?' pk-filled':'');
+  b.setAttribute('data-forn-nome', it.forn||'');
+  b.innerHTML = '<span class="pk-btn-lbl">'+(it.forn?esc(it.forn):'Selecionar...')+'</span><svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:none;stroke:#94A3B8;stroke-width:2;stroke-linecap:round"><path d="m6 9 6 6 6-6"/></svg>';
+  b.addEventListener('click', function(){ pkOpen(this); });
+  w.appendChild(b);
+  tdForn.appendChild(w);
+
+  // TD Pgto
+  var tdPgto = tr.insertCell();
+  var selPgto = document.createElement('select');
+  selPgto.className = 'orc-pgto';
+  selPgto.onchange = function(){ orcAutoSave(); };
+  pgtos.forEach(function(p){ var o=document.createElement('option'); o.textContent=p; if(p===it.pgto) o.selected=true; selPgto.appendChild(o); });
+  tdPgto.appendChild(selPgto);
+
+  // TD Obs
+  var tdObs = tr.insertCell();
+  tdObs.innerHTML = '<input type="text" value="'+esc(it.obs)+'" placeholder="Obs" oninput="orcAutoSave()">';
+
+  // TD Remover
+  var tdRm = tr.insertCell();
+  tdRm.innerHTML = '<button class="btn-rm" onclick="orcDelRow(this)" title="Remover"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></button>';
 }
 
 function esc(s){ return String(s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
