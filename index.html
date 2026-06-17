@@ -4310,6 +4310,32 @@ function orcAddItem(){
   orcAddItemRow(tbody, null);
 }
 
+function orcBuildCatOpts(selVal){
+  var items = loadCat();
+  var porCat = {};
+  items.forEach(function(it){
+    var c = it.categoria||'Outros';
+    if(!porCat[c]) porCat[c] = [];
+    porCat[c].push(it);
+  });
+  var html = '<option value="">— selecione —</option>';
+  if(!items.length){
+    html += '<option disabled>Cadastre itens no Catálogo</option>';
+  } else {
+    Object.keys(porCat).sort().forEach(function(cat){
+      html += '<optgroup label="'+cat+'">';
+      porCat[cat].forEach(function(it){
+        var nome = it.nome+(it.medida?' ('+it.medida+')':'');
+        var sel = (selVal===nome)?' selected':'';
+        html += '<option value="'+nome.replace(/"/g,'&quot;')+'"'+sel+'>'+nome+'</option>';
+      });
+      html += '</optgroup>';
+    });
+  }
+  html += '<option value="__CUSTOM__"'+(selVal==='__CUSTOM__'?' selected':'')+'>+ Digitar item personalizado</option>';
+  return html;
+}
+
 function orcAddItemRow(tbody, it){
   it = it||{srv:'',desc:'',qty:1,price:'',freq:1,unidade:'Dia',forn:'',pgto:'45D',obs:''};
   var tr = document.createElement('tr');
@@ -4712,33 +4738,6 @@ function populateSecSelect(){
 window.orcPopulateSelector=orcPopulateSelector;
 window.orcLoadVisita=orcLoadVisita;
 /* ══ SELECT DE SERVIÇO DO CATÁLOGO (v15-27) ══ */
-function orcBuildCatOpts(selVal){
-  var items = loadCat();
-  var porCat = {};
-  var _excluir = [];
-  items.forEach(function(it){
-    var c = it.categoria||'Outros';
-    if(!porCat[c]) porCat[c] = [];
-    porCat[c].push(it);
-  });
-  var html = '<option value="">— selecione —</option>';
-  if(!items.length){
-    html += '<option disabled>Cadastre itens no Catálogo</option>';
-  } else {
-    Object.keys(porCat).sort().forEach(function(cat){
-      html += '<optgroup label="'+cat+'">';
-      porCat[cat].forEach(function(it){
-        var nome = it.nome+(it.medida?' ('+it.medida+')':'');
-        var sel = (selVal===nome)?' selected':'';
-        html += '<option value="'+nome.replace(/"/g,'&quot;')+'"'+sel+'>'+nome+'</option>';
-      });
-      html += '</optgroup>';
-    });
-  }
-  html += '<option value="__CUSTOM__"'+(selVal==='__CUSTOM__'?' selected':'')+'>+ Digitar item personalizado</option>';
-  return html;
-}
-
 function orcSrvSelChange(sel){
   if(sel.value !== '__CUSTOM__'){ orcAutoSave(); return; }
   var td = sel.parentElement;
