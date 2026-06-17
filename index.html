@@ -4316,7 +4316,22 @@ function orcAddItemRow(tbody, it){
   var uns = ['Dia','Unid','Hora','Evento','Serviço','Diária'];
   var pgtos = ['30D','45D','60D','À Vista','15D','28D'];
   tr.innerHTML = [
-    '<td style="position:relative"><input type="text" value="'+esc(it.srv)+'" placeholder="Serviço" class="orc-srv" oninput="orcAutoSave()" autocomplete="off"></td>',
+    (function(){
+      var srvVal = it.srv||'';
+      var isCustom = srvVal && srvVal.startsWith('__CUSTOM__');
+      var customVal = isCustom ? srvVal.replace('__CUSTOM__','') : '';
+      var selVal = isCustom ? '__CUSTOM__' : srvVal;
+      var opts = orcBuildCatOpts(selVal);
+      if(isCustom){
+        return '<td style="position:relative">'
+          +'<input type="text" value="'+esc(customVal)+'" placeholder="Descreva o serviço" class="orc-srv orc-srv-custom" oninput="orcAutoSave()" autocomplete="off" style="border-color:#F59E0B">'
+          +'<div style="font-size:10px;color:#92400e;margin-top:2px;padding-left:2px">item personalizado <span onclick="orcSrvVoltarSelect(this)" style="cursor:pointer;text-decoration:underline;color:#1D4ED8">usar catálogo</span></div>'
+          +'</td>';
+      }
+      return '<td style="position:relative">'
+        +'<select class="orc-srv" onchange="orcSrvSelChange(this)" style="font-size:12px;min-width:0">'+opts+'</select>'
+        +'</td>';
+    })(),
     '<td style="position:relative"><input type="text" value="'+esc(it.desc)+'" placeholder="Descrição" class="orc-desc-cat" oninput="catAcInput(this);orcAutoSave()" onfocus="catAcOpen(this)" onblur="setTimeout(function(){catAcClose();},150)" autocomplete="off"></td>',
     '<td><input type="number" value="'+(it.qty||1)+'" min="0" step="1" class="orc-qty" oninput="orcRecalcRow(this)" style="text-align:center"></td>',
     '<td><input type="text" value="'+esc(it.price)+'" placeholder="0,00" class="orc-price" oninput="orcRecalcRow(this)"></td>',
@@ -4373,16 +4388,25 @@ function orcCollectItens(){
     if(!inps.length) return;
     var pkBtn = tr.querySelector('.pk-btn');
     var fornNome = pkBtn ? (pkBtn.getAttribute('data-forn-nome')||'') : '';
+    var srvEl = tr.querySelector('.orc-srv');
+    var srvVal = '';
+    if(srvEl){
+      if(srvEl.tagName==='SELECT'){
+        srvVal = srvEl.value==='__CUSTOM__' ? '' : srvEl.value;
+      } else {
+        srvVal = '__CUSTOM__'+srvEl.value.trim();
+      }
+    }
     itens.push({
-      srv:  inps[0]?inps[0].value.trim():'',
-      desc: inps[1]?inps[1].value.trim():'',
-      qty:  parseFloat(inps[2]?inps[2].value:1)||0,
-      price:inps[3]?inps[3].value.trim():'',
-      freq: parseFloat(inps[4]?inps[4].value:1)||1,
+      srv:  srvVal,
+      desc: inps[0]?inps[0].value.trim():'',
+      qty:  parseFloat(inps[1]?inps[1].value:1)||0,
+      price:inps[2]?inps[2].value.trim():'',
+      freq: parseFloat(inps[3]?inps[3].value:1)||1,
       unidade: tr.querySelector('.orc-un')?tr.querySelector('.orc-un').value:'Dia',
       forn: fornNome,
       pgto: tr.querySelector('.orc-pgto')?tr.querySelector('.orc-pgto').value:'45D',
-      obs:  inps[5]?inps[5].value.trim():'',
+      obs:  inps[4]?inps[4].value.trim():'',
     });
   });
   return itens;
@@ -4438,7 +4462,7 @@ function orcExportXLSX(){
   rows.push(['\tSERVIÇO\tDESCRIÇÃO DO SERVIÇO\tQtde\tPreço Unit.\tFreq.\tUnidade\tValor final \tFornecedor\tForma de pagamento\tOBS']);
   itens.forEach(function(it){
     var vf = (it.qty||0)*parseMoney(it.price)*(it.freq||1);
-    rows.push(['\t'+it.srv+'\t'+it.desc+'\t'+it.qty+'\t'+parseMoney(it.price)+'\t'+it.freq+'\t'+it.unidade+'\t'+vf+'\t'+it.forn+'\t'+it.pgto+'\t'+it.obs]);
+    rows.push(['\t'+orcSrvDisplay(it.srv)+'\t'+it.desc+'\t'+it.qty+'\t'+parseMoney(it.price)+'\t'+it.freq+'\t'+it.unidade+'\t'+vf+'\t'+it.forn+'\t'+it.pgto+'\t'+it.obs]);
   });
   var sub = itens.reduce(function(s,it){ return s+(it.qty||0)*parseMoney(it.price)*(it.freq||1); },0);
   rows.push(['\tSUBTOTAL DOS SERVIÇOS\t\t\t\t\t\t'+sub]);
@@ -4483,7 +4507,7 @@ function orcWAOrcamento(){
     if(!it.srv&&!it.desc) return;
     var vf=(it.qty||0)*parseMoney(it.price)*(it.freq||1);
     sub+=vf;
-    m+='• '+(it.srv?it.srv+' — ':'')+(it.desc||'');
+    m+='• '+(it.srv?orcSrvDisplay(it.srv)+' — ':'')+(it.desc||'');
     m+=' | Qtde: '+it.qty+' '+it.unidade;
     m+=' | Valor: '+fmtM2(vf);
     if(it.forn) m+=' | Forn: '+it.forn;
@@ -4687,6 +4711,58 @@ function populateSecSelect(){
 /* ── Expor globalmente ── */
 window.orcPopulateSelector=orcPopulateSelector;
 window.orcLoadVisita=orcLoadVisita;
+/* ══ SELECT DE SERVIÇO DO CATÁLOGO (v15-27) ══ */
+function orcBuildCatOpts(selVal){
+  var items = loadCat();
+  var porCat = {};
+  var _excluir = [];
+  items.forEach(function(it){
+    var c = it.categoria||'Outros';
+    if(!porCat[c]) porCat[c] = [];
+    porCat[c].push(it);
+  });
+  var html = '<option value="">— selecione —</option>';
+  if(!items.length){
+    html += '<option disabled>Cadastre itens no Catálogo</option>';
+  } else {
+    Object.keys(porCat).sort().forEach(function(cat){
+      html += '<optgroup label="'+cat+'">';
+      porCat[cat].forEach(function(it){
+        var nome = it.nome+(it.medida?' ('+it.medida+')':'');
+        var sel = (selVal===nome)?' selected':'';
+        html += '<option value="'+nome.replace(/"/g,'&quot;')+'"'+sel+'>'+nome+'</option>';
+      });
+      html += '</optgroup>';
+    });
+  }
+  html += '<option value="__CUSTOM__"'+(selVal==='__CUSTOM__'?' selected':'')+'>+ Digitar item personalizado</option>';
+  return html;
+}
+
+function orcSrvSelChange(sel){
+  if(sel.value !== '__CUSTOM__'){ orcAutoSave(); return; }
+  var td = sel.parentElement;
+  td.innerHTML = '<input type="text" value="" placeholder="Descreva o serviço" class="orc-srv orc-srv-custom" oninput="orcAutoSave()" autocomplete="off" style="border-color:#F59E0B;width:100%">'
+    +'<div style="font-size:10px;color:#92400e;margin-top:2px;padding-left:2px">item personalizado '
+    +'<span onclick="orcSrvVoltarSelect(this)" style="cursor:pointer;text-decoration:underline;color:#1D4ED8">usar catálogo</span></div>';
+  td.querySelector('input').focus();
+}
+
+function orcSrvVoltarSelect(span){
+  var td = span.closest('td');
+  td.innerHTML = '<select class="orc-srv" onchange="orcSrvSelChange(this)" style="font-size:12px;min-width:0;width:100%">'+orcBuildCatOpts('')+'</select>';
+  orcAutoSave();
+}
+function orcSrvDisplay(srv){
+  if(!srv) return '';
+  return srv.startsWith('__CUSTOM__') ? srv.replace('__CUSTOM__','') : srv;
+}
+window.orcSrvDisplay = orcSrvDisplay;
+
+window.orcSrvSelChange = orcSrvSelChange;
+window.orcSrvVoltarSelect = orcSrvVoltarSelect;
+window.orcBuildCatOpts = orcBuildCatOpts;
+
 window.orcAddItem=orcAddItem;
 window.orcRecalcRow=orcRecalcRow;
 window.orcDelRow=orcDelRow;
@@ -4900,7 +4976,7 @@ function orcAbrirCotacaoForn(){
     // Demanda
     m += '\n► *DEMANDA*\n\n';
     itensForn.forEach(function(it,i){
-      m += (i+1) + '. ' + esc(it.desc||it.srv||'');
+      m += (i+1) + '. ' + esc(it.desc||orcSrvDisplay(it.srv)||'');
       m += ' - Qtd: ' + it.qty + ' ' + it.unidade;
       if(it.freq>1) m += ' x ' + it.freq + ' dias';
       m += '\n';
@@ -4927,7 +5003,7 @@ function orcAbrirCotacaoForn(){
     html += '<div class="forn-cot-itens">';
     semItens.forEach(function(it){
       html += '<div class="forn-cot-item" style="color:#92400E">'
-        +(it.srv?it.srv+' — ':'')+esc(it.desc||it.srv||'')
+        +(it.srv?orcSrvDisplay(it.srv)+' — ':'')+esc(it.desc||orcSrvDisplay(it.srv)||'')
         +' | Qtde: '+it.qty+' '+it.unidade
         +'</div>';
     });
@@ -8348,7 +8424,15 @@ function catAcRender(inp, q){
           var srvInp = tr.querySelector('.orc-srv');
           var descInp = tr.querySelector('.orc-desc-cat');
           var unSel = tr.querySelector('.orc-un');
-          if(srvInp) srvInp.value = it.categoria || '';
+          if(srvInp){
+            if(srvInp.tagName==='SELECT'){
+              var catVal = it.categoria||'';
+              srvInp.value = catVal;
+              if(srvInp.value !== catVal) srvInp.value = '';
+            } else {
+              srvInp.value = it.categoria || '';
+            }
+          }
           if(descInp){
             descInp.value = it.nome + (it.medida ? ' ('+it.medida+')' : '');
           }
