@@ -3603,12 +3603,22 @@ if('serviceWorker' in navigator){
       </div>
       <div class="row2">
         <div class="fld">
-          <label>Data do evento</label>
+          <label>Data início</label>
           <input type="date" id="avData">
         </div>
         <div class="fld">
-          <label>Horário</label>
+          <label>Horário início</label>
           <input type="time" id="avHora">
+        </div>
+      </div>
+      <div class="row2">
+        <div class="fld">
+          <label>Data fim</label>
+          <input type="date" id="avDataFim">
+        </div>
+        <div class="fld">
+          <label>Horário fim</label>
+          <input type="time" id="avHoraFim">
         </div>
       </div>
       <div class="fld">
@@ -7792,7 +7802,7 @@ window.btnEnviarTudo = btnEnviarTudo;
 /* ══ ORÇAMENTO AVULSO (sem VT) ══ */
 function orcAvulsoAbrirModal(){
   // Limpar campos
-  ['avNome','avData','avHora','avLocal','avMapa','avMontData','avMontHora'].forEach(function(id){
+  ['avNome','avData','avHora','avDataFim','avHoraFim','avLocal','avMapa','avMontData','avMontHora'].forEach(function(id){
     var el = document.getElementById(id);
     if(el) el.value = '';
   });
@@ -7824,6 +7834,8 @@ function orcAvulsoSalvar(){
     tipo: 'avulso', // marcador especial
     dataEvento: document.getElementById('avData').value,
     horaEvento: document.getElementById('avHora').value,
+    dataEventoFim: document.getElementById('avDataFim').value,
+    horaFim: document.getElementById('avHoraFim').value,
     local: document.getElementById('avLocal').value.trim(),
     linkLoc: document.getElementById('avMapa').value.trim(),
     dataMont: document.getElementById('avMontData').value,
