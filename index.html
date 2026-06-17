@@ -1463,6 +1463,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
             <div style="font-size:10px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.07em;padding:9px 14px;border-bottom:1px solid #E2E8F0;background:#F8FAFC;display:flex;align-items:center;gap:6px">
               <svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:none;stroke:#1A56DB;stroke-width:2;stroke-linecap:round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
               Cabeçalho — preenchido automaticamente da visita técnica
+              <button onclick="orcEditarCabecalho()" style="margin-left:auto;padding:3px 10px;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:6px;font-size:10px;font-weight:700;color:#1D4ED8;cursor:pointer;letter-spacing:.04em">✏️ EDITAR</button>
             </div>
             <div class="orc-hdr-grid" id="orc-cabecalho"></div>
           </div>
@@ -3588,6 +3589,60 @@ if('serviceWorker' in navigator){
 
 </div>
 
+
+<!-- MODAL: EDITAR CABEÇALHO DO ORÇAMENTO -->
+<div id="orcEditOv" class="ag-modal-ov" onclick="orcEditFecharBg(event)" style="display:none">
+  <div class="ag-modal">
+    <div class="ag-modal-hdr">
+      <span class="ag-modal-title">✏️ Editar dados do evento</span>
+      <button class="ag-modal-x" onclick="orcEditFechar()">&#x2715;</button>
+    </div>
+    <div class="ag-modal-body">
+      <div class="fld">
+        <label>Nome do evento *</label>
+        <input type="text" id="orcEditNome" autocomplete="off">
+      </div>
+      <div class="row2">
+        <div class="fld">
+          <label>Data início</label>
+          <input type="date" id="orcEditData">
+        </div>
+        <div class="fld">
+          <label>Horário início</label>
+          <input type="time" id="orcEditHora">
+        </div>
+      </div>
+      <div class="row2">
+        <div class="fld">
+          <label>Data fim</label>
+          <input type="date" id="orcEditDataFim">
+        </div>
+        <div class="fld">
+          <label>Horário fim</label>
+          <input type="time" id="orcEditHoraFim">
+        </div>
+      </div>
+      <div class="fld">
+        <label>Local</label>
+        <input type="text" id="orcEditLocal" autocomplete="off">
+      </div>
+      <div class="row2">
+        <div class="fld">
+          <label>Data da montagem</label>
+          <input type="date" id="orcEditMontData">
+        </div>
+        <div class="fld">
+          <label>Horário da montagem</label>
+          <input type="time" id="orcEditMontHora">
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:18px;justify-content:flex-end">
+        <button onclick="orcEditFechar()" style="padding:9px 18px;background:#fff;border:1.5px solid #E2E8F0;border-radius:8px;font-weight:600;color:#475569;cursor:pointer">Cancelar</button>
+        <button onclick="orcEditSalvar()" style="padding:9px 18px;background:#2563EB;border:none;border-radius:8px;font-weight:600;color:#fff;cursor:pointer">Salvar alterações</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- MODAL: NOVO ORÇAMENTO AVULSO (sem VT) -->
 <div id="orcAvulsoOv" class="ag-modal-ov" onclick="orcAvulsoFecharBg(event)">
@@ -7869,6 +7924,54 @@ function orcAvulsoSalvar(){
 window.orcAvulsoAbrirModal = orcAvulsoAbrirModal;
 window.orcAvulsoFechar = orcAvulsoFechar;
 window.orcAvulsoSalvar = orcAvulsoSalvar;
+
+/* ══ EDITAR CABEÇALHO DO ORÇAMENTO (v15-26) ══ */
+function orcEditarCabecalho(){
+  if(!orcCurrentVid){ toast('Selecione uma visita primeiro','err'); return; }
+  var vs = loadV();
+  var v = vs.find(function(x){ return x.id===orcCurrentVid; });
+  if(!v){ toast('Visita não encontrada','err'); return; }
+  // Preencher modal com dados atuais
+  document.getElementById('orcEditNome').value    = v.nome || '';
+  document.getElementById('orcEditData').value    = v.dataEvento || '';
+  document.getElementById('orcEditHora').value    = v.horaEvento || '';
+  document.getElementById('orcEditDataFim').value = v.dataEventoFim || '';
+  document.getElementById('orcEditHoraFim').value = v.horaFim || '';
+  document.getElementById('orcEditLocal').value   = v.local || v.end || '';
+  document.getElementById('orcEditMontData').value = v.dataMont || '';
+  document.getElementById('orcEditMontHora').value = v.horaMont || '';
+  document.getElementById('orcEditOv').style.display = 'flex';
+}
+function orcEditFechar(){
+  document.getElementById('orcEditOv').style.display = 'none';
+}
+function orcEditFecharBg(e){
+  if(e.target.id==='orcEditOv') orcEditFechar();
+}
+function orcEditSalvar(){
+  var nome = document.getElementById('orcEditNome').value.trim();
+  if(!nome){ toast('Informe o nome do evento','err'); return; }
+  var vs = loadV();
+  var idx = vs.findIndex(function(x){ return x.id===orcCurrentVid; });
+  if(idx===-1){ toast('Visita não encontrada','err'); return; }
+  vs[idx].nome         = nome;
+  vs[idx].dataEvento   = document.getElementById('orcEditData').value;
+  vs[idx].horaEvento   = document.getElementById('orcEditHora').value;
+  vs[idx].dataEventoFim = document.getElementById('orcEditDataFim').value;
+  vs[idx].horaFim      = document.getElementById('orcEditHoraFim').value;
+  vs[idx].local        = document.getElementById('orcEditLocal').value.trim();
+  vs[idx].end          = vs[idx].local;
+  vs[idx].dataMont     = document.getElementById('orcEditMontData').value;
+  vs[idx].horaMont     = document.getElementById('orcEditMontHora').value;
+  saveV(vs);
+  orcEditFechar();
+  orcRenderCabecalho(vs[idx]);
+  toast('Dados atualizados','ok');
+}
+window.orcEditarCabecalho = orcEditarCabecalho;
+window.orcEditFechar      = orcEditFechar;
+window.orcEditFecharBg    = orcEditFecharBg;
+window.orcEditSalvar      = orcEditSalvar;
 
 
 
