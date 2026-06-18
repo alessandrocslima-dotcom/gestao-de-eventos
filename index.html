@@ -5225,56 +5225,6 @@ function renderFornList(){
   }).join('');
 }
 
-/* ══ PATCH orcAddItemRow — usar createElement ══ */
-var _origOrcAddItemRow = orcAddItemRow;
-orcAddItemRow = function(tbody, it){
-  it = it||{srv:'',desc:'',qty:1,price:'',freq:1,unidade:'Dia',forn:'',pgto:'45D',obs:''};
-  var uns=['Dia','Unid','Hora','Evento','Serviço','Diária'];
-  var pgtos=['30D','45D','60D','À Vista','15D','28D'];
-  var vf=(it.qty||0)*parseMoney(it.price)*(it.freq||1);
-  var tr=document.createElement('tr');
-
-  function mkTxt(val,ph,cls){var i=document.createElement('input');i.type='text';i.value=val||'';i.placeholder=ph||'';if(cls)i.className=cls;return i;}
-  function mkNum(val,cls){var i=document.createElement('input');i.type='number';i.value=val||1;i.min=0;i.step=1;if(cls)i.className=cls;i.style.textAlign='center';return i;}
-
-  var iSrv=mkTxt(it.srv,'Serviço'); iSrv.oninput=function(){orcAutoSave();};
-  var iDsc=mkTxt(it.desc,'Descrição'); iDsc.oninput=function(){orcAutoSave();};
-  var iQty=mkNum(it.qty,'orc-qty'); iQty.oninput=function(){orcRecalcRow(this);};
-  var iPrc=mkTxt(it.price,'0,00','orc-price'); iPrc.oninput=function(){orcRecalcRow(this);};
-  var iFrq=mkNum(it.freq,'orc-freq'); iFrq.oninput=function(){orcRecalcRow(this);};
-
-  var selUn=document.createElement('select'); selUn.className='orc-un'; selUn.onchange=function(){orcAutoSave();};
-  uns.forEach(function(u){var o=document.createElement('option');o.value=u;o.textContent=u;if(u===(it.unidade||'Dia'))o.selected=true;selUn.appendChild(o);});
-
-  var tdVf=document.createElement('td'); tdVf.className='orc-vf'+(vf===0?' orc-vf-zero':''); tdVf.textContent=fmtM2(vf);
-
-  // Fornecedor — picklist
-  var wrap=document.createElement('div'); wrap.style.width='100%';
-  var pkBtn=document.createElement('button'); pkBtn.type='button'; pkBtn.className='pk-btn'+(it.forn?' pk-filled':'');
-  pkBtn.setAttribute('data-forn-nome', it.forn||'');
-  pkBtn.innerHTML='<span class="pk-btn-lbl">'+(it.forn?esc(it.forn):'Selecionar...')+'</span><svg class="pk-btn-ico" viewBox="0 0 24 24" style="width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round"><path d="m6 9 6 6 6-6"/></svg>';
-  pkBtn.addEventListener('click', function(){ pkOpen(this); });
-  wrap.appendChild(pkBtn);
-
-  var selPg=document.createElement('select'); selPg.className='orc-pgto'; selPg.onchange=function(){orcAutoSave();};
-  pgtos.forEach(function(p){var o=document.createElement('option');o.value=p;o.textContent=p;if(p===(it.pgto||'45D'))o.selected=true;selPg.appendChild(o);});
-
-  var iObs=mkTxt(it.obs,'Obs'); iObs.oninput=function(){orcAutoSave();};
-
-  var btnDel=document.createElement('button'); btnDel.className='btn-rm'; btnDel.title='Remover';
-  btnDel.innerHTML='<svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>';
-  btnDel.onclick=function(){orcDelRow(this);};
-
-  [iSrv,iDsc,iQty,iPrc,iFrq,selUn].forEach(function(el){var td=document.createElement('td');td.appendChild(el);tr.appendChild(td);});
-  tr.appendChild(tdVf);
-  var tdFn=document.createElement('td'); tdFn.appendChild(wrap); tr.appendChild(tdFn);
-  var tdPg=document.createElement('td'); tdPg.appendChild(selPg); tr.appendChild(tdPg);
-  var tdObs=document.createElement('td'); tdObs.appendChild(iObs); tr.appendChild(tdObs);
-  var tdDel=document.createElement('td'); tdDel.appendChild(btnDel); tr.appendChild(tdDel);
-
-  tbody.appendChild(tr);
-};
-
 /* Patch sbGo para fornecedores */
 /* Modal fecha ao clicar fora */
 (function(){ var _mf=document.getElementById('modalFornOv'); if(_mf) _mf.addEventListener('click',function(e){ if(e.target===this) closeFornModal(); }); })();
