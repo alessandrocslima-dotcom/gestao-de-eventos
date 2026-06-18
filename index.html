@@ -4569,11 +4569,15 @@ function orcWAOrcamento(){
   m+='\n'+linha+'\n\n*ITENS DO ORÇAMENTO*\n\n';
   var sub=0;
   itens.forEach(function(it){
-    if(!it.srv&&!it.desc) return;
+    var srvLabel = orcSrvDisplay(it.srv)||'';
+    if(!srvLabel&&!it.desc) return;
     var vf=(it.qty||0)*parseMoney(it.price)*(it.freq||1);
     sub+=vf;
-    m+='• '+(it.srv?orcSrvDisplay(it.srv)+' — ':'')+(it.desc||'');
-    m+=' | Qtde: '+it.qty+' '+it.unidade;
+    var linha = srvLabel||(it.desc||'');
+    if(srvLabel && it.desc) linha = srvLabel+' — '+it.desc;
+    m+='• '+linha;
+    m+=' | Qtde: '+(it.qty||1)+' '+it.unidade;
+    if((it.freq||1)>1) m+=' x '+it.freq+' dias';
     m+=' | Valor: '+fmtM2(vf);
     if(it.forn) m+=' | Forn: '+it.forn;
     m+='\n';
@@ -4635,10 +4639,13 @@ function orcWACotacao(){
   m += '\n► *DEMANDA*\n\n';
   var num = 1;
   itens.forEach(function(it){
-    if(!it.srv && !it.desc) return;
-    m += num + '. ' + orcSrvDisplay(it.srv) + (it.desc ? ' — ' + it.desc : '');
-    m += ' - Qtd: ' + it.qty + ' ' + it.unidade;
-    if(it.freq > 1) m += ' x ' + it.freq + ' dias';
+    var srvLabel = orcSrvDisplay(it.srv)||'';
+    if(!srvLabel && !it.desc) return;
+    var linha = srvLabel||(it.desc||'');
+    if(srvLabel && it.desc) linha = srvLabel+' — '+it.desc;
+    m += num + '. ' + linha;
+    m += ' - Qtd: ' + (it.qty||1) + ' ' + it.unidade;
+    if((it.freq||1) > 1) m += ' x ' + it.freq + ' dias';
     m += '\n';
     num++;
   });
