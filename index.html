@@ -1485,7 +1485,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
               <table class="orc-tbl">
                 <thead>
                   <tr>
-                    <th style="width:100px">Serviço</th>
+                    <th style="width:180px">Serviço</th>
                     <th style="width:160px">Descrição</th>
                     <th style="width:55px;text-align:center">Qtde</th>
                     <th style="width:100px">Preço unit.</th>
@@ -4636,7 +4636,7 @@ function orcWACotacao(){
   var num = 1;
   itens.forEach(function(it){
     if(!it.srv && !it.desc) return;
-    m += num + '. ' + (it.desc || it.srv || '');
+    m += num + '. ' + orcSrvDisplay(it.srv) + (it.desc ? ' — ' + it.desc : '');
     m += ' - Qtd: ' + it.qty + ' ' + it.unidade;
     if(it.freq > 1) m += ' x ' + it.freq + ' dias';
     m += '\n';
