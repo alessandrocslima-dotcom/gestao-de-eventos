@@ -2324,9 +2324,7 @@ function renderDash(){
     if(v.atualizadoEm||v.criadoEm){try{var ds=new Date(v.atualizadoEm||v.criadoEm);salvoEm=ds.toLocaleDateString('pt-BR')+' às '+ds.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});}catch(ex){}}
     if(salvoEm) html += '<div class="esalvo"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>Salvo em: '+salvoEm+'</div>';
     html += '<div class="ecard-btns">';
-    if(me && me.role==='admin'){
-      html += '<button class="ebtn ebtn-equipe" data-id="'+v.id+'" data-act="equipe"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Equipe</button>';
-    }
+    html += '<button class="ebtn ebtn-equipe" data-id="'+v.id+'" data-act="equipe"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Transferir</button>';
     html += '<button class="ebtn ebtn-edit" data-id="'+v.id+'" data-act="edit"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Editar</button>';
     html += '<button class="ebtn ebtn-del" data-id="'+v.id+'" data-act="del"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>Excluir</button>';
     html += '</div></div>';
@@ -3492,8 +3490,8 @@ window.openEmpModal=openEmpModal; window.closeEmpModal=closeEmpModal; window.sav
       </button>
     </div>
 
-    <!-- Participantes -->
-    <div class="eq-sec">
+    <!-- Participantes (só admin) -->
+    <div class="eq-sec" id="eqSecParticipantes">
       <div class="eq-sec-tit">Participantes</div>
       <div id="eqPartList"></div>
       <div style="display:flex;gap:8px;margin-top:8px">
@@ -3502,8 +3500,8 @@ window.openEmpModal=openEmpModal; window.closeEmpModal=closeEmpModal; window.sav
       </div>
     </div>
 
-    <!-- Histórico -->
-    <div class="eq-sec">
+    <!-- Histórico (só admin) -->
+    <div class="eq-sec" id="eqSecHistorico">
       <div class="eq-sec-tit">Histórico de alterações</div>
       <div class="eq-hist" id="eqHist"></div>
     </div>
@@ -7324,16 +7322,26 @@ function eqRegistrarHist(visita, acao, detalhe){
 }
 
 function eqOpenModal(visitaId){
-  if(!me || me.role!=='admin'){ toast('Apenas administradores','err'); return; }
-  _eqVisitaId = visitaId;
+  if(!me){ toast('Faça login primeiro','err'); return; }
   var v = loadV().find(function(x){ return x.id===visitaId; });
   if(!v){ toast('Visita não encontrada','err'); return; }
+  // Verificar se tem permissão: admin vê tudo, usuário comum só suas visitas
+  var meuId = (me && me.id) ? me.id : 'root';
+  var souAdmin = me.role==='admin';
+  var souDono = v.responsavel === meuId || (Array.isArray(v.participantes) && v.participantes.indexOf(meuId)>=0);
+  if(!souAdmin && !souDono){ toast('Você não tem acesso a esta visita','err'); return; }
+  _eqVisitaId = visitaId;
   // Garantir estrutura
   if(!v.responsavel) v.responsavel = 'root';
   if(!Array.isArray(v.participantes)) v.participantes = [v.responsavel];
   if(!Array.isArray(v.historico)) v.historico = [];
   document.getElementById('eqVisitaNome').textContent = '📋 ' + (v.nome||'Sem nome');
   eqRenderModal(v);
+  // Mostrar/ocultar seções conforme perfil
+  var secParticipantes = document.getElementById('eqSecParticipantes');
+  var secHistorico = document.getElementById('eqSecHistorico');
+  if(secParticipantes) secParticipantes.style.display = souAdmin ? '' : 'none';
+  if(secHistorico) secHistorico.style.display = souAdmin ? '' : 'none';
   document.getElementById('eqModalOv').classList.add('on');
 }
 
@@ -7431,7 +7439,7 @@ function eqTransferir(){
   var v = loadV().find(function(x){ return x.id===_eqVisitaId; });
   if(!v) return;
   // Montar lista de candidatos (todos os usuários menos o responsável atual)
-  var candidatos = loadU().filter(function(u){ return u.id!==v.responsavel; });
+  var candidatos = loadU().filter(function(u){ return u.id!==v.responsavel && u.ativo!=0; });
   if(!candidatos.length){ toast('Não há outros usuários cadastrados','err'); return; }
   var lista = candidatos.map(function(u,i){ return (i+1)+') '+(u.nome||u.login); }).join('\n');
   var escolha = prompt('Transferir responsabilidade para quem?\n\n'+lista+'\n\nDigite o número:');
