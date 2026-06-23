@@ -1207,7 +1207,10 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
         <div class="gps-result" id="gpsMainBox">
           <div class="gps-coords" id="gpsMainTxt"></div>
           <div class="gps-dt" id="gpsMainDT"></div>
-          <a class="gps-link" id="gpsMainLink" href="#" target="_blank">🗺 Ver no Google Maps ↗</a>
+          <div style="display:flex;gap:10px;margin-top:3px">
+            <a class="gps-link" id="gpsMainLink" href="#" target="_blank" style="margin-top:0">🗺 Google Maps ↗</a>
+            <a class="gps-link" id="gpsMainWaze" href="#" target="_blank" style="margin-top:0;color:#33CCFF">🚗 Waze ↗</a>
+          </div>
         </div>
         <div class="fsec"><svg viewBox="0 0 24 24"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Classificação de risco</div>
         <div class="risco-pair">
@@ -1235,7 +1238,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
             <button class="gps-btn-sm" id="gpsBtnR2" onclick="capGPS('r2')">
               <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>Capturar Ponto de Encontro
             </button>
-            <div class="gps-mini" id="gpsR2Box"><div class="gps-mini-coords" id="gpsR2Txt"></div><div class="gps-mini-dt" id="gpsR2DT"></div><a class="gps-mini-link" id="gpsR2Link" href="#" target="_blank">Ver no mapa ↗</a></div>
+            <div class="gps-mini" id="gpsR2Box"><div class="gps-mini-coords" id="gpsR2Txt"></div><div class="gps-mini-dt" id="gpsR2DT"></div><div style="display:flex;gap:10px"><a class="gps-mini-link" id="gpsR2Link" href="#" target="_blank">🗺 Google Maps ↗</a><a class="gps-mini-link" id="gpsR2Waze" href="#" target="_blank" style="color:#33CCFF">🚗 Waze ↗</a></div></div>
           </div>
         </div>
       </div>
@@ -2468,6 +2471,7 @@ function capGPS(target){
         document.getElementById('gpsMainTxt').textContent = lat+', '+lng;
         document.getElementById('gpsMainDT').textContent = 'Capturado em '+dt;
         document.getElementById('gpsMainLink').href = url;
+        document.getElementById('gpsMainWaze').href = 'https://waze.com/ul?ll='+lat+','+lng+'&navigate=yes';
         document.getElementById('gpsMainBox').classList.add('on');
         btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round"><path d="M12 22s-8-5.8-8-12a8 8 0 1 1 16 0c0 6.2-8 12-8 12z"/><circle cx="12" cy="10" r="3"/></svg> ✓ Localização capturada';
       } else {
@@ -2475,6 +2479,7 @@ function capGPS(target){
         document.getElementById('gps'+n+'Txt').textContent = lat+', '+lng;
         document.getElementById('gps'+n+'DT').textContent = dt;
         document.getElementById('gps'+n+'Link').href = url;
+        var wEl=document.getElementById('gps'+n+'Waze'); if(wEl) wEl.href='https://waze.com/ul?ll='+lat+','+lng+'&navigate=yes';
         document.getElementById('gps'+n+'Box').classList.add('on');
         btn.classList.add('done');
         btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round"><polyline points="20 6 9 17 4 12"/></svg> ✓ '+(target==='r1'?'Local capturado':'Encontro capturado');
@@ -3002,9 +3007,9 @@ function loadForm(v){
   sv('fLoc',v.local);sv('fEnd',v.end);sv('fRef',v.ref);sv('fLinkLoc',v.linkLoc);
   sv('fRDesc',v.riscoDesc);sv('fLinkRisco',v.linkRisco);sv('fSom',v.somTipo);sv('fSomDet',v.somDet);sv('fObsEst',v.obsEst);sv('fObs',v.obs);
   if(v.risco) setRisco(v.risco);
-  if(v.gpsMain&&v.gpsMain.lat){ gps.main=v.gpsMain; document.getElementById('gpsMainTxt').textContent=v.gpsMain.lat+', '+v.gpsMain.lng; document.getElementById('gpsMainDT').textContent='Capturado em '+v.gpsMain.dt; document.getElementById('gpsMainLink').href='https://maps.google.com/?q='+v.gpsMain.lat+','+v.gpsMain.lng; document.getElementById('gpsMainBox').classList.add('on'); }
+  if(v.gpsMain&&v.gpsMain.lat){ gps.main=v.gpsMain; document.getElementById('gpsMainTxt').textContent=v.gpsMain.lat+', '+v.gpsMain.lng; document.getElementById('gpsMainDT').textContent='Capturado em '+v.gpsMain.dt; document.getElementById('gpsMainLink').href='https://maps.google.com/?q='+v.gpsMain.lat+','+v.gpsMain.lng; document.getElementById('gpsMainWaze').href='https://waze.com/ul?ll='+v.gpsMain.lat+','+v.gpsMain.lng+'&navigate=yes'; document.getElementById('gpsMainBox').classList.add('on'); }
 
-  if(v.gpsR2&&v.gpsR2.lat){ gps.r2=v.gpsR2; document.getElementById('gpsR2Txt').textContent=v.gpsR2.lat+', '+v.gpsR2.lng; document.getElementById('gpsR2DT').textContent=v.gpsR2.dt; document.getElementById('gpsR2Link').href='https://maps.google.com/?q='+v.gpsR2.lat+','+v.gpsR2.lng; document.getElementById('gpsR2Box').classList.add('on'); }
+  if(v.gpsR2&&v.gpsR2.lat){ gps.r2=v.gpsR2; document.getElementById('gpsR2Txt').textContent=v.gpsR2.lat+', '+v.gpsR2.lng; document.getElementById('gpsR2DT').textContent=v.gpsR2.dt; document.getElementById('gpsR2Link').href='https://maps.google.com/?q='+v.gpsR2.lat+','+v.gpsR2.lng; document.getElementById('gpsR2Waze').href='https://waze.com/ul?ll='+v.gpsR2.lat+','+v.gpsR2.lng+'&navigate=yes'; document.getElementById('gpsR2Box').classList.add('on'); }
   eqItens=v.eqItens||[];renderEq();
   equipeItens=v.equipeItens||[];renderEquipe();
   servicoItens=v.servicoItens||[];renderServico();
