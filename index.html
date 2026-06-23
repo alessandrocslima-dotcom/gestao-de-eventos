@@ -4625,9 +4625,17 @@ function orcWACotacao(){
 
   // Link de localização (Mapa)
   var mapa = '';
-  if(v.gpsMain && v.gpsMain.lat) mapa = 'https://www.google.com/maps?q=' + v.gpsMain.lat + ',' + v.gpsMain.lng;
-  else if(v.linkLoc) mapa = v.linkLoc;
-  if(mapa) m += 'Mapa: ' + mapa + '\n';
+  var mapaWaze = '';
+  if(v.gpsMain && v.gpsMain.lat){
+    mapa = 'https://www.google.com/maps?q=' + v.gpsMain.lat + ',' + v.gpsMain.lng;
+    mapaWaze = 'https://waze.com/ul?ll=' + v.gpsMain.lat + ',' + v.gpsMain.lng + '&navigate=yes';
+  } else if(v.linkLoc){
+    mapa = v.linkLoc;
+  }
+  if(mapa){
+    m += '🗺 Maps: ' + mapa + '\n';
+    if(mapaWaze) m += '🚗 Waze: ' + mapaWaze + '\n';
+  }
 
   // Montagem (se houver)
   if(v.dataMont){
@@ -5010,9 +5018,17 @@ function orcAbrirCotacaoForn(){
     if(v.local||v.end) m += 'Local: ' + (v.local||v.end) + '\n';
     // Link de localização (Mapa)
     var mapa = '';
-    if(v.gpsMain && v.gpsMain.lat) mapa = 'https://www.google.com/maps?q=' + v.gpsMain.lat + ',' + v.gpsMain.lng;
-    else if(v.linkLoc) mapa = v.linkLoc;
-    if(mapa) m += 'Mapa: ' + mapa + '\n';
+    var mapaWaze = '';
+    if(v.gpsMain && v.gpsMain.lat){
+      mapa = 'https://www.google.com/maps?q=' + v.gpsMain.lat + ',' + v.gpsMain.lng;
+      mapaWaze = 'https://waze.com/ul?ll=' + v.gpsMain.lat + ',' + v.gpsMain.lng + '&navigate=yes';
+    } else if(v.linkLoc){
+      mapa = v.linkLoc;
+    }
+    if(mapa){
+      m += '🗺 Maps: ' + mapa + '\n';
+      if(mapaWaze) m += '🚗 Waze: ' + mapaWaze + '\n';
+    }
     // Montagem (se houver na VT)
     if(v.dataMont){
       var partesM = v.dataMont.split('-');
@@ -7661,7 +7677,12 @@ function agDmEnviarWA(){
   }
   m += 'Local: ' + (ev.local||'—') + '\n';
   var link = document.getElementById('agDmLink').value.trim();
-  if(link) m += 'Mapa: ' + link + '\n';
+  if(link){
+    m += '🗺 Maps: ' + link + '\n';
+    // Se o link for GPS capturado, adicionar Waze
+    var matchCoords = link.match(/[?&]q=(-?[\d.]+),(-?[\d.]+)/);
+    if(matchCoords) m += '🚗 Waze: https://waze.com/ul?ll=' + matchCoords[1] + ',' + matchCoords[2] + '&navigate=yes\n';
+  }
 
   // === MONTAGEM (se houver) ===
   if(ev.montData || ev.montHora){
