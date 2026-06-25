@@ -5596,6 +5596,7 @@ function agAbrirModal(data){
   agPopulateModalSec();
   agPopulateModalVisitas();
   // Demanda: zerar e popular select do catálogo
+  _agImportLink = '';
   if(typeof agEDmReset==='function') agEDmReset();
   if(typeof agEDmPopulateSelect==='function') agEDmPopulateSelect();
   document.getElementById('agModalOv').classList.add('open');
@@ -5672,9 +5673,11 @@ function agSalvarEvento(){
     demanda: (typeof _agEDmItens!=='undefined' && Array.isArray(_agEDmItens)) ? _agEDmItens.slice() : [],
     visitaId: document.getElementById('agEVisita').value,
     obs: document.getElementById('agEObs').value.trim(),
+    dmLink: _agImportLink || '',
     criadoEm: new Date().toISOString(),
     owner: (typeof _meuId==='function') ? _meuId() : null
   };
+  _agImportLink = ''; // limpar após salvar
   if(agEditId){ var ix=evs.findIndex(function(e){return e.id===agEditId;}); if(ix>=0)evs[ix]=ev; else evs.push(ev); }
   else evs.push(ev);
   agSaveEvs(evs);
@@ -7857,6 +7860,16 @@ function agEvtImportarVT(){
   else if(v.end)      document.getElementById('agELocal').value    = v.end;
   if(v.dataMont)      document.getElementById('agEMontData').value = v.dataMont;
   if(v.horaMont)      document.getElementById('agEMontHora').value = v.horaMont;
+  // Importar link de localização (GPS ou link colado)
+  var linkLoc = '';
+  if(v.gpsMain && v.gpsMain.lat && v.gpsMain.lng){
+    linkLoc = 'https://maps.google.com/?q=' + v.gpsMain.lat + ',' + v.gpsMain.lng;
+  } else if(v.linkLoc){
+    linkLoc = v.linkLoc;
+  }
+  if(linkLoc){
+    _agImportLink = linkLoc; // guardar para agSalvarEvento usar
+  }
 
   // Importar demanda da VT para a lista editável
   var novosItens = [];
@@ -8661,6 +8674,7 @@ window.somPopulateSelect = somPopulateSelect;
 
 /* ══ DEMANDA NO MODAL DE EVENTO (v15) ══ */
 var _agEDmItens = []; // lista temporária enquanto edita
+var _agImportLink = ''; // link de localização importado da VT
 
 function agEDmPopulateSelect(){
   var sel = document.getElementById('agEDmItem');
