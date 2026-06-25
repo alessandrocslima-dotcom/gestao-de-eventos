@@ -2763,6 +2763,8 @@ function saveVisita(){
   saveV(vs);
   saveVisitaCloud(d); // salvar também na nuvem
   editId=null;
+  window.isEditing=false;
+  isEditing=false;
   toast('Visita salva com sucesso!','ok');
   setTimeout(function(){ goTab('dash'); },600);
 }
@@ -2789,13 +2791,21 @@ function envWA(){
   if(gv('fRef'))     m+='Ponto de referencia: '+gv('fRef')+'\n';
   if(gv('fData'))    m+='Data: '+fmtD(gv('fData'))+'\n';
   if(gv('fHora'))    m+='Horario: '+gv('fHora')+(gv('fHoraFim')?' às '+gv('fHoraFim'):'')+'\n';
-  if(gps.main.lat)   m+='Localizacao: maps.google.com/?q='+gps.main.lat+','+gps.main.lng+'\n';
+  if(gps.main.lat){
+    m+='🗺 Maps: https://maps.google.com/?q='+gps.main.lat+','+gps.main.lng+'\n';
+    m+='🚗 Waze: https://waze.com/ul?ll='+gps.main.lat+','+gps.main.lng+'&navigate=yes\n';
+  } else if(gv('fLinkLoc')){
+    m+='🗺 Localização: '+gv('fLinkLoc')+'\n';
+  }
   if(gv('fPessoas')) m+='Publico estimado: '+gv('fPessoas')+' pessoas\n';
   if(fRisco==='risco'){
     m+='Risco: AREA DE RISCO\n';
     if(gv('fRDesc')) m+='Descricao: '+gv('fRDesc')+'\n';
 
-    if(gps.r2.lat) m+='GPS Encontro: maps.google.com/?q='+gps.r2.lat+','+gps.r2.lng+'\n';
+    if(gps.r2.lat){
+      m+='🗺 Encontro Maps: https://maps.google.com/?q='+gps.r2.lat+','+gps.r2.lng+'\n';
+      m+='🚗 Encontro Waze: https://waze.com/ul?ll='+gps.r2.lat+','+gps.r2.lng+'&navigate=yes\n';
+    }
   }
   m+='\n';
 
@@ -2830,7 +2840,9 @@ function envWA(){
       m+=d+'\n';
     });
     if(som){
-      m+='\nSonorização: '+som+'\n';
+      // Remover prefixo "Sonorização" redundante se o valor já começa com ele
+      var somTxt = som.replace(/^Sonoriza[çc][aã]o\s*[:\-]?\s*/i, '');
+      m+='\nSonorização: '+somTxt+'\n';
       if(det) m+=det+'\n';
     }
     m+='\n';
@@ -3915,7 +3927,7 @@ function sbGo(page, el) {
 
   // Ações específicas
   if(page === 'dash') { renderDash(); sbUpdateBadge(); }
-  if(page === 'form') { if(!window.isEditing){ resetForm(); } buildProg(); renderFStep(); window.isEditing=false; populateEmpSelect(); }
+  if(page === 'form') { if(!window.isEditing){ resetForm(); } buildProg(); renderFStep(); populateEmpSelect(); }
   // Proteção: páginas admin só para administradores
   if(page.indexOf('admin-')===0 && (!me || me.role!=='admin')){
     toast('Acesso restrito a administradores','err');
@@ -3993,7 +4005,8 @@ irParaForm = function(){
   document.getElementById('tbTitle').textContent = 'Nova Visita Técnica';
   document.getElementById('tbBread').innerHTML = 'Visitas / <b>Nova Visita</b>';
   document.getElementById('tbNovaBtn').style.display = 'none';
-  if(!window.isEditing){ resetForm(); } buildProg(); renderFStep(); window.isEditing=false;
+  if(!window.isEditing){ resetForm(); } buildProg(); renderFStep();
+  // NÃO zerar isEditing aqui — editV já define e saveVisita precisa dele
   populateEmpSelect();
   sbClose();
 };
