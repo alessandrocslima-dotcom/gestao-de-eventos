@@ -3934,12 +3934,12 @@ function sbGo(page, el) {
     sbGo('dash');
     return;
   }
-  if(page === 'admin-users')    { renderAdmin(); adTab('users'); }
-  if(page === 'admin-events')   { renderAdmin(); adTab('events'); }
-  if(page === 'admin-empresas') { renderAdmin(); adTab('empresas'); }
-  if(page === 'admin-secretarias') { renderAdmin(); adTab('secretarias'); }
-  if(page === 'admin-catalogo')    { renderAdmin(); adTab('catalogo'); }
-  if(page === 'admin-backup')      { renderAdmin(); adTab('backup'); }
+  if(page === 'admin-users')    { adTab('users'); }
+  if(page === 'admin-events')   { adTab('events'); }
+  if(page === 'admin-empresas') { adTab('empresas'); }
+  if(page === 'admin-secretarias') { adTab('secretarias'); }
+  if(page === 'admin-catalogo')    { adTab('catalogo'); }
+  if(page === 'admin-backup')      { adTab('backup'); }
   if(page === 'empresas-cad')   { renderEmpListCad(); }
   if(page === 'rel-visitas')    { renderRelVisitas(); }
 
@@ -4018,7 +4018,7 @@ irParaAdmin = function(){
   document.getElementById('tbTitle').textContent = 'Administração';
   document.getElementById('tbBread').innerHTML = 'Sistema / <b>Administração</b>';
   document.getElementById('tbNovaBtn').style.display = 'none';
-  renderAdmin();
+  adTab(curAdTab||'users');
   sbClose();
 };
 
