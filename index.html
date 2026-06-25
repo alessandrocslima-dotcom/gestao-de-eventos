@@ -3792,6 +3792,16 @@ if('serviceWorker' in navigator){
       <button class="ag-modal-x" onclick="agCloseModal()">&#x2715;</button>
     </div>
     <div class="ag-modal-body">
+      <!-- Importar de VT -->
+      <div style="background:#EFF6FF;border:1.5px solid #BFDBFE;border-radius:10px;padding:12px 14px;margin-bottom:14px">
+        <div style="font-size:11px;font-weight:700;color:#1E40AF;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">📋 Importar de Visita Técnica</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <select id="agEVisita" onchange="agEvtImportarVT()" style="flex:1;padding:8px 12px;border:1.5px solid #BFDBFE;border-radius:8px;font-size:13px;background:#fff;color:#0F172A;font-family:'Inter',sans-serif;outline:none">
+            <option value="">Selecionar visita técnica...</option>
+          </select>
+        </div>
+        <div style="font-size:11px;color:#3B82F6;margin-top:6px">Preenche automaticamente nome, data, horário, local e montagem</div>
+      </div>
       <div class="fld"><label>Nome do evento *</label><input type="text" id="agENome" placeholder="Ex: Inauguração da Praça Tiradentes"></div>
       <div class="row2">
         <div class="fld"><label>Data início *</label><input type="date" id="agEData"></div>
@@ -3824,9 +3834,7 @@ if('serviceWorker' in navigator){
       <div class="fld"><label>Nº oficial <span style="font-size:10px;color:#94A3B8;font-weight:400;text-transform:none">(após aprovação)</span></label>
         <input type="text" id="agENum" placeholder="Ex: EVT-2026-0047">
       </div>
-      <div class="fld"><label>Visita técnica vinculada</label>
-        <select id="agEVisita" onchange="agEvtImportarVT()"><option value="">Nenhuma</option></select>
-      </div>
+
 
       <!-- DEMANDA (opcional) -->
       <div class="fld">
@@ -7835,41 +7843,49 @@ window.orcVoltar = orcVoltar;
 /* ══ IMPORTAR DADOS DA VT PARA O EVENTO DA AGENDA (com confirmação) ══ */
 function agEvtImportarVT(){
   var vid = document.getElementById('agEVisita').value;
-  if(!vid) return; // não selecionou nada, ignora
+  if(!vid) return;
   var v = loadV().find(function(x){ return x.id===vid; });
   if(!v){ toast('Visita não encontrada','err'); return; }
 
-  // Verificar se há dados úteis pra importar
-  var temAlgo = v.nome || v.dataEvento || v.dataEventoFim || v.horaEvento || v.horaFim || v.local || v.end;
-  if(!temAlgo) return; // VT sem dados, não pergunta nada
+  // Importar campos do evento
+  if(v.nome)          document.getElementById('agENome').value     = v.nome;
+  if(v.dataEvento)    document.getElementById('agEData').value     = v.dataEvento;
+  if(v.dataEventoFim) document.getElementById('agEDataFim').value  = v.dataEventoFim;
+  if(v.horaEvento)    document.getElementById('agEHora').value     = v.horaEvento;
+  if(v.horaFim)       document.getElementById('agEHoraFim').value  = v.horaFim;
+  if(v.local)         document.getElementById('agELocal').value    = v.local;
+  else if(v.end)      document.getElementById('agELocal').value    = v.end;
+  if(v.dataMont)      document.getElementById('agEMontData').value = v.dataMont;
+  if(v.horaMont)      document.getElementById('agEMontHora').value = v.horaMont;
 
-  // Verificar se algum campo do evento já está preenchido (pra não sobrescrever sem avisar)
-  var nome = document.getElementById('agENome').value.trim();
-  var data = document.getElementById('agEData').value;
-  var dataFim = document.getElementById('agEDataFim').value;
-  var hora = document.getElementById('agEHora').value;
-  var horaFim = document.getElementById('agEHoraFim').value;
-  var local = document.getElementById('agELocal').value.trim();
-  var temPreenchido = nome || data || dataFim || hora || horaFim || local;
+  // Importar demanda da VT para a lista editável
+  var novosItens = [];
+  (v.eqItens||[]).forEach(function(it){
+    if(it.nome){
+      var nomeCompleto = it.nome + (it.medida ? ' ('+it.medida+')' : '');
+      novosItens.push({ nome: nomeCompleto, qtd: it.qtd||'' });
+    }
+  });
+  // Sonorização como item se preenchida
+  if(v.somTipo && v.somTipo !== 'Sem necessidade de sonorização'){
+    novosItens.push({ nome: v.somTipo, qtd: '1' });
+  }
+  // Equipe e serviços
+  (v.equipeItens||[]).forEach(function(it){
+    if(it.nome) novosItens.push({ nome: it.nome, qtd: it.qtd||'' });
+  });
 
-  var msg = temPreenchido
-    ? 'Importar os dados desta Visita Técnica?\n(Nome, datas, horários e local — vai substituir o que está preenchido)'
-    : 'Importar os dados desta Visita Técnica?\n(Nome, datas, horários e local)';
-
-  if(!confirm(msg)) return;
-
-  // Importar os campos
-  if(v.nome)         document.getElementById('agENome').value    = v.nome;
-  if(v.dataEvento)   document.getElementById('agEData').value    = v.dataEvento;
-  if(v.dataEventoFim)document.getElementById('agEDataFim').value = v.dataEventoFim;
-  if(v.horaEvento)   document.getElementById('agEHora').value    = v.horaEvento;
-  if(v.horaFim)      document.getElementById('agEHoraFim').value = v.horaFim;
-  if(v.local)        document.getElementById('agELocal').value   = v.local;
-  else if(v.end)     document.getElementById('agELocal').value   = v.end;
-  if(v.dataMont)     document.getElementById('agEMontData').value = v.dataMont;
-  if(v.horaMont)     document.getElementById('agEMontHora').value = v.horaMont;
-
-  toast('Dados da VT importados!','ok');
+  if(novosItens.length){
+    // Mesclar com itens já existentes (não sobrescreve, adiciona)
+    novosItens.forEach(function(novo){
+      var jaExiste = _agEDmItens.some(function(ex){ return ex.nome===novo.nome; });
+      if(!jaExiste) _agEDmItens.push(novo);
+    });
+    if(typeof agEDmRender==='function') agEDmRender();
+    toast('VT importada — '+novosItens.length+' itens adicionados à demanda!','ok');
+  } else {
+    toast('Dados do evento importados!','ok');
+  }
 }
 window.agEvtImportarVT = agEvtImportarVT;
 
