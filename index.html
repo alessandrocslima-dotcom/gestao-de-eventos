@@ -2841,8 +2841,7 @@ function envWA(){
     });
     if(som){
       // Remover prefixo "Sonorização" redundante se o valor já começa com ele
-      var somTxt = som.replace(/^Sonoriza[çc][aã]o\s*[:\-]?\s*/i, '');
-      m+='\nSonorização: '+somTxt+'\n';
+      m+='\nSonorização: '+som+'\n';
       if(det) m+=det+'\n';
     }
     m+='\n';
