@@ -258,15 +258,13 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 @keyframes mascote-pulsar{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
 @keyframes mascote-shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-5px)}40%{transform:translateX(5px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
 @keyframes mascote-balao{0%{opacity:0;transform:scale(0.7) translateY(8px)}100%{opacity:1;transform:scale(1) translateY(0)}}
-@keyframes mascote-cursor{0%,89%,100%{opacity:1}94%{opacity:0}}
 .mascote-wrap{display:flex;align-items:flex-end;gap:0;margin-bottom:1rem;min-height:180px;position:relative}
-.mascote-img{width:130px;flex-shrink:0;animation:mascote-entrar 0.9s cubic-bezier(0.34,1.56,0.64,1) both,mascote-flutuar 3s ease-in-out 1s infinite;filter:drop-shadow(0 6px 12px rgba(0,0,0,0.15));cursor:pointer}
+.mascote-img{width:150px;flex-shrink:0;animation:mascote-entrar 0.9s cubic-bezier(0.34,1.56,0.64,1) both,mascote-flutuar 3s ease-in-out 1s infinite;filter:drop-shadow(0 6px 16px rgba(0,0,0,0.15));cursor:pointer;mix-blend-mode:multiply}
 .mascote-balao{background:#fff;border:1.5px solid #BFDBFE;border-radius:14px;padding:12px 15px;margin-left:12px;margin-bottom:24px;animation:mascote-balao 0.5s cubic-bezier(0.34,1.56,0.64,1) 1s both;max-width:280px;position:relative;box-shadow:0 2px 8px rgba(37,99,235,0.08)}
 .mascote-balao::before{content:'';position:absolute;left:-11px;bottom:20px;border-top:9px solid transparent;border-bottom:9px solid transparent;border-right:11px solid #BFDBFE}
 .mascote-balao::after{content:'';position:absolute;left:-8px;bottom:21px;border-top:8px solid transparent;border-bottom:8px solid transparent;border-right:9px solid #fff}
 .mascote-titulo{font-size:13px;font-weight:700;color:#1A56DB;margin-bottom:4px}
 .mascote-texto{font-size:12px;color:#475569;line-height:1.6}
-.mascote-cursor{display:inline-block;width:2px;height:11px;background:#1A56DB;margin-left:1px;vertical-align:middle;animation:mascote-cursor 1.2s infinite}
 /* Dashboard grid */
 .dash-grid{display:grid;grid-template-columns:1fr 320px;gap:14px}
 @media(max-width:900px){.dash-grid{grid-template-columns:1fr}}
@@ -1069,10 +1067,10 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <!-- DASHBOARD -->
       <div class="vp on" id="vpDash">
         <div class="mascote-wrap" id="mascoteWrap">
-          <img class="mascote-img" id="mascoteImg" src="https://alessandrocslima-dotcom.github.io/gestao-de-eventos/produtor.png" alt="Produtor GEP" onclick="mascoteProximaDica()"/>
+          <img class="mascote-img" id="mascoteImg" src="https://alessandrocslima-dotcom.github.io/gestao-de-eventos/produtor.png?v=2" alt="Produtor GEP" onclick="mascoteProximaDica()"/>
           <div class="mascote-balao" id="mascoteBalao">
             <div class="mascote-titulo" id="mascoteTitulo">Seja bem-vindo!</div>
-            <div class="mascote-texto" id="mascoteTexto">Carregando...<span class="mascote-cursor"></span></div>
+            <div class="mascote-texto" id="mascoteTexto">Carregando...</div>
           </div>
         </div>
         <div class="pg-hdr">
@@ -2293,7 +2291,7 @@ function mascoteAtualizar(titulo, texto, cor, anim){
   if(!t||!tx||!img||!balao) return;
   t.style.color = cor||'#1A56DB';
   t.textContent = titulo;
-  tx.innerHTML = texto + '<span class="mascote-cursor" style="background:'+(cor||'#1A56DB')+'"></span>';
+  tx.innerHTML = texto;
   balao.style.animation = 'none'; void balao.offsetWidth;
   balao.style.animation = 'mascote-balao 0.45s cubic-bezier(0.34,1.56,0.64,1) both';
   img.style.animation = 'none'; void img.offsetWidth;
