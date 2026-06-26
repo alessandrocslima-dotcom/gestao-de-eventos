@@ -252,6 +252,21 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 .kpi-ico{position:absolute;right:10px;top:12px;opacity:.07}
 .kpi-ico svg{width:30px;height:30px;fill:none;stroke:#0F172A;stroke-width:1.4}
 
+/* Mascote animado */
+@keyframes mascote-entrar{0%{transform:translateX(-80px) scale(0.85);opacity:0}65%{transform:translateX(4px) scale(1.02);opacity:1}100%{transform:translateX(0) scale(1);opacity:1}}
+@keyframes mascote-flutuar{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes mascote-pulsar{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+@keyframes mascote-shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-5px)}40%{transform:translateX(5px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
+@keyframes mascote-balao{0%{opacity:0;transform:scale(0.7) translateY(8px)}100%{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes mascote-cursor{0%,89%,100%{opacity:1}94%{opacity:0}}
+.mascote-wrap{display:flex;align-items:flex-end;gap:0;margin-bottom:1rem;min-height:180px;position:relative}
+.mascote-img{width:130px;flex-shrink:0;animation:mascote-entrar 0.9s cubic-bezier(0.34,1.56,0.64,1) both,mascote-flutuar 3s ease-in-out 1s infinite;filter:drop-shadow(0 6px 12px rgba(0,0,0,0.15));cursor:pointer}
+.mascote-balao{background:#fff;border:1.5px solid #BFDBFE;border-radius:14px;padding:12px 15px;margin-left:12px;margin-bottom:24px;animation:mascote-balao 0.5s cubic-bezier(0.34,1.56,0.64,1) 1s both;max-width:280px;position:relative;box-shadow:0 2px 8px rgba(37,99,235,0.08)}
+.mascote-balao::before{content:'';position:absolute;left:-11px;bottom:20px;border-top:9px solid transparent;border-bottom:9px solid transparent;border-right:11px solid #BFDBFE}
+.mascote-balao::after{content:'';position:absolute;left:-8px;bottom:21px;border-top:8px solid transparent;border-bottom:8px solid transparent;border-right:9px solid #fff}
+.mascote-titulo{font-size:13px;font-weight:700;color:#1A56DB;margin-bottom:4px}
+.mascote-texto{font-size:12px;color:#475569;line-height:1.6}
+.mascote-cursor{display:inline-block;width:2px;height:11px;background:#1A56DB;margin-left:1px;vertical-align:middle;animation:mascote-cursor 1.2s infinite}
 /* Dashboard grid */
 .dash-grid{display:grid;grid-template-columns:1fr 320px;gap:14px}
 @media(max-width:900px){.dash-grid{grid-template-columns:1fr}}
@@ -1053,6 +1068,13 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 
       <!-- DASHBOARD -->
       <div class="vp on" id="vpDash">
+        <div class="mascote-wrap" id="mascoteWrap">
+          <img class="mascote-img" id="mascoteImg" src="https://alessandrocslima-dotcom.github.io/gestao-de-eventos/WhatsApp%20Image%202026-06-25%20at%2021.18.51.jpeg" alt="Produtor GEP" onclick="mascoteProximaDica()"/>
+          <div class="mascote-balao" id="mascoteBalao">
+            <div class="mascote-titulo" id="mascoteTitulo">Seja bem-vindo!</div>
+            <div class="mascote-texto" id="mascoteTexto">Carregando...<span class="mascote-cursor"></span></div>
+          </div>
+        </div>
         <div class="pg-hdr">
           <h1>Visitas Técnicas</h1>
           <p id="dGreet">Bem-vindo de volta</p>
@@ -2233,10 +2255,65 @@ function goTab(tab){
 }
 
 /* ── DASHBOARD ── */
+/* ══ MASCOTE ANIMADO ══ */
+var _mascoteDicas = [
+  {t:'Dica rápida!', txt:'Use <b>Importar de VT</b> ao criar evento na agenda para não redigitar os dados!', cor:'#065F46', anim:'pulsar'},
+  {t:'Sabia que...', txt:'O botão <b>WhatsApp</b> no card já monta a mensagem completa com endereço e demanda!', cor:'#1A56DB', anim:'flutuar'},
+  {t:'Dica de GPS!', txt:'Capture o GPS dentro da visita para gerar links de <b>Maps e Waze</b> automaticamente.', cor:'#0369A1', anim:'flutuar'},
+  {t:'Transferir!', txt:'Precisa passar a visita para outro produtor? Clique em <b>Transferir</b> no card!', cor:'#7C3AED', anim:'pulsar'},
+  {t:'Agenda!', txt:'Na Agenda de Eventos, clique em <b>Importar de VT</b> para trazer toda a demanda da visita.', cor:'#065F46', anim:'flutuar'}
+];
+var _mascoteDicaIdx = 0;
+
+function mascoteInit(){
+  var h = new Date().getHours();
+  var nome = me ? (me.nome||me.login||'produtor') : 'produtor';
+  var saudacao, txt, cor;
+  if(h >= 5 && h < 12){
+    saudacao = 'Bom dia, '+nome+'!';
+    txt = 'Novo dia, novos eventos! Veja as visitas registradas abaixo.';
+    cor = '#D97706';
+  } else if(h >= 12 && h < 18){
+    saudacao = 'Boa tarde, '+nome+'!';
+    txt = 'Tudo certo por aqui? Confira as visitas e a agenda de hoje.';
+    cor = '#1A56DB';
+  } else {
+    saudacao = 'Boa noite, '+nome+'!';
+    txt = 'Finalizando o dia? Não esqueça de sincronizar antes de fechar!';
+    cor = '#5B21B6';
+  }
+  mascoteAtualizar(saudacao, txt, cor, 'entrar');
+}
+
+function mascoteAtualizar(titulo, texto, cor, anim){
+  var t = document.getElementById('mascoteTitulo');
+  var tx = document.getElementById('mascoteTexto');
+  var img = document.getElementById('mascoteImg');
+  var balao = document.getElementById('mascoteBalao');
+  if(!t||!tx||!img||!balao) return;
+  t.style.color = cor||'#1A56DB';
+  t.textContent = titulo;
+  tx.innerHTML = texto + '<span class="mascote-cursor" style="background:'+(cor||'#1A56DB')+'"></span>';
+  balao.style.animation = 'none'; void balao.offsetWidth;
+  balao.style.animation = 'mascote-balao 0.45s cubic-bezier(0.34,1.56,0.64,1) both';
+  img.style.animation = 'none'; void img.offsetWidth;
+  if(anim==='shake')   img.style.animation='mascote-shake 0.5s ease, mascote-flutuar 3s ease-in-out 0.6s infinite';
+  else if(anim==='pulsar') img.style.animation='mascote-pulsar 0.5s ease 3, mascote-flutuar 3s ease-in-out 1.6s infinite';
+  else img.style.animation='mascote-flutuar 3s ease-in-out infinite';
+}
+
+function mascoteProximaDica(){
+  var d = _mascoteDicas[_mascoteDicaIdx % _mascoteDicas.length];
+  _mascoteDicaIdx++;
+  mascoteAtualizar(d.t, d.txt, d.cor, d.anim);
+}
+window.mascoteProximaDica = mascoteProximaDica;
+
 function renderDash(){
   var h = new Date().getHours();
   var greet = document.getElementById('dGreet');
   if(greet) greet.textContent = (h<12?'Bom dia':h<18?'Boa tarde':'Boa noite') + ', ' + (me?me.nome||me.login:'');
+  mascoteInit();
   // Tentar carregar da nuvem, fallback para local
   var all = loadV();
   // VISIBILIDADE: cada usuário vê só as visitas em que participa (admin vê todas)
