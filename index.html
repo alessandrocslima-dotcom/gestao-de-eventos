@@ -35,14 +35,9 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 ═══════════════════════════════════════════ */
 #pgLogin{
   min-height:100vh;flex-direction:column;align-items:center;justify-content:center;
-  padding:2rem 1.25rem;background:#060B18;
-  background-image:radial-gradient(ellipse 90% 55% at 50% 0%,rgba(29,75,186,.28) 0%,transparent 65%),
-    radial-gradient(ellipse 50% 45% at 90% 95%,rgba(124,58,237,.14) 0%,transparent 60%);
+  padding:0;background:#f5f7fc;
   position:relative;overflow:hidden;
 }
-#pgLogin::before{content:'';position:absolute;inset:0;pointer-events:none;
-  background-image:linear-gradient(rgba(30,45,69,.35) 1px,transparent 1px),linear-gradient(90deg,rgba(30,45,69,.35) 1px,transparent 1px);
-  background-size:48px 48px;}
 .login-wrap{width:100%;max-width:360px;position:relative;z-index:1}
 .login-icon-ring{width:80px;height:80px;margin:0 auto 1.25rem;position:relative;display:flex;align-items:center;justify-content:center}
 .login-icon-ring::before{content:'';position:absolute;inset:-3px;border-radius:22px;background:conic-gradient(from 0deg,#1A56DB,#7C3AED,#1A56DB);animation:spin 4s linear infinite}
@@ -1027,15 +1022,15 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 
 
 /* ══ LOGIN NOVO ══ */
-.ge-login-wrap{display:flex;min-height:100vh;background:var(--bg,#f5f7fc)}
-.ge-login-brand{flex:0 0 420px;background:radial-gradient(130% 120% at 80% 0%,#1e44a8 0%,#0f1c40 55%,#0a1430 100%);color:#fff;display:flex;flex-direction:column;padding:36px 40px;gap:20px;position:relative;overflow:hidden}
+.ge-login-wrap{display:flex;height:100vh;overflow:hidden;background:#f5f7fc}
+.ge-login-brand{flex:0 0 420px;background:radial-gradient(130% 120% at 80% 0%,#1e44a8 0%,#0f1c40 55%,#0a1430 100%);color:#fff;display:flex;flex-direction:column;padding:36px 40px;gap:16px;position:relative;overflow:hidden;height:100vh}
 @media(max-width:700px){.ge-login-brand{display:none}}
 .ge-drift{position:absolute;border-radius:50%;background:rgba(126,166,255,.35);animation:ge-drift 6s ease-in-out infinite}
 @keyframes ge-drift{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-14px) scale(1.1)}}
 .ge-login-mascot{flex:1;display:flex;align-items:center;justify-content:center}
 .ge-login-tagline{font-size:22px;font-weight:800;line-height:1.28}
 .ge-login-tagsub{margin-top:8px;font-size:13px;line-height:1.55;color:#aebfe6}
-.ge-login-form{flex:1;display:flex;flex-direction:column;justify-content:center;padding:44px 56px;background:#fff}
+.ge-login-form{flex:1;display:flex;flex-direction:column;justify-content:center;padding:44px 56px;background:#fff;height:100vh;overflow-y:auto}
 @media(max-width:700px){.ge-login-form{padding:32px 24px}}
 .ge-login-form-in{max-width:360px;width:100%;margin:0 auto}
 .ge-lh{font-size:24px;font-weight:800;color:#0f1b3d;font-family:'Plus Jakarta Sans',sans-serif}
