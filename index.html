@@ -1123,17 +1123,10 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       </div>
 
       <div class="ge-navsec" id="sbAdmGrp" style="display:none">Administração</div>
-      <a class="ge-navi sb-item" id="sbAdmItem" data-tip="Administração" onclick="sbToggleSub('sub-adm',this)" style="display:none">
+      <a class="ge-navi sb-item" id="sbAdmItem" data-tip="Administração" onclick="sbGo('admin-users',this)" style="display:none">
         <i class="ph ph-gear-six"></i><span>Administração</span>
       </a>
-      <div class="sb-sub" id="sub-adm" style="display:none;padding-left:14px">
-        <a class="ge-navi sb-item" style="font-size:12px;padding:7px 10px" onclick="sbGo('admin-users',this)"><i class="ph ph-arrow-right"></i><span>Usuários</span></a>
-        <a class="ge-navi sb-item" style="font-size:12px;padding:7px 10px" onclick="sbGo('admin-events',this)"><i class="ph ph-arrow-right"></i><span>Registros</span></a>
-        <a class="ge-navi sb-item" style="font-size:12px;padding:7px 10px" onclick="sbGo('admin-empresas',this)"><i class="ph ph-arrow-right"></i><span>Empresas</span></a>
-        <a class="ge-navi sb-item" style="font-size:12px;padding:7px 10px" onclick="sbGo('admin-secretarias',this)"><i class="ph ph-arrow-right"></i><span>Secretarias</span></a>
-        <a class="ge-navi sb-item" style="font-size:12px;padding:7px 10px" onclick="sbGo('admin-catalogo',this)"><i class="ph ph-arrow-right"></i><span>Catálogo</span></a>
-        <a class="ge-navi sb-item" style="font-size:12px;padding:7px 10px" onclick="sbGo('admin-backup',this)"><i class="ph ph-arrow-right"></i><span>Backup</span></a>
-      </div>
+      <div id="sub-adm" style="display:none"></div>
 
       <div class="ge-navsec">Conta</div>
       <a class="ge-navi sb-item" data-tip="Sincronizar" onclick="btnSincronizar()" id="btnSync">
@@ -4245,7 +4238,7 @@ function sbUpdateBadge(){
 
 /* Patch irParaDash/irParaForm/irParaAdmin para atualizar sidebar */
 var _origIrDash = irParaDash;
-irParaDash = function(){ sbGo('dash', document.querySelector('.sb-item[data-tip="Dashboard"]')); };
+irParaDash = function(){ sbGo('dash', document.querySelector('.sb-item[data-tip="Visitas Técnicas"]')); };
 
 var _origIrForm = irParaForm;
 irParaForm = function(){
@@ -4263,13 +4256,7 @@ irParaForm = function(){
 
 var _origIrAdmin = irParaAdmin;
 irParaAdmin = function(){
-  document.querySelectorAll('.vp').forEach(function(v){ v.classList.remove('on'); });
-  document.getElementById('vpAdmin').classList.add('on');
-  document.getElementById('tbTitle').textContent = 'Administração';
-  document.getElementById('tbBread').innerHTML = 'Sistema / <b>Administração</b>';
-  document.getElementById('tbNovaBtn').style.display = 'none';
-  adTab(curAdTab||'users');
-  sbClose();
+  sbGo('admin-users', document.getElementById('sbAdmItem'));
 };
 
 /* Patch doLogin */
