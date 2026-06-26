@@ -1025,6 +1025,31 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 
 .ge-cta{display:flex;align-items:center;gap:9px;padding:0 18px;height:42px;border:none;border-radius:12px;background:linear-gradient(145deg,#3b5bdb,#2f49c0);color:#fff;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 12px 24px -10px rgba(59,91,219,.8);white-space:nowrap}
 
+
+/* ══ LOGIN NOVO ══ */
+.ge-login-wrap{display:flex;min-height:100vh;background:var(--bg,#f5f7fc)}
+.ge-login-brand{flex:0 0 420px;background:radial-gradient(130% 120% at 80% 0%,#1e44a8 0%,#0f1c40 55%,#0a1430 100%);color:#fff;display:flex;flex-direction:column;padding:36px 40px;gap:20px;position:relative;overflow:hidden}
+@media(max-width:700px){.ge-login-brand{display:none}}
+.ge-drift{position:absolute;border-radius:50%;background:rgba(126,166,255,.35);animation:ge-drift 6s ease-in-out infinite}
+@keyframes ge-drift{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-14px) scale(1.1)}}
+.ge-login-mascot{flex:1;display:flex;align-items:center;justify-content:center}
+.ge-login-tagline{font-size:22px;font-weight:800;line-height:1.28}
+.ge-login-tagsub{margin-top:8px;font-size:13px;line-height:1.55;color:#aebfe6}
+.ge-login-form{flex:1;display:flex;flex-direction:column;justify-content:center;padding:44px 56px;background:#fff}
+@media(max-width:700px){.ge-login-form{padding:32px 24px}}
+.ge-login-form-in{max-width:360px;width:100%;margin:0 auto}
+.ge-lh{font-size:24px;font-weight:800;color:#0f1b3d;font-family:'Plus Jakarta Sans',sans-serif}
+.ge-lsub{font-size:13px;color:#7587ab;margin-top:6px}
+.ge-label{display:block;font-size:11px;font-weight:700;color:#5b6b86;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.ge-field{display:flex;align-items:center;gap:10px;border:1.5px solid #e9eef7;border-radius:12px;padding:10px 14px;background:#f8fafc;transition:border-color .2s}
+.ge-field:focus-within{border-color:#3b5bdb;background:#fff}
+.ge-field i{font-size:16px;color:#94a3b8;flex-shrink:0}
+.ge-inp{border:none;background:none;font-size:14px;color:#0f1b3d;outline:none;width:100%;font-family:inherit}
+.ge-inp::placeholder{color:#94a3b8}
+.ge-pbtn{width:100%;background:linear-gradient(145deg,#3b5bdb,#2f49c0);color:#fff;border:none;border-radius:12px;padding:13px;font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:24px;box-shadow:0 8px 20px -6px rgba(59,91,219,.6);cursor:pointer;font-family:inherit;transition:opacity .15s}
+.ge-pbtn:hover{opacity:.92}
+.ge-admin-note{display:flex;align-items:flex-start;gap:8px;margin-top:16px;padding:10px 12px;background:#f0f4ff;border-radius:10px;font-size:11px;color:#5b6b86;line-height:1.5}
+.ge-admin-note i{font-size:15px;color:#3b5bdb;flex-shrink:0;margin-top:1px}
 </style>
 </head>
 <body>
@@ -1040,31 +1065,55 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 
 <!-- LOGIN -->
 <div class="pg on" id="pgLogin">
-  <div class="login-wrap">
-    <div style="text-align:center;margin-bottom:2.5rem">
-      <div class="login-icon-ring"><div class="login-icon-inner">
-        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-      </div></div>
-      <div class="login-title">Gestão de Eventos <em>Pro</em></div>
-      <div class="login-sub">Visitas · Orçamentos · Eventos · Financeiro</div>
-    </div>
-    <div class="login-card">
-      <div class="login-card-title">Acesse o sistema</div>
-      <div class="err-msg" id="loginErr">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        Usuário ou senha inválidos.
+  <div class="ge-login-wrap">
+    <!-- LADO ESQUERDO: Brand + Mascote -->
+    <div class="ge-login-brand">
+      <span class="ge-drift" style="top:60px;left:46px;width:9px;height:9px"></span>
+      <span class="ge-drift" style="top:130px;right:54px;width:6px;height:6px;animation-delay:.8s"></span>
+      <span class="ge-drift" style="bottom:80px;left:60px;width:7px;height:7px;animation-delay:1.4s"></span>
+      <!-- Logo -->
+      <div style="position:relative;display:flex;align-items:center;gap:12px">
+        <span class="ge-logo"><i class="ph-fill ph-stack"></i></span>
+        <div><div class="ge-bname">Gestão de Eventos</div><div class="ge-bpro">PRO</div></div>
       </div>
-      <label class="lbl">Login</label>
-      <input type="text" class="linput" id="lUser" placeholder="seu.usuario" autocomplete="username">
-      <label class="lbl">Senha</label>
-      <input type="password" class="linput" id="lPass" placeholder="••••••" autocomplete="current-password">
-      <button class="btn-entrar" id="btnEntrar">Entrar</button>
-      <button class="btn-reset" id="btnReset">Redefinir sistema</button>
+      <!-- Mascote -->
+      <div class="ge-login-mascot">
+        <img src="https://alessandrocslima-dotcom.github.io/gestao-de-eventos/produtor.png" alt="Produtor GEP" style="height:200px;object-fit:contain;filter:drop-shadow(0 12px 24px rgba(0,0,0,.4))"/>
+      </div>
+      <!-- Tagline -->
+      <div style="position:relative">
+        <div class="ge-login-tagline">Seus eventos,<br>do orçamento ao palco.</div>
+        <div class="ge-login-tagsub">Visitas técnicas, agenda e orçamentos — tudo em um só lugar.</div>
+      </div>
     </div>
-    <div class="login-autor">
-      <div class="login-autor-label">Desenvolvido por</div>
-      <div class="login-autor-nome">Alessandro Lima</div>
-      <div class="login-autor-badge">© 2026 · Todos os direitos reservados</div>
+    <!-- LADO DIREITO: Formulário -->
+    <div class="ge-login-form">
+      <div class="ge-login-form-in">
+        <div class="ge-lh">Bem-vindo de volta</div>
+        <div class="ge-lsub">Entre para gerenciar suas visitas e eventos.</div>
+        <div class="err-msg" id="loginErr" style="margin:12px 0">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Usuário ou senha inválidos.
+        </div>
+        <div style="margin-top:24px">
+          <label class="ge-label">Usuário</label>
+          <div class="ge-field"><i class="ph ph-user"></i><input class="ge-inp" type="text" id="lUser" placeholder="seu.usuario" autocomplete="username"></div>
+        </div>
+        <div style="margin-top:16px">
+          <label class="ge-label">Senha</label>
+          <div class="ge-field"><i class="ph ph-lock-simple"></i><input class="ge-inp" id="lPass" type="password" placeholder="••••••••" autocomplete="current-password"></div>
+        </div>
+        <button class="ge-pbtn ge-enter" id="btnEntrar" onclick="doLogin()">
+          Entrar <i class="ph ph-arrow-right"></i>
+        </button>
+        <div class="ge-admin-note">
+          <i class="ph ph-shield-check"></i>
+          <div>Acesso restrito. As contas são criadas pelo administrador do sistema.</div>
+        </div>
+        <div style="text-align:center;margin-top:16px;font-size:11px;color:#94a3b8">
+          <button class="btn-reset" id="btnReset" style="background:none;border:none;color:#94a3b8;font-size:11px;cursor:pointer;text-decoration:underline">Redefinir sistema</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
