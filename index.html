@@ -2428,7 +2428,7 @@ function _dashEnviarWA(id){
       if(it.nome){ var d='* '+it.nome; if(it.qtd) d+=' - Qtd: '+it.qtd; m+=d+nl; }
     });
   }
-  if(v.somTipo) m += nl+'Sonoriza\u00e7\u00e3o: '+v.somTipo+nl;
+  if(v.somTipo) m += nl+'*SONORIZA\u00c7\u00c3O*'+nl+v.somTipo.replace(/^Sonoriza[\u00e7c][\u00e3a]o\s*[:\-]?\s*/i,'')+nl;
   if(v.obs) m += nl+'*RECOMENDA\u00c7\u00d5ES*'+nl+v.obs+nl;
   window.open('https://wa.me/?text='+encodeURIComponent(m),'_blank');
 }
@@ -2926,7 +2926,7 @@ function envWA(){
     });
     if(som){
       // Remover prefixo "Sonorização" redundante se o valor já começa com ele
-      m+='\nSonorização: '+som+'\n';
+      m+='\n*SONORIZA\u00c7\u00c3O*\n'+som.replace(/^Sonoriza[\u00e7c][\u00e3a]o\s*[:\-]?\s*/i,'')+"\n";
       if(det) m+=det+'\n';
     }
     m+='\n';
