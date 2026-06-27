@@ -1025,8 +1025,8 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 
 
 /* ══ LOGIN OPÇÃO B ══ */
-#pgLogin{width:100vw;height:100vh;padding:0;margin:0;position:fixed;top:0;left:0;z-index:100;overflow:hidden;display:flex!important;align-items:center;justify-content:center;background:radial-gradient(130% 120% at 80% 0%,#1e44a8 0%,#0f1c40 55%,#0a1430 100%)}
-.ge-login-wrap{width:100%;height:100%;display:flex;align-items:center;justify-content:center;position:relative;padding:24px}
+#pgLogin{position:fixed;top:0;left:0;width:100vw;height:100vh;padding:0;margin:0;overflow:hidden;align-items:center;justify-content:center;z-index:9999;background:radial-gradient(130% 120% at 80% 0%,#1e44a8 0%,#0f1c40 55%,#0a1430 100%)}
+.ge-login-wrap{width:100%;min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;padding:24px}
 .ge-drift{position:absolute;border-radius:50%;background:rgba(126,166,255,.3);pointer-events:none;animation:ge-drift 6s ease-in-out infinite}
 @keyframes ge-drift{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-16px) scale(1.12)}}
 .ge-login-card{display:flex;width:100%;max-width:900px;min-height:520px;border-radius:22px;overflow:hidden;box-shadow:0 40px 100px -30px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.08)}
@@ -1121,7 +1121,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 <div id="sbOverlay" onclick="sbClose()"></div>
 
 <!-- APP -->
-<div class="pg" id="pgApp">
+<div class="pg" id="pgApp" style="display:none">
 
   <!-- ═══ SIDEBAR ═══ -->
   <aside class="ge-sidebar" id="vtpSidebar">
@@ -2279,6 +2279,7 @@ function _aplicarLogin(found){
   document.getElementById('loginErr').classList.remove('on');
   document.getElementById('pgLogin').style.display = 'none';
   document.getElementById('pgLogin').classList.remove('on');
+  document.getElementById('pgLogin').classList.remove('on');
   document.getElementById('pgApp').style.display = 'flex';
   document.getElementById('uLabel').textContent = found.nome || found.login;
   var admEl = document.getElementById('sbAdmItem');
@@ -2341,6 +2342,7 @@ function doLogin(){
     me = found;
     err.classList.remove('on');
     document.getElementById('pgLogin').style.display = 'none';
+  document.getElementById('pgLogin').classList.remove('on');
     document.getElementById('pgLogin').classList.remove('on');
     document.getElementById('pgApp').style.display = 'flex';
     document.getElementById('uLabel').textContent = found.nome || found.login;
@@ -2369,6 +2371,7 @@ function doLogout(){
   if(!confirm('Deseja sair do sistema?')) return;
   me = null;
   document.getElementById('pgApp').style.display = 'none';
+  document.getElementById('pgApp').classList.remove('on');
   document.getElementById('pgLogin').classList.add('on');
   document.getElementById('pgLogin').style.display = 'flex';
   document.getElementById('lUser').value = '';
@@ -7583,6 +7586,7 @@ function _inatExpirar(){
   me = null;
   try{
     document.getElementById('pgApp').style.display = 'none';
+  document.getElementById('pgApp').classList.remove('on');
     var pl = document.getElementById('pgLogin');
     pl.classList.add('on');
     pl.style.display = 'flex';

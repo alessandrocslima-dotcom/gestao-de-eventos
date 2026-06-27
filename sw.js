@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'gep-v15-56';
+const CACHE_VERSION = 'gep-v15-56b';
 const CACHE_NAME = 'gestao-eventos-' + CACHE_VERSION;
 const ASSETS = ['./', './index.html'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting())); });
