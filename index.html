@@ -2491,11 +2491,11 @@ function _dashEnviarWA(id){
   var v = vs.find(function(x){ return x.id===id; });
   if(!v){ toast('Visita n\u00e3o encontrada','err'); return; }
   var nl = '\n';
-  var m = '*VISITA T\u00c9CNICA*' + nl;
-  m += '-----------------------------' + nl;
-  if(v.empresa) m += 'Empresa: '+v.empresa+nl;
-  m += 'Produtor: '+(v.produtor||'')+nl;
-  m += '-----------------------------' + nl + nl;
+  var m = '*VISITA T\u00c9CNICA*';
+  if(v.empresa) m += ' | ' + v.empresa;
+  m += nl;
+  if(v.produtor) m += 'Produtor: ' + v.produtor + nl;
+  m += nl;
   m += '*EVENTO*' + nl;
   if(v.nome) m += 'Nome: '+v.nome+nl;
   if(v.end||v.local) m += 'Endere\u00e7o: '+(v.end||v.local)+nl;
