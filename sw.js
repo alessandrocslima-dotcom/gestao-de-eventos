@@ -1,5 +1,5 @@
 /* Service Worker — Gestão de Eventos Pro */
-const CACHE_VERSION = 'gep-v15-68';
+const CACHE_VERSION = 'gep-v15-69';
 const CACHE_NAME = 'gestao-eventos-' + CACHE_VERSION;
 
 /* Instala e assume imediatamente — sem esperar fechar abas */
