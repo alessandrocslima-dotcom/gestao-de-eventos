@@ -34,11 +34,8 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
    LOGIN
 ═══════════════════════════════════════════ */
 #pgLogin{
-  min-height:100vh;flex-direction:column;align-items:center;justify-content:center;
-  padding:2rem 1.25rem;background:#060B18;
-  background-image:radial-gradient(ellipse 90% 55% at 50% 0%,rgba(29,75,186,.28) 0%,transparent 65%),
-    radial-gradient(ellipse 50% 45% at 90% 95%,rgba(124,58,237,.14) 0%,transparent 60%);
-  position:relative;overflow:hidden;
+  min-height:100vh; padding:0; background:transparent;
+  position:relative; overflow:hidden;
 }
 #pgLogin::before{content:'';position:absolute;inset:0;pointer-events:none;
   background-image:linear-gradient(rgba(30,45,69,.35) 1px,transparent 1px),linear-gradient(90deg,rgba(30,45,69,.35) 1px,transparent 1px);
@@ -59,8 +56,6 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
   html,body{ height:100%; }
   body{
     margin:0; min-height:100vh;
-    display:flex; align-items:center; justify-content:center;
-    padding:28px;
     font-family:'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     background:var(--navy-2);
     color:var(--ink);
@@ -68,9 +63,9 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 
   .gep-card{
     position:relative;
-    display:flex; width:100%; max-width:980px; min-height:560px;
-    background:#fff; border-radius:24px; overflow:hidden;
-    box-shadow:0 50px 110px -50px rgba(0,0,0,.7);
+    display:flex; width:100%; max-width:100%; min-height:100vh;
+    background:#fff; border-radius:0; overflow:hidden;
+    box-shadow:none;
   }
 
   /* ---------- Painel de marca (esquerda) ---------- */
@@ -117,7 +112,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 
   .gep-mascot{
     position:relative; margin-top:auto; align-self:center;
-    width:200px; height:215px;
+    width:280px; height:300px;
   }
   .gep-mascot .shadow{
     position:absolute; bottom:8px; left:50%; transform:translateX(-50%);
@@ -128,7 +123,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
   .gep-mascot .floater{ position:absolute; inset:0; animation:gep-float 4.8s ease-in-out infinite; }
   .gep-mascot img{
     position:absolute; bottom:0; left:50%; transform:translateX(-50%);
-    height:215px; width:auto; display:block;
+    height:300px; width:auto; display:block;
     filter:drop-shadow(0 16px 26px rgba(0,0,0,.45));
     -webkit-user-drag:none; user-select:none;
     animation:gep-breathe 3.5s ease-in-out infinite;
@@ -1258,10 +1253,10 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
         <p class="gep-sub">Entre com suas credenciais para continuar.</p>
 
         <div class="gep-group">
-          <label class="gep-label" for="gepName">Nome completo</label>
+          <label class="gep-label" for="gepName">Login</label>
           <div class="gep-field">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            <input id="gepName" type="text" placeholder="Ex.: Alessandro Lima" autocomplete="name">
+            <input id="gepName" type="text" placeholder="seu.usuario" autocomplete="name">
           </div>
         </div>
 
