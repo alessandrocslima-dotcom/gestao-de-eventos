@@ -5152,8 +5152,8 @@ function orcConfirmarImport(){
   sels.forEach(function(x){
     var it = x.it;
     orcAddItemRow(tbody, {
-      srv: it.cat||'',
-      desc: it.nome||(it.desc||''),
+      srv: '__CUSTOM__'+(it.nome||''),
+      desc: it.desc||'',
       qty: it.qtd||1,
       price: '',
       freq: 1,
