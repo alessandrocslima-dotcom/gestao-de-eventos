@@ -111,19 +111,20 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
   .gep-feat svg{ width:14px; height:14px; }
 
   .gep-mascot{
-    position:absolute; bottom:0; left:50%; transform:translateX(-50%);
-    width:340px; height:420px;
+    position:absolute; left:0; right:0; bottom:0;
+    height:440px; margin:0;
+    pointer-events:none; z-index:1;
   }
   .gep-mascot .shadow{
-    position:absolute; bottom:8px; left:50%; transform:translateX(-50%);
-    width:120px; height:18px; border-radius:50%;
+    position:absolute; bottom:6px; left:50%; transform:translateX(-50%);
+    width:150px; height:20px; border-radius:50%;
     background:radial-gradient(ellipse at center, rgba(0,0,0,.55), transparent 70%);
     animation:gep-shadow 4.6s ease-in-out infinite;
   }
   .gep-mascot .floater{ position:absolute; inset:0; animation:gep-float 4.8s ease-in-out infinite; }
   .gep-mascot img{
     position:absolute; bottom:0; left:50%; transform:translateX(-50%);
-    height:420px; width:auto; display:block;
+    height:440px; width:auto; display:block;
     filter:drop-shadow(0 16px 26px rgba(0,0,0,.45));
     -webkit-user-drag:none; user-select:none;
     animation:gep-breathe 3.5s ease-in-out infinite;
