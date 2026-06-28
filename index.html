@@ -4100,8 +4100,8 @@ window.openEmpModal=openEmpModal; window.closeEmpModal=closeEmpModal; window.sav
 /* Registro do Service Worker (PWA) */
 if('serviceWorker' in navigator){
   window.addEventListener('load', function(){
-    navigator.serviceWorker.register('sw.js').then(function(reg){
-      console.log('Service Worker registrado');
+    navigator.serviceWorker.register('/gestao-de-eventos/sw.js', { scope: '/gestao-de-eventos/' }).then(function(reg){
+      console.log('Service Worker registrado:', reg.scope);
     }).catch(function(err){
       console.log('SW não registrado:', err);
     });

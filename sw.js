@@ -1,13 +1,29 @@
-/* Service Worker — Gestão de Eventos Pro */
-const CACHE_VERSION = 'gep-v15-75';
+/* Service Worker — GEP Gestão de Eventos Pro */
+const CACHE_VERSION = 'gep-v15-76';
 const CACHE_NAME = 'gestao-eventos-' + CACHE_VERSION;
 
-/* Instala e assume imediatamente — sem esperar fechar abas */
+/* Arquivos essenciais para funcionar offline */
+const PRECACHE = [
+  '/gestao-de-eventos/',
+  '/gestao-de-eventos/index.html',
+  '/gestao-de-eventos/produtor.png',
+  '/gestao-de-eventos/manifest.json',
+  '/gestao-de-eventos/icons/icon-192.png',
+  '/gestao-de-eventos/icons/icon-512.png'
+];
+
+/* Instala e faz precache dos arquivos essenciais */
 self.addEventListener('install', function(event) {
-  self.skipWaiting();
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(function(cache) {
+      return cache.addAll(PRECACHE);
+    }).then(function() {
+      return self.skipWaiting();
+    })
+  );
 });
 
-/* Ao ativar: limpa caches antigos e avisa clientes que há versão nova */
+/* Ao ativar: limpa caches antigos e avisa clientes */
 self.addEventListener('activate', function(event) {
   event.waitUntil(
     caches.keys().then(function(keys) {
@@ -21,7 +37,6 @@ self.addEventListener('activate', function(event) {
     }).then(function() {
       return self.clients.claim();
     }).then(function() {
-      /* Avisa todas as abas abertas que a versão mudou */
       return self.clients.matchAll({ type: 'window' }).then(function(clients) {
         clients.forEach(function(client) {
           client.postMessage({ type: 'NEW_VERSION', version: CACHE_VERSION });
@@ -31,19 +46,23 @@ self.addEventListener('activate', function(event) {
   );
 });
 
-/* Estratégia: rede primeiro, cache como reserva */
+/* Estratégia: rede primeiro, cache como reserva (funciona offline) */
 self.addEventListener('fetch', function(event) {
   if (event.request.method !== 'GET') return;
 
   event.respondWith(
     fetch(event.request).then(function(response) {
-      const copy = response.clone();
-      caches.open(CACHE_NAME).then(function(cache) {
-        cache.put(event.request, copy);
-      });
+      if (response && response.status === 200) {
+        var copy = response.clone();
+        caches.open(CACHE_NAME).then(function(cache) {
+          cache.put(event.request, copy);
+        });
+      }
       return response;
     }).catch(function() {
-      return caches.match(event.request);
+      return caches.match(event.request).then(function(cached) {
+        return cached || caches.match('/gestao-de-eventos/index.html');
+      });
     })
   );
 });
