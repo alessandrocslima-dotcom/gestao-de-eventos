@@ -2504,8 +2504,8 @@ function _dashEnviarWA(id){
   if(v.gpsMain&&v.gpsMain.lat){
     var lat=parseFloat(v.gpsMain.lat).toFixed(5);
     var lng=parseFloat(v.gpsMain.lng).toFixed(5);
-    m += '📍 Maps: https://maps.google.com/?q='+lat+','+lng+nl;
-    m += '🚗 Waze: https://waze.com/ul?ll='+lat+','+lng+'&navigate=yes'+nl;
+    m += '🗺 https://maps.app.goo.gl?q='+lat+','+lng+nl;
+    m += '🚗 https://waze.com/ul?ll='+lat+','+lng+nl;
   } else if(v.linkLoc){
     m += 'Localiza\u00e7\u00e3o: '+v.linkLoc+nl;
   }
@@ -2971,8 +2971,8 @@ function envWA(){
   if(gps.main.lat){
     var _lat=parseFloat(gps.main.lat).toFixed(5);
     var _lng=parseFloat(gps.main.lng).toFixed(5);
-    m+='🗺 Maps: https://maps.google.com/?q='+_lat+','+_lng+'\n';
-    m+='🚗 Waze: https://waze.com/ul?ll='+_lat+','+_lng+'&navigate=yes\n';
+    m+='🗺 https://maps.app.goo.gl?q='+_lat+','+_lng+'\n';
+    m+='🚗 https://waze.com/ul?ll='+_lat+','+_lng+'\n';
   } else if(gv('fLinkLoc')){
     m+='🗺 Localiza\u00e7\u00e3o: '+gv('fLinkLoc')+'\\n';
   }
@@ -2984,8 +2984,8 @@ function envWA(){
     if(gps.r2.lat){
       var _r2lat=parseFloat(gps.r2.lat).toFixed(5);
       var _r2lng=parseFloat(gps.r2.lng).toFixed(5);
-      m+='🗺 Encontro Maps: https://maps.google.com/?q='+_r2lat+','+_r2lng+'\n';
-      m+='🚗 Encontro Waze: https://waze.com/ul?ll='+_r2lat+','+_r2lng+'&navigate=yes\n';
+      m+='🗺 Encontro: https://maps.app.goo.gl?q='+_r2lat+','+_r2lng+'\n';
+      m+='🚗 Encontro: https://waze.com/ul?ll='+_r2lat+','+_r2lng+'\n';
     }
   }
   m+='\n';
@@ -3713,6 +3713,28 @@ if('serviceWorker' in navigator){
       console.log('Service Worker registrado');
     }).catch(function(err){
       console.log('SW não registrado:', err);
+    });
+
+    /* Recebe aviso do SW quando há versão nova */
+    navigator.serviceWorker.addEventListener('message', function(event) {
+      if(event.data && event.data.type === 'NEW_VERSION') {
+        /* Mostra banner de atualização */
+        var existing = document.getElementById('swUpdateBanner');
+        if(existing) return;
+        var banner = document.createElement('div');
+        banner.id = 'swUpdateBanner';
+        banner.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:9999;'+
+          'background:#0f172a;color:#fff;padding:12px 20px;border-radius:12px;'+
+          'display:flex;align-items:center;gap:12px;font-family:"Inter",sans-serif;'+
+          'font-size:13px;box-shadow:0 8px 32px rgba(0,0,0,.35);white-space:nowrap;';
+        banner.innerHTML = '<span>🔄 Nova versão disponível!</span>'+
+          '<button onclick="window.location.reload()" style="background:#2563eb;color:#fff;'+
+          'border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:700;'+
+          'cursor:pointer;font-family:inherit;">Atualizar agora</button>'+
+          '<button onclick="this.parentNode.remove()" style="background:transparent;color:#94a3b8;'+
+          'border:none;cursor:pointer;font-size:16px;padding:0 4px;">✕</button>';
+        document.body.appendChild(banner);
+      }
     });
   });
 }
@@ -7885,7 +7907,7 @@ function agDmEnviarWA(){
     m += '🗺 Maps: ' + link + '\n';
     // Se o link for GPS capturado, adicionar Waze
     var matchCoords = link.match(/[?&]q=(-?[\d.]+),(-?[\d.]+)/);
-    if(matchCoords) m += '🚗 Waze: https://waze.com/ul?ll=' + matchCoords[1] + ',' + matchCoords[2] + '&navigate=yes\n';
+    if(matchCoords) m += '🚗 https://waze.com/ul?ll=' + matchCoords[1] + ',' + matchCoords[2] + '\n';
   }
 
   // === MONTAGEM (se houver) ===
