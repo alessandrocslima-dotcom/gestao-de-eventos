@@ -76,7 +76,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
     background:
       radial-gradient(130% 120% at 82% -10%, #224aa6 0%, rgba(34,74,166,0) 55%),
       linear-gradient(160deg, #16244b 0%, var(--navy) 45%, var(--navy-2) 100%);
-    display:flex; flex-direction:column;
+    display:flex; flex-direction:column; min-height:100vh;
   }
   /* grid sutil + glow */
   .gep-brand::before{
@@ -112,7 +112,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 
   .gep-mascot{
     position:relative; margin-top:auto; align-self:center;
-    width:280px; height:300px;
+    width:380px; height:400px;
   }
   .gep-mascot .shadow{
     position:absolute; bottom:8px; left:50%; transform:translateX(-50%);
@@ -123,7 +123,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
   .gep-mascot .floater{ position:absolute; inset:0; animation:gep-float 4.8s ease-in-out infinite; }
   .gep-mascot img{
     position:absolute; bottom:0; left:50%; transform:translateX(-50%);
-    height:300px; width:auto; display:block;
+    height:400px; width:auto; display:block;
     filter:drop-shadow(0 16px 26px rgba(0,0,0,.45));
     -webkit-user-drag:none; user-select:none;
     animation:gep-breathe 3.5s ease-in-out infinite;
