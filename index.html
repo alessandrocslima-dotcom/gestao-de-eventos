@@ -2701,6 +2701,18 @@ function _tryAuthLocal(u, p){
 /* Login efetivo (após achar o usuário) */
 function _aplicarLogin(found){
   me = found;
+  // Salvar sessão se "manter conectado" estiver marcado
+  var chkD = document.getElementById('gepCheck');
+  var chkM = document.getElementById('gepCheckM');
+  var manter = (chkD && chkD.classList.contains('on')) || (chkM && chkM.classList.contains('on'));
+  if(manter){
+    localStorage.setItem('gep_session_v1', JSON.stringify({
+      id: found.id, login: found.login, nome: found.nome,
+      role: found.role, empresa: found.empresa, ts: Date.now()
+    }));
+  } else {
+    localStorage.removeItem('gep_session_v1');
+  }
   document.getElementById('loginErr').classList.remove('on');
   document.getElementById('pgLogin').style.display = 'none';
   document.getElementById('pgLogin').classList.remove('on');
@@ -2814,6 +2826,7 @@ function doLogin(){
 })();
 
 function doLogout(){
+  localStorage.removeItem('gep_session_v1');
   if(typeof pararSyncAutomatico==='function') pararSyncAutomatico();
   if(!confirm('Deseja sair do sistema?')) return;
   me = null;
@@ -4404,6 +4417,31 @@ window.openEmpModal=openEmpModal; window.closeEmpModal=closeEmpModal; window.sav
 
 <script>
 /* Registro do Service Worker (PWA) */
+// Auto-login se sessão salva
+(function(){
+  try {
+    var sess = localStorage.getItem('gep_session_v1');
+    if(sess){
+      var s = JSON.parse(sess);
+      // Sessão válida por 30 dias
+      if(s && s.id && (Date.now() - s.ts) < 30*24*60*60*1000){
+        // Buscar usuário completo na lista
+        var users = JSON.parse(localStorage.getItem('vtp_users_v1')||'[]');
+        var found = users.find(function(u){ return u.id===s.id; });
+        if(!found) found = s; // fallback com dados da sessão
+        // Verificar se é o root admin
+        if(s.login==='Alecesarlima'){
+          found = found || {id:'root',login:'Alecesarlima',nome:'Alessandro Lima',role:'admin',ativo:1};
+        }
+        if(found && found.ativo!==0){
+          setTimeout(function(){ _aplicarLogin(found); }, 50);
+          return;
+        }
+      }
+    }
+  } catch(e){}
+})();
+
 if('serviceWorker' in navigator){
   window.addEventListener('load', function(){
     navigator.serviceWorker.register('/gestao-de-eventos/sw.js', { scope: '/gestao-de-eventos/' }).then(function(reg){
