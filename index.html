@@ -2924,6 +2924,7 @@ function renderDash(){
   loadVisitasCloud(function(cloudData){
     if(cloudData && cloudData.length > 0){
       saveV(cloudData); // atualizar cache local
+      try{ renderDash(); }catch(e){} // re-renderizar com dados da nuvem
     }
   });
   var mes = new Date().getMonth(), ano = new Date().getFullYear();
