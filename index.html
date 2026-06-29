@@ -9,9 +9,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>GEP — Gestão de Eventos Pro</title>
 <link rel="manifest" href="manifest.json">
-<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16.png">
-<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -4664,9 +4664,15 @@ irParaAdmin = function(){
 var _origDoLogin = doLogin;
 doLogin = function(){
   _origDoLogin();
-  // detectar user logado
-  var u = document.getElementById('lUser').value.trim();
-  var p = document.getElementById('lPass').value.trim();
+  // detectar user logado — compatível com novos IDs do designer
+  var uEl = document.getElementById('gepLoginM') && document.getElementById('gepLoginM').value.trim()
+    ? document.getElementById('gepLoginM')
+    : (document.getElementById('gepName') || document.getElementById('lUser'));
+  var pEl = document.getElementById('gepLoginM') && document.getElementById('gepLoginM').value.trim()
+    ? document.getElementById('gepPwdM')
+    : (document.getElementById('gepPwd') || document.getElementById('lPass'));
+  var u = uEl ? uEl.value.trim() : '';
+  var p = pEl ? pEl.value.trim() : '';
   var found = null;
   if(u==='Alecesarlima'&&p==='140117'){
     found={id:'root',login:'Alecesarlima',pass:'140117',nome:'Alessandro Lima',role:'admin',ativo:1};
