@@ -1,5 +1,5 @@
 /* Service Worker — GEP Gestão de Eventos Pro */
-const CACHE_VERSION = 'gep-v15-84';
+const CACHE_VERSION = 'gep-v15-85';
 const CACHE_NAME = 'gestao-eventos-' + CACHE_VERSION;
 
 const PRECACHE = [
@@ -7,8 +7,7 @@ const PRECACHE = [
   '/gestao-de-eventos/index.html',
   '/gestao-de-eventos/manifest.json',
   '/gestao-de-eventos/icon-192.png',
-  '/gestao-de-eventos/icon-512.png',
-  '/gestao-de-eventos/maskable-192.png'
+  '/gestao-de-eventos/icon-512.png'
 ];
 
 self.addEventListener('install', function(event) {
@@ -45,6 +44,7 @@ self.addEventListener('fetch', function(event) {
   if (event.request.method !== 'GET') return;
   if (event.request.url.indexOf('chrome-extension') !== -1) return;
   if (event.request.url.indexOf('googleapis.com') !== -1) return;
+  if (event.request.url.indexOf('firebaseapp') !== -1) return;
 
   event.respondWith(
     fetch(event.request).then(function(response) {
