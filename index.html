@@ -567,7 +567,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 .gep-m-banner{
   --gep-m-accent:#e07b2e;
   position:relative; display:flex; align-items:flex-start; gap:12px;
-  max-height:130px; overflow:hidden;
+  max-height:140px; overflow:visible;
   padding:13px 15px; border-radius:16px;
   background:radial-gradient(120% 160% at 92% -30%, #e6edff 0%, rgba(255,255,255,0) 55%),
              linear-gradient(135deg,#eef3ff 0%,#ffffff 70%);
@@ -575,9 +575,9 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
   font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;
   margin-bottom:14px;
 }
-.gep-m-mascot{ flex:0 0 auto; align-self:flex-end; width:84px; height:104px; cursor:pointer;
+.gep-m-mascot{ flex:0 0 auto; align-self:flex-end; width:90px; height:110px; cursor:pointer;
   -webkit-user-select:none; user-select:none; animation:gep-m-float 4.6s ease-in-out infinite; }
-.gep-m-mascot img{ display:block; width:100%; height:100%; object-fit:contain; object-position:bottom; -webkit-user-drag:none; }
+.gep-m-mascot img{ display:block; width:100%; height:100%; object-fit:contain; object-position:center bottom; -webkit-user-drag:none; }
 .gep-m-mascot.gep-m-hop{ animation:gep-m-hop .6s cubic-bezier(.34,1.56,.64,1); }
 .gep-m-content{ flex:1 1 auto; min-width:0; }
 .gep-m-top{ display:flex; align-items:center; gap:7px 9px; flex-wrap:wrap; margin-bottom:6px; }
@@ -2903,11 +2903,22 @@ function mascoteMobileUpdate(){
   var c = root.querySelector('#gepMCount');
   if(c && ep) c.textContent = ep.getAttribute('data-count')||'0';
   var mascot = document.getElementById('gepMMascot');
-  if(mascot){
+  if(mascot && !mascot._mobileListenerAdded){
+    mascot._mobileListenerAdded = true;
+    var mTips = [
+      'Você tem <b id="gepMCount">' + (document.getElementById('gepMCount')||{textContent:'0'}).textContent + '</b> visitas técnicas para hoje. Bora vistoriar?',
+      'Dica: registre a visita logo após a vistoria, com tudo fresquinho.',
+      'Precisa de um orçamento rápido? Acesse Orçamentos no menu.',
+      'Tudo sob controle por aqui. Bom trabalho, equipe!'
+    ];
+    var mTipIdx = 0;
     mascot.addEventListener('click', function(){
       mascot.classList.remove('gep-m-hop');
       void mascot.offsetWidth;
       mascot.classList.add('gep-m-hop');
+      mTipIdx = (mTipIdx + 1) % mTips.length;
+      var msg = document.querySelector('.gep-m-message');
+      if(msg) msg.innerHTML = mTips[mTipIdx];
     });
   }
 }
