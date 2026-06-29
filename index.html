@@ -2589,23 +2589,23 @@ function _aplicarLogin(found){
 }
 
 function doLogin(){
-  // Detecta qual campo tem valor preenchido (mobile ou desktop)
-  var desktopU = document.getElementById('gepName');
-  var mobileU  = document.getElementById('gepLoginM');
-  var desktopP = document.getElementById('gepPwd');
-  var mobileP  = document.getElementById('gepPwdM');
-  var uEl, pEl;
-  // Usa o campo que tiver valor, priorizando mobile se ambos tiverem
-  var mobileVal = mobileU ? mobileU.value.trim() : '';
-  var desktopVal = desktopU ? desktopU.value.trim() : '';
-  if(mobileVal){
-    uEl = mobileU; pEl = mobileP;
-  } else {
-    uEl = desktopU || document.getElementById('lUser');
-    pEl = desktopP || document.getElementById('lPass');
+  // Pega valor de qualquer campo visível
+  var ids = ['gepName','gepLoginM','lUser'];
+  var pids = ['gepPwd','gepPwdM','lPass'];
+  var u = '', p = '';
+  for(var i=0;i<ids.length;i++){
+    var el = document.getElementById(ids[i]);
+    if(el && el.value.trim()){ u = el.value.trim(); break; }
   }
-  var u = uEl ? uEl.value.trim() : '';
-  var p = pEl ? pEl.value.trim() : '';
+  for(var j=0;j<pids.length;j++){
+    var ep = document.getElementById(pids[j]);
+    if(ep && ep.value.trim()){ p = ep.value.trim(); break; }
+  }
+  // Sincronizar com lUser/lPass para o resto do código
+  var lu = document.getElementById('lUser');
+  var lp = document.getElementById('lPass');
+  if(lu) lu.value = u;
+  if(lp) lp.value = p;
   var err = document.getElementById('loginErr');
 
   // 1ª tentativa: validar localmente
