@@ -617,6 +617,19 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 @media (prefers-reduced-motion:reduce){
   .gep-mascot,.gep-badge .gep-dot{ animation:none; }
 }
+/* ===== AJUDA ===== */
+.ajuda-card{background:#fff;border:1px solid #e2e8f0;border-radius:14px;margin-bottom:10px;overflow:hidden;cursor:pointer;transition:box-shadow .2s}
+.ajuda-card:hover{box-shadow:0 4px 12px rgba(0,0,0,.08)}
+.ajuda-card-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;font-size:14px;font-weight:700;color:#0f1b3d}
+.ajuda-arr{font-size:18px;color:#94a3b8;transition:transform .2s}
+.ajuda-card.open .ajuda-arr{transform:rotate(90deg)}
+.ajuda-card-body{display:none;padding:0 16px 16px;border-top:1px solid #f1f5f9}
+.ajuda-card.open .ajuda-card-body{display:block}
+.ajuda-card-body p{font-size:13px;line-height:1.65;color:#475569;margin:12px 0 0}
+.ajuda-card-body b{color:#0f1b3d}
+.ajuda-tooltip{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:#eff6ff;border:1px solid #bfdbfe;color:#1a56db;font-size:12px;font-weight:700;cursor:pointer;margin-left:8px;flex-shrink:0;vertical-align:middle}
+.ajuda-tooltip:hover{background:#dbeafe}
+
 /* Dashboard grid */
 .dash-grid{display:grid;grid-template-columns:1fr 320px;gap:14px}
 @media(max-width:900px){.dash-grid{grid-template-columns:1fr}}
@@ -1364,7 +1377,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
           <div class="gep-foot-dev">Desenvolvido por</div>
           <div class="gep-foot-name">Alessandro Lima</div>
           <div class="gep-foot-copy">© 2026 · Todos os direitos reservados</div>
-          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · v15-67</div>
+          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-92</span></div>
         </div>
       </div>
     </div>
@@ -1428,7 +1441,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div class="d">Desenvolvido por</div>
       <div class="n">Alessandro Lima</div>
       <div class="c">© 2026 · Todos os direitos reservados</div>
-      <div class="v">GEP · Gestão de Eventos Pro · v15-67</div>
+      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-92</span></div>
     </div>
   </div>
 
@@ -1525,6 +1538,12 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
         <div class="sb-si" onclick="sbGo('admin-backup',this)"><div class="sb-sdot"></div><span class="sb-slbl">Backup</span></div>
       </div>
 
+      <!-- Ajuda -->
+      <div class="sb-grp">Suporte</div>
+      <div class="sb-item" data-tip="Central de Ajuda" onclick="sbGo('ajuda')">
+        <span class="sb-ico">📚</span><span class="sb-lbl">Ajuda</span>
+      </div>
+
       <!-- Sincronizar / Enviar / Sair -->
       <div class="sb-grp">Conta</div>
       <div class="sb-item" data-tip="Sincronizar com a nuvem" onclick="btnSincronizar()" id="btnSync">
@@ -1603,10 +1622,11 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
         </div>
 
         <div class="pg-hdr" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px">
-          <div>
+          <div style="display:flex;align-items:center">
             <h1>Visitas Técnicas</h1>
-            <p id="dGreet">Bem-vindo de volta</p>
+            <span class="ajuda-tooltip" onclick="abrirAjuda('vt')" title="Ajuda — Visitas Técnicas">?</span>
           </div>
+          <p id="dGreet">Bem-vindo de volta</p>
           <button id="btnMostrarOcultas" data-show="0" onclick="toggleOcultas()" style="display:none;font-size:11px;padding:5px 12px;border:1px solid #E2E8F0;border-radius:8px;background:#F8FAFC;color:#64748B;cursor:pointer;align-items:center;gap:5px">
             <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
             <span id="btnOcultasLabel">Ver ocultas</span>
@@ -1977,7 +1997,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
           <!-- Tabela de itens -->
           <div class="panel">
             <div class="panel-hdr">
-              <span class="panel-title">📋 Itens do orçamento</span>
+              <span class="panel-title">📋 Itens do orçamento <span class="ajuda-tooltip" onclick="abrirAjuda('orc')" title="Ajuda — Orçamentos">?</span></span>
               <div style="display:flex;gap:8px">
                 <button class="btn-outline-blue" style="width:auto;padding:6px 14px;margin:0" onclick="orcAbrirImportVT()">
                   <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Importar da VT
@@ -2044,7 +2064,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <!-- AGENDA DE EVENTOS -->
       <div class="vp" id="vpEventos">
         <div class="pg-hdr">
-          <h1>📅 Agenda de Eventos</h1>
+          <h1>📅 Agenda de Eventos <span class="ajuda-tooltip" onclick="abrirAjuda('agenda')" title="Ajuda — Agenda">?</span></h1>
           <p>Calendário visual de todos os eventos cadastrados</p>
         </div>
 
@@ -2311,6 +2331,79 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
     <div class="fld"><label>Observações</label><textarea id="eObs" placeholder="Informações adicionais..." style="min-height:60px"></textarea></div>
     <button class="btn-primary" onclick="saveEmp()">Salvar empresa</button>
   </div>
+</div>
+
+<!-- TELA DE AJUDA -->
+<div class="vp" id="vpAjuda" style="display:none">
+  <div class="pg-hdr">
+    <h1>📚 Central de Ajuda</h1>
+    <p>Tudo que você precisa saber para usar o GEP</p>
+  </div>
+
+  <!-- Primeiros passos -->
+  <div class="ajuda-card" onclick="ajudaToggle('ajuda-inicio')">
+    <div class="ajuda-card-hdr">
+      <span>🚀 Primeiros Passos</span><span class="ajuda-arr">›</span>
+    </div>
+    <div class="ajuda-card-body" id="ajuda-inicio">
+      <p><b>Como fazer login:</b><br>Na tela inicial, digite seu nome de usuário e senha. Sua conta é criada pelo administrador do sistema — se não tiver acesso, fale com Alessandro Lima.</p>
+      <p><b>Navegação:</b><br>Use o menu lateral (ícone ☰ no celular) para acessar os módulos: Visitas Técnicas, Orçamentos, Agenda e Relatórios.</p>
+      <p><b>Sincronização:</b><br>Seus dados ficam salvos na nuvem automaticamente. Para forçar uma atualização, acesse <b>Sincronizar</b> no menu.</p>
+    </div>
+  </div>
+
+  <!-- Visitas Técnicas -->
+  <div class="ajuda-card" onclick="ajudaToggle('ajuda-vt')">
+    <div class="ajuda-card-hdr">
+      <span>🗺 Visitas Técnicas</span><span class="ajuda-arr">›</span>
+    </div>
+    <div class="ajuda-card-body" id="ajuda-vt">
+      <p><b>O que é uma Visita Técnica?</b><br>É o registro da vistoria que você faz no local do evento antes da realização. Aqui você anota endereço, data, horário, demanda de equipamentos e muito mais.</p>
+      <p><b>Como criar uma nova visita:</b><br>1. Clique no botão <b>+ Nova Visita</b> no canto superior direito.<br>2. Preencha os dados do evento: nome, local, data e horário.<br>3. Adicione a GPS (localização) tocando em "Capturar localização".<br>4. Em <b>Demanda</b>, liste os equipamentos necessários.<br>5. Clique em <b>Salvar</b>.</p>
+      <p><b>Como enviar a visita pelo WhatsApp:</b><br>Nos cards de visita, clique em <b>WhatsApp</b>. O app monta a mensagem automaticamente com todos os detalhes e abre o WhatsApp para você escolher o destinatário.</p>
+      <p><b>Como transferir uma visita:</b><br>Clique em <b>Transferir</b> no card da visita para passar para outro produtor da equipe.</p>
+    </div>
+  </div>
+
+  <!-- Orçamentos -->
+  <div class="ajuda-card" onclick="ajudaToggle('ajuda-orc')">
+    <div class="ajuda-card-hdr">
+      <span>💰 Orçamentos</span><span class="ajuda-arr">›</span>
+    </div>
+    <div class="ajuda-card-body" id="ajuda-orc">
+      <p><b>O que é o módulo de Orçamentos?</b><br>Aqui você detalha os custos de cada evento — serviços, fornecedores, preços e condições de pagamento.</p>
+      <p><b>Como criar um orçamento:</b><br>1. Acesse <b>Orçamentos</b> no menu.<br>2. Selecione o evento desejado.<br>3. Clique em <b>+ Adicionar item</b> para incluir serviços manualmente.<br>4. Ou clique em <b>Importar da VT</b> para trazer automaticamente a demanda registrada na Visita Técnica.</p>
+      <p><b>Importar da VT:</b><br>Esta é a forma mais rápida! Clique em <b>Importar da VT</b>, selecione os itens da visita e clique em Confirmar. Os itens entram direto na coluna <b>Serviço</b>.</p>
+      <p><b>Como enviar cotação pelo WhatsApp:</b><br>Após preencher os itens, clique em <b>WA — Cotação</b> para enviar a lista de serviços para o fornecedor via WhatsApp.</p>
+    </div>
+  </div>
+
+  <!-- Agenda -->
+  <div class="ajuda-card" onclick="ajudaToggle('ajuda-agenda')">
+    <div class="ajuda-card-hdr">
+      <span>📅 Agenda de Eventos</span><span class="ajuda-arr">›</span>
+    </div>
+    <div class="ajuda-card-body" id="ajuda-agenda">
+      <p><b>O que é a Agenda?</b><br>É onde ficam registrados os eventos confirmados — com data, local, equipe, demanda e status de cada um.</p>
+      <p><b>Como agendar um evento:</b><br>1. Acesse <b>Agenda de Eventos</b> no menu.<br>2. Clique em <b>+ Novo Evento</b>.<br>3. Preencha as informações e salve.</p>
+      <p><b>Demanda do evento:</b><br>Dentro de cada evento agendado, você pode registrar a demanda de equipamentos e importar itens diretamente da Visita Técnica correspondente.</p>
+    </div>
+  </div>
+
+  <!-- Dúvidas -->
+  <div class="ajuda-card" onclick="ajudaToggle('ajuda-duvidas')">
+    <div class="ajuda-card-hdr">
+      <span>❓ Dúvidas Frequentes</span><span class="ajuda-arr">›</span>
+    </div>
+    <div class="ajuda-card-body" id="ajuda-duvidas">
+      <p><b>Meus dados somem se eu limpar o celular?</b><br>Não! Tudo fica salvo na nuvem. Basta fazer login novamente que seus dados voltam.</p>
+      <p><b>Posso usar em dois celulares?</b><br>Sim. Faça login com o mesmo usuário em qualquer dispositivo. Use <b>Sincronizar</b> para garantir que os dados estejam atualizados.</p>
+      <p><b>Como instalar o app no celular?</b><br>No Chrome, toque nos 3 pontinhos ⋮ e selecione <b>Adicionar à tela inicial</b>. O GEP vai aparecer como um app normal na sua tela.</p>
+      <p><b>Esqueci minha senha, o que faço?</b><br>Entre em contato com o administrador (Alessandro Lima) para redefinir sua senha.</p>
+      <p><b>Como registrar um evento como realizado?</b><br>Acesse <b>Eventos Realizados</b> no menu e registre o evento após sua conclusão.</p>
+    </div>
+  </div>
+
 </div>
 
 <script>
@@ -2801,6 +2894,7 @@ function goTab(tab){
   if(pg) pg.style.display = 'block';
   if(nt) nt.classList.add('on');
   window.scrollTo(0,0);
+  if(tab==='ajuda'){ var vp=document.getElementById('vpAjuda'); if(vp) vp.style.display=''; }
   if(tab==='dash') try{ renderDash(); }catch(e){}
   if(tab==='admin') try{ renderAdmin(); }catch(e){}
   if(tab==='form'){
@@ -2929,6 +3023,27 @@ function mascoteMobileUpdate(){
   }
 }
 window.mascoteMobileUpdate = mascoteMobileUpdate;
+
+/* ===== AJUDA ===== */
+function ajudaToggle(id){
+  var body = document.getElementById(id);
+  if(!body) return;
+  var card = body.closest('.ajuda-card');
+  card.classList.toggle('open');
+}
+function abrirAjuda(modulo){
+  sbGo('ajuda');
+  if(modulo){
+    setTimeout(function(){
+      var el = document.getElementById('ajuda-'+modulo);
+      if(el){
+        var card = el.closest('.ajuda-card');
+        card.classList.add('open');
+        card.scrollIntoView({behavior:'smooth',block:'start'});
+      }
+    }, 200);
+  }
+}
 
 function renderDash(){
   var h = new Date().getHours();
@@ -4328,6 +4443,12 @@ if('serviceWorker' in navigator){
     /* Recebe aviso do SW quando há versão nova */
     navigator.serviceWorker.addEventListener('message', function(event) {
       if(event.data && event.data.type === 'NEW_VERSION') {
+        // Atualizar versão na tela de login
+        var v = event.data.version || '';
+        ['appVer','appVer2'].forEach(function(id){
+          var el = document.getElementById(id);
+          if(el && v) el.textContent = v;
+        });
         /* Mostra banner de atualização */
         var existing = document.getElementById('swUpdateBanner');
         if(existing) return;
