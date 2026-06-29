@@ -41,6 +41,14 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
   background-image:linear-gradient(rgba(30,45,69,.35) 1px,transparent 1px),linear-gradient(90deg,rgba(30,45,69,.35) 1px,transparent 1px);
   background-size:48px 48px;}
 /* ===== LOGIN — designer v15-69 ===== */
+#pgLogin input:-webkit-autofill,
+#pgLogin input:-webkit-autofill:hover,
+#pgLogin input:-webkit-autofill:focus,
+#pgLogin input:-webkit-autofill:active{
+  -webkit-box-shadow:0 0 0px 1000px #1e2d54 inset !important;
+  -webkit-text-fill-color:#fff !important;
+  caret-color:#fff;
+}
 /* =====================================================================
      GEP — Gestão de Eventos Pro · Tela de Login
      HTML + CSS + JS puro. Autocontido. Imagem via src="produtor.png".
@@ -554,6 +562,37 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 }
 .gep-link:hover{ color:#2f49c0; }
 @keyframes gep-float{ 0%,100%{ transform:translateY(0) rotate(0); } 50%{ transform:translateY(-9px) rotate(-1.3deg); } }
+
+/* ===== GEP — Banner MOBILE (com mascote) ===== */
+.gep-m-banner{
+  --gep-m-accent:#e07b2e;
+  position:relative; display:flex; align-items:flex-start; gap:12px;
+  max-height:130px; overflow:hidden;
+  padding:13px 15px; border-radius:16px;
+  background:radial-gradient(120% 160% at 92% -30%, #e6edff 0%, rgba(255,255,255,0) 55%),
+             linear-gradient(135deg,#eef3ff 0%,#ffffff 70%);
+  border:1px solid #e6ecf8; box-shadow:0 12px 30px -22px rgba(15,27,61,.35);
+  font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;
+  margin-bottom:14px;
+}
+.gep-m-mascot{ flex:0 0 auto; align-self:flex-end; width:84px; height:104px; cursor:pointer;
+  -webkit-user-select:none; user-select:none; animation:gep-m-float 4.6s ease-in-out infinite; }
+.gep-m-mascot img{ display:block; width:100%; height:100%; object-fit:contain; object-position:bottom; -webkit-user-drag:none; }
+.gep-m-mascot.gep-m-hop{ animation:gep-m-hop .6s cubic-bezier(.34,1.56,.64,1); }
+.gep-m-content{ flex:1 1 auto; min-width:0; }
+.gep-m-top{ display:flex; align-items:center; gap:7px 9px; flex-wrap:wrap; margin-bottom:6px; }
+.gep-m-badge{ display:inline-flex; align-items:center; gap:6px; padding:4px 9px; border-radius:999px;
+  background:#e9faf0; border:1px solid #bbe9cc; font-size:10.5px; font-weight:700; color:#15803d; }
+.gep-m-dot{ width:6px; height:6px; border-radius:50%; background:#22c55e; animation:gep-m-pulse 2.4s ease-in-out infinite; }
+.gep-m-date{ font-size:11.5px; font-weight:600; color:#94a3b8; text-transform:capitalize; }
+.gep-m-greeting{ margin:0; font-size:18px; line-height:1.2; font-weight:800; color:#0f1b3d; letter-spacing:-.01em; }
+.gep-m-greeting b{ color:var(--gep-m-accent); font-weight:800; }
+.gep-m-message{ margin:4px 0 0; font-size:13px; line-height:1.4; color:#5b6b86;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+@keyframes gep-m-float{ 0%,100%{ transform:translateY(0) rotate(0);} 50%{ transform:translateY(-6px) rotate(-1.2deg);} }
+@keyframes gep-m-pulse{ 0%,100%{ box-shadow:0 0 0 0 rgba(34,197,94,.5);} 70%{ box-shadow:0 0 0 6px rgba(34,197,94,0);} }
+@keyframes gep-m-hop{ 0%{transform:translateY(0)} 30%{transform:translateY(-18px) rotate(-4deg)} 60%{transform:translateY(2px)} 100%{transform:translateY(0)} }
+@media (prefers-reduced-motion:reduce){ .gep-m-mascot,.gep-m-dot{ animation:none; } }
 @keyframes gep-pulse{ 0%,100%{ box-shadow:0 0 0 0 rgba(34,197,94,.5); } 70%{ box-shadow:0 0 0 6px rgba(34,197,94,0); } }
 @keyframes gep-hop{
   0%{ transform:translateY(0) rotate(0); }
@@ -561,6 +600,12 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
   55%{ transform:translateY(3px) rotate(2deg); }
   78%{ transform:translateY(-6px) rotate(-1deg); }
   100%{ transform:translateY(0) rotate(0); }
+}
+/* Banner mobile visível só no mobile, desktop só no desktop */
+.gep-m-banner{ display:none; }
+@media (max-width:640px){
+  .gep-banner{ display:none; }
+  .gep-m-banner{ display:flex; }
 }
 @media (max-width:560px){
   .gep-banner{ flex-direction:column; align-items:center; text-align:center; gap:6px; padding:24px 22px; }
@@ -1541,6 +1586,22 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
     <a class="gep-link" id="gepTip"><span>✨</span> Toque no mascote para a dica do dia</a>
   </div>
 </div>
+
+        <!-- Banner Mobile -->
+        <div class="gep-m-banner" id="gepBannerM">
+          <div class="gep-m-mascot" id="gepMMascot" title="Toque para a dica do dia">
+            <img src="produtor.png" alt="Mascote produtor de eventos do GEP">
+          </div>
+          <div class="gep-m-content">
+            <div class="gep-m-top">
+              <span class="gep-m-badge"><span class="gep-m-dot"></span>Disponível</span>
+              <span class="gep-m-date" id="gepMDate">Segunda-feira, 29 de junho</span>
+            </div>
+            <h2 class="gep-m-greeting"><span id="gepMGreet">Boa tarde</span>, <b id="gepMName">Alessandro</b>!</h2>
+            <p class="gep-m-message">Você tem <b id="gepMCount">0</b> visitas técnicas para hoje. Bora vistoriar?</p>
+          </div>
+        </div>
+
         <div class="pg-hdr">
           <h1>Visitas Técnicas</h1>
           <p id="dGreet">Bem-vindo de volta</p>
@@ -2826,11 +2887,35 @@ function mascoteUpdate(){
 }
 window.mascoteUpdate = mascoteUpdate;
 
+/* Banner mobile — sincronizar com o desktop */
+function mascoteMobileUpdate(){
+  var root = document.getElementById('gepBannerM');
+  if(!root) return;
+  var g = root.querySelector('#gepMGreet'); if(g) g.textContent = greeting();
+  var n = root.querySelector('#gepMName');
+  var ep = document.getElementById('epWelcome');
+  var fullName = ep ? (ep.getAttribute('data-user')||'Alessandro Lima') : 'Alessandro Lima';
+  if(n) n.textContent = fullName.split(/\s+/)[0];
+  var d = root.querySelector('#gepMDate'); if(d) d.textContent = dateLabel();
+  var c = root.querySelector('#gepMCount');
+  if(c && ep) c.textContent = ep.getAttribute('data-count')||'0';
+  var mascot = document.getElementById('gepMMascot');
+  if(mascot){
+    mascot.addEventListener('click', function(){
+      mascot.classList.remove('gep-m-hop');
+      void mascot.offsetWidth;
+      mascot.classList.add('gep-m-hop');
+    });
+  }
+}
+window.mascoteMobileUpdate = mascoteMobileUpdate;
+
 function renderDash(){
   var h = new Date().getHours();
   var greet = document.getElementById('dGreet');
   if(greet) greet.textContent = (h<12?'Bom dia':h<18?'Boa tarde':'Boa noite') + ', ' + (me?me.nome||me.login:'');
   mascoteUpdate();
+  if(typeof mascoteMobileUpdate==='function') mascoteMobileUpdate();
   // Tentar carregar da nuvem, fallback para local
   var all = loadV();
   // VISIBILIDADE: cada usuário vê só as visitas em que participa (admin vê todas)
