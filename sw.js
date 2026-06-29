@@ -1,14 +1,14 @@
 /* Service Worker — GEP Gestão de Eventos Pro */
-const CACHE_VERSION = 'gep-v15-79';
+const CACHE_VERSION = 'gep-v15-82';
 const CACHE_NAME = 'gestao-eventos-' + CACHE_VERSION;
 
 const PRECACHE = [
   '/gestao-de-eventos/',
   '/gestao-de-eventos/index.html',
   '/gestao-de-eventos/manifest.json',
-  '/gestao-de-eventos/icons/icon-192.png',
-  '/gestao-de-eventos/icons/icon-512.png',
-  '/gestao-de-eventos/icons/maskable-192.png'
+  '/gestao-de-eventos/icon-192.png',
+  '/gestao-de-eventos/icon-512.png',
+  '/gestao-de-eventos/maskable-192.png'
 ];
 
 self.addEventListener('install', function(event) {

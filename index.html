@@ -1221,6 +1221,8 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
   <button class="btn-instx" id="btnInstX"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
 </div>
 <div id="loginErr" style="display:none"></div>
+<input type="hidden" id="lUser">
+<input type="hidden" id="lPass">
 <div class="gep-card">
 
     <!-- ===================== MARCA ===================== -->
@@ -3912,6 +3914,27 @@ function setupListeners(){
 // Registrar listeners de múltiplas formas para garantir funcionamento
 document.addEventListener('DOMContentLoaded', setupListeners);
 window.addEventListener('load', setupListeners);
+// Sincronizar campos visíveis com campos hidden (compatibilidade)
+function syncLoginFields(){
+  var gn = document.getElementById('gepName');
+  var gp = document.getElementById('gepPwd');
+  var gm = document.getElementById('gepLoginM');
+  var gpm = document.getElementById('gepPwdM');
+  var lu = document.getElementById('lUser');
+  var lp = document.getElementById('lPass');
+  function sync(){
+    var u = (gm && gm.value.trim()) ? gm.value : (gn ? gn.value : '');
+    var p = (gm && gm.value.trim()) ? (gpm ? gpm.value : '') : (gp ? gp.value : '');
+    if(lu) lu.value = u;
+    if(lp) lp.value = p;
+  }
+  if(gn) gn.addEventListener('input', sync);
+  if(gp) gp.addEventListener('input', sync);
+  if(gm) gm.addEventListener('input', sync);
+  if(gpm) gpm.addEventListener('input', sync);
+}
+document.addEventListener('DOMContentLoaded', syncLoginFields);
+window.addEventListener('load', syncLoginFields);
 // Fallback imediato se DOM já carregou
 if(document.readyState === 'complete' || document.readyState === 'interactive'){
   setTimeout(setupListeners, 1);
