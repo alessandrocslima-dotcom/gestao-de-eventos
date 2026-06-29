@@ -834,12 +834,13 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 .toast.err{background:#DC2626}
 
 /* Install bar */
-.install-bar{display:none;align-items:center;gap:10px;background:#EFF6FF;
-  border-bottom:1px solid #BFDBFE;padding:10px 1rem;flex-shrink:0}
+.install-bar{display:none;align-items:center;gap:10px;background:#1A56DB;
+  padding:10px 1rem;position:fixed;top:0;left:0;right:0;z-index:99999;
+  box-shadow:0 2px 8px rgba(0,0,0,.3);}
 .install-bar.on{display:flex}
-.install-bar span{flex:1;font-size:12px;color:#1A56DB}
-.btn-inst{padding:6px 14px;background:#1A56DB;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer}
-.btn-instx{background:none;border:none;cursor:pointer;color:#1A56DB;display:flex;align-items:center;padding:2px}
+.install-bar span{flex:1;font-size:13px;font-weight:600;color:#fff}
+.btn-inst{padding:7px 16px;background:#fff;color:#1A56DB;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer}
+.btn-instx{background:none;border:none;cursor:pointer;color:#fff;display:flex;align-items:center;padding:2px}
 
 /* Páginas extras placeholder */
 .vp-placeholder{text-align:center;padding:4rem 1.5rem}
@@ -1213,13 +1214,14 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 <div class="toast" id="toast"></div>
 
 <!-- INSTALL BAR -->
-<!-- LOGIN -->
-<div class="pg on" id="pgLogin">
 <div class="install-bar" id="iBar">
-  <span>📲 Adicione à tela inicial para usar como app</span>
+  <span>📲 Instale o GEP como app</span>
   <button class="btn-inst" id="btnInst">Instalar</button>
   <button class="btn-instx" id="btnInstX"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
 </div>
+
+<!-- LOGIN -->
+<div class="pg on" id="pgLogin">
 <div id="loginErr" style="display:none"></div>
 <input type="hidden" id="lUser">
 <input type="hidden" id="lPass">
