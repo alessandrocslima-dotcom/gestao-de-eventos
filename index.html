@@ -76,26 +76,18 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
     box-shadow:none;
   }
 
-  /* ---------- Painel de marca (esquerda) ---------- */
+  /* ---------- Painel de marca (esquerda) — foto Rio ===== */
   .gep-brand{
-    position:relative; flex:0 0 48%;
+    position:relative; flex:0 0 44%;
     padding:42px 42px 0;
     color:#fff; overflow:hidden;
     background:
-      radial-gradient(130% 120% at 82% -10%, #224aa6 0%, rgba(34,74,166,0) 55%),
-      linear-gradient(160deg, #16244b 0%, var(--navy) 45%, var(--navy-2) 100%);
-    display:flex; flex-direction:column; min-height:100vh; position:relative;
+      linear-gradient(115deg, rgba(10,20,48,0.96) 0%, rgba(10,20,48,0.78) 38%, rgba(10,20,48,0.42) 72%, rgba(10,20,48,0.62) 100%),
+      linear-gradient(180deg, rgba(10,20,48,0.6) 0%, rgba(10,20,48,0.1) 32%, rgba(10,20,48,0) 58%, rgba(10,20,48,0.85) 100%),
+      url('rio-cristo.jpg');
+    background-size:cover; background-position:center right;
+    display:flex; flex-direction:column; min-height:100vh;
   }
-  /* grid sutil + glow */
-  .gep-brand::before{
-    content:""; position:absolute; inset:0;
-    background-image:linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
-                     linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
-    background-size:34px 34px; mask-image:radial-gradient(120% 90% at 50% 20%, #000 40%, transparent 80%);
-  }
-  .gep-glow{ position:absolute; border-radius:50%; filter:blur(8px); pointer-events:none; }
-  .gep-glow.a{ width:240px; height:240px; right:-70px; top:-60px; background:radial-gradient(circle, rgba(59,91,219,.45), transparent 65%); }
-  .gep-glow.b{ width:200px; height:200px; left:-60px; bottom:60px; background:radial-gradient(circle, rgba(224,123,46,.28), transparent 65%); }
 
   .gep-logo-row{ position:relative; display:flex; align-items:center; gap:13px; }
   .gep-logo{
@@ -119,7 +111,6 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
   .gep-feat svg{ width:14px; height:14px; }
 
   .gep-brand{ position:relative !important; overflow:hidden; }
-  .gep-skyline{ margin-top:auto; padding-top:16px; }
   #pgLogin .gep-mascot{
     position:absolute !important;
     left:0; right:0; bottom:0;
@@ -1287,9 +1278,6 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 
     <!-- ===================== MARCA ===================== -->
     <div class="gep-brand">
-      <span class="gep-glow a"></span>
-      <span class="gep-glow b"></span>
-
       <div class="gep-logo-row">
         <span class="gep-logo">
           <svg viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M128 24l96 52-96 52-96-52 96-52z" fill="#fff"/><path d="M40 124l88 48 88-48" stroke="#fff" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/><path d="M40 168l88 48 88-48" stroke="#fff" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" opacity=".75"/></svg>
@@ -1311,22 +1299,6 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
         <div class="gep-feat"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></i> Relatórios financeiros</div>
       </div>
 
-      <div class="gep-skyline">
-        <svg viewBox="0 0 320 120" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:100%">
-          <rect x="10" y="60" width="30" height="60" fill="white" opacity=".15"/>
-          <rect x="20" y="40" width="10" height="20" fill="white" opacity=".15"/>
-          <rect x="50" y="45" width="40" height="75" fill="white" opacity=".15"/>
-          <rect x="60" y="30" width="20" height="15" fill="white" opacity=".15"/>
-          <rect x="100" y="55" width="25" height="65" fill="white" opacity=".15"/>
-          <rect x="135" y="35" width="50" height="85" fill="white" opacity=".15"/>
-          <rect x="148" y="20" width="24" height="15" fill="white" opacity=".15"/>
-          <rect x="155" y="10" width="10" height="10" fill="white" opacity=".15"/>
-          <rect x="195" y="50" width="35" height="70" fill="white" opacity=".15"/>
-          <rect x="240" y="65" width="28" height="55" fill="white" opacity=".15"/>
-          <rect x="278" y="45" width="32" height="75" fill="white" opacity=".15"/>
-          <rect x="0" y="118" width="320" height="2" fill="white" opacity=".15"/>
-        </svg>
-      </div>
     </div>
 
     <!-- ===================== FORMULÁRIO ===================== -->
