@@ -2278,63 +2278,8 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
         <div id="relVisitasList"></div>
       </div>
 
-      <div class="vp" id="vpRelEventos">
-        <div class="vp-placeholder">
-          <div class="vp-ico">📅</div>
-          <h2>Relatório de Eventos</h2>
-          <p>Relatório consolidado dos eventos atendidos. Em breve disponível.</p>
-          <div class="vp-badge">🚀 Em desenvolvimento</div>
-        </div>
-      </div>
-
-      <div class="vp" id="vpExportacoes">
-        <div class="pg-hdr"><h1>📤 Exportações</h1><p>Exporte os dados do sistema</p></div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px">
-          <div onclick="exportCSV()" style="background:#fff;border:1.5px solid #E2E8F0;border-radius:14px;padding:20px;cursor:pointer;transition:all .15s;text-align:center" onmouseover="this.style.borderColor='#BFDBFE'" onmouseout="this.style.borderColor='#E2E8F0'">
-            <div style="font-size:32px;margin-bottom:8px">📊</div>
-            <div style="font-size:13px;font-weight:700;color:#0F172A">Visitas — CSV</div>
-            <div style="font-size:11px;color:#64748B;margin-top:4px">Exportar todas as visitas</div>
-          </div>
-          <div onclick="exportJSON()" style="background:#fff;border:1.5px solid #E2E8F0;border-radius:14px;padding:20px;cursor:pointer;transition:all .15s;text-align:center" onmouseover="this.style.borderColor='#BFDBFE'" onmouseout="this.style.borderColor='#E2E8F0'">
-            <div style="font-size:32px;margin-bottom:8px">🗂</div>
-            <div style="font-size:13px;font-weight:700;color:#0F172A">Backup — JSON</div>
-            <div style="font-size:11px;color:#64748B;margin-top:4px">Backup completo do sistema</div>
-          </div>
-        </div>
-      </div>
-
-    </div><!-- /vtpContent -->
-  </div><!-- /vtpMain -->
-</div><!-- /pgApp -->
-
-<!-- MODAIS originais -->
-<div class="modal-ov" id="modalOv">
-  <div class="modal">
-    <div class="modal-title"><span id="modalTit">Novo usuário</span><button class="modal-x" onclick="closeModal()"><svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
-    <div class="fld"><label>Login</label><input type="text" id="mLogin" placeholder="nome.usuario" autocomplete="off"></div>
-    <div class="fld"><label>Senha</label><input type="password" id="mSenha" placeholder="Mínimo 4 caracteres" autocomplete="new-password"></div>
-    <div class="fld"><label>Nome completo</label><input type="text" id="mNome" placeholder="Nome exibido no sistema"></div>
-    <div class="fld"><label>Perfil</label><select id="mRole"><option value="user">Usuário</option><option value="admin">Administrador</option></select></div>
-    <div class="fld"><label>Situação</label><select id="mAtivo"><option value="1">Ativo</option><option value="0">Inativo</option></select></div>
-    <button class="btn-primary" onclick="saveUser()">Salvar usuário</button>
-  </div>
-</div>
-<div class="modal-ov" id="modalEmpOv">
-  <div class="modal-emp">
-    <div class="modal-title"><span id="modalEmpTit">Nova empresa</span><button class="modal-x" onclick="closeEmpModal()"><svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
-    <div class="fld"><label>Nome fantasia</label><input type="text" id="eNomeFant" placeholder="Nome como é conhecido"></div>
-    <div class="fld"><label>Razão social</label><input type="text" id="eRazao" placeholder="Razão social completa"></div>
-    <div class="fld"><label>CNPJ</label><input type="text" id="eCNPJ" placeholder="00.000.000/0001-00"></div>
-    <div class="fld"><label>Telefone</label><input type="tel" id="eTel" placeholder="(00) 00000-0000"></div>
-    <div class="fld"><label>Responsável</label><input type="text" id="eResp" placeholder="Nome do responsável"></div>
-    <div class="fld"><label>E-mail</label><input type="email" id="eEmail" placeholder="contato@empresa.com"></div>
-    <div class="fld"><label>Observações</label><textarea id="eObs" placeholder="Informações adicionais..." style="min-height:60px"></textarea></div>
-    <button class="btn-primary" onclick="saveEmp()">Salvar empresa</button>
-  </div>
-</div>
-
 <!-- TELA DE AJUDA -->
-<div class="vp" id="vpAjuda" style="display:none">
+<div class="vp" id="vpAjuda" >
   <div class="pg-hdr">
     <h1>📚 Central de Ajuda</h1>
     <p>Tudo que você precisa saber para usar o GEP</p>
@@ -2405,6 +2350,63 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
   </div>
 
 </div>
+
+
+      <div class="vp" id="vpRelEventos">
+        <div class="vp-placeholder">
+          <div class="vp-ico">📅</div>
+          <h2>Relatório de Eventos</h2>
+          <p>Relatório consolidado dos eventos atendidos. Em breve disponível.</p>
+          <div class="vp-badge">🚀 Em desenvolvimento</div>
+        </div>
+      </div>
+
+      <div class="vp" id="vpExportacoes">
+        <div class="pg-hdr"><h1>📤 Exportações</h1><p>Exporte os dados do sistema</p></div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px">
+          <div onclick="exportCSV()" style="background:#fff;border:1.5px solid #E2E8F0;border-radius:14px;padding:20px;cursor:pointer;transition:all .15s;text-align:center" onmouseover="this.style.borderColor='#BFDBFE'" onmouseout="this.style.borderColor='#E2E8F0'">
+            <div style="font-size:32px;margin-bottom:8px">📊</div>
+            <div style="font-size:13px;font-weight:700;color:#0F172A">Visitas — CSV</div>
+            <div style="font-size:11px;color:#64748B;margin-top:4px">Exportar todas as visitas</div>
+          </div>
+          <div onclick="exportJSON()" style="background:#fff;border:1.5px solid #E2E8F0;border-radius:14px;padding:20px;cursor:pointer;transition:all .15s;text-align:center" onmouseover="this.style.borderColor='#BFDBFE'" onmouseout="this.style.borderColor='#E2E8F0'">
+            <div style="font-size:32px;margin-bottom:8px">🗂</div>
+            <div style="font-size:13px;font-weight:700;color:#0F172A">Backup — JSON</div>
+            <div style="font-size:11px;color:#64748B;margin-top:4px">Backup completo do sistema</div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /vtpContent -->
+  </div><!-- /vtpMain -->
+</div><!-- /pgApp -->
+
+<!-- MODAIS originais -->
+<div class="modal-ov" id="modalOv">
+  <div class="modal">
+    <div class="modal-title"><span id="modalTit">Novo usuário</span><button class="modal-x" onclick="closeModal()"><svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+    <div class="fld"><label>Login</label><input type="text" id="mLogin" placeholder="nome.usuario" autocomplete="off"></div>
+    <div class="fld"><label>Senha</label><input type="password" id="mSenha" placeholder="Mínimo 4 caracteres" autocomplete="new-password"></div>
+    <div class="fld"><label>Nome completo</label><input type="text" id="mNome" placeholder="Nome exibido no sistema"></div>
+    <div class="fld"><label>Perfil</label><select id="mRole"><option value="user">Usuário</option><option value="admin">Administrador</option></select></div>
+    <div class="fld"><label>Situação</label><select id="mAtivo"><option value="1">Ativo</option><option value="0">Inativo</option></select></div>
+    <button class="btn-primary" onclick="saveUser()">Salvar usuário</button>
+  </div>
+</div>
+<div class="modal-ov" id="modalEmpOv">
+  <div class="modal-emp">
+    <div class="modal-title"><span id="modalEmpTit">Nova empresa</span><button class="modal-x" onclick="closeEmpModal()"><svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+    <div class="fld"><label>Nome fantasia</label><input type="text" id="eNomeFant" placeholder="Nome como é conhecido"></div>
+    <div class="fld"><label>Razão social</label><input type="text" id="eRazao" placeholder="Razão social completa"></div>
+    <div class="fld"><label>CNPJ</label><input type="text" id="eCNPJ" placeholder="00.000.000/0001-00"></div>
+    <div class="fld"><label>Telefone</label><input type="tel" id="eTel" placeholder="(00) 00000-0000"></div>
+    <div class="fld"><label>Responsável</label><input type="text" id="eResp" placeholder="Nome do responsável"></div>
+    <div class="fld"><label>E-mail</label><input type="email" id="eEmail" placeholder="contato@empresa.com"></div>
+    <div class="fld"><label>Observações</label><textarea id="eObs" placeholder="Informações adicionais..." style="min-height:60px"></textarea></div>
+    <button class="btn-primary" onclick="saveEmp()">Salvar empresa</button>
+  </div>
+</div>
+
 
 <script>
 /* ── FIREBASE CONFIG ── */
@@ -2875,7 +2877,7 @@ function resetSys(){
 /* ── NAVEGAÇÃO ABAS ── */
 function goTab(tab){
   // Esconder todas as páginas
-  var allPgs = ['tpDash','tpForm','tpAdmin','vpAjuda'];
+  var allPgs = ['vpDash','vpForm','vpAdmin','vpOrcamentos','vpEventos','vpRealizados','vpEmpresasCad','vpProdutores','vpFornecedores','vpSecretarias','vpRelVisitas','vpRelEventos','vpExportacoes','vpAjuda'];
   allPgs.forEach(function(id){
     var el = document.getElementById(id);
     if(el) el.style.display = 'none';
@@ -2887,7 +2889,7 @@ function goTab(tab){
     if(el) el.classList.remove('on');
   });
   // Mostrar página selecionada
-  var pageMap = { dash:'tpDash', form:'tpForm', admin:'tpAdmin', ajuda:'vpAjuda' };
+  var pageMap = { dash:'vpDash', form:'vpForm', admin:'vpAdmin', ajuda:'vpAjuda' };
   var tabMap  = { dash:'ntDash', form:'ntForm', admin:'ntAdmin' };
   var pg = document.getElementById(pageMap[tab]);
   var nt = document.getElementById(tabMap[tab]);
