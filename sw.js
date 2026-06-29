@@ -1,5 +1,5 @@
 /* Service Worker — GEP Gestão de Eventos Pro */
-const CACHE_VERSION = 'gep-v15-76';
+const CACHE_VERSION = 'gep-v15-77';
 const CACHE_NAME = 'gestao-eventos-' + CACHE_VERSION;
 
 /* Arquivos essenciais para funcionar offline */
