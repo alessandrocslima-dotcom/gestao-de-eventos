@@ -1602,9 +1602,15 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
           </div>
         </div>
 
-        <div class="pg-hdr">
-          <h1>Visitas Técnicas</h1>
-          <p id="dGreet">Bem-vindo de volta</p>
+        <div class="pg-hdr" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px">
+          <div>
+            <h1>Visitas Técnicas</h1>
+            <p id="dGreet">Bem-vindo de volta</p>
+          </div>
+          <button id="btnMostrarOcultas" data-show="0" onclick="toggleOcultas()" style="display:none;font-size:11px;padding:5px 12px;border:1px solid #E2E8F0;border-radius:8px;background:#F8FAFC;color:#64748B;cursor:pointer;align-items:center;gap:5px">
+            <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <span id="btnOcultasLabel">Ver ocultas</span>
+          </button>
         </div>
         <div id="eList"></div>
       </div>
@@ -2946,6 +2952,18 @@ function renderDash(){
   all.forEach(function(v){ if(v.dataEvento){ var d=new Date(v.dataEvento+'T12:00'); if(d.getMonth()===mes&&d.getFullYear()===ano) mesCont++; } });
   var emps = {}, prods = {};
   all.forEach(function(v){ if(v.empresa) emps[v.empresa]=1; if(v.produtor) prods[v.produtor]=1; });
+  // Filtrar visitas ocultas pelo admin
+  var SK_OCULTAS = 'gep_ocultas_v1';
+  var ocultas = JSON.parse(localStorage.getItem(SK_OCULTAS)||'[]');
+  var mostrarOcultas = document.getElementById('btnMostrarOcultas') && document.getElementById('btnMostrarOcultas').dataset.show === '1';
+  if(!mostrarOcultas){
+    all = all.filter(function(v){ return ocultas.indexOf(v.id) === -1; });
+  }
+  // Mostrar botão Ver ocultas se admin e tiver ocultas
+  var btnOc = document.getElementById('btnMostrarOcultas');
+  if(btnOc && me && me.role==='admin'){
+    btnOc.style.display = ocultas.length ? 'flex' : 'none';
+  }
   var el = document.getElementById('eList');
   if(!all.length){
     el.innerHTML = '<div class="empty"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><p>Nenhuma visita registrada</p><small>Crie a sua primeira visita técnica</small></div>';
@@ -2995,7 +3013,17 @@ function renderDash(){
     html += '<button style="font-size:11px;padding:5px 10px;border:1px solid #86EFAC;border-radius:7px;background:#F0FDF4;color:#15803D;cursor:pointer;display:flex;align-items:center;gap:4px" data-id="'+v.id+'" data-act="wa"><svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>WhatsApp</button>';
     html += '<button style="font-size:11px;padding:5px 10px;border:1px solid #C7D2FE;border-radius:7px;background:#EEF2FF;color:#4338CA;cursor:pointer;display:flex;align-items:center;gap:4px" data-id="'+v.id+'" data-act="equipe"><svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Transferir</button>';
     html += '<button style="font-size:11px;padding:5px 10px;border:1px solid #BFDBFE;border-radius:7px;background:#EFF6FF;color:#1A56DB;cursor:pointer;display:flex;align-items:center;gap:4px" data-id="'+v.id+'" data-act="edit"><svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Editar</button>';
-    html += '<button style="font-size:11px;padding:5px 10px;border:1px solid #FCA5A5;border-radius:7px;background:#FEF2F2;color:#DC2626;cursor:pointer;display:flex;align-items:center;gap:4px" data-id="'+v.id+'" data-act="del"><svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>Excluir</button>';
+    // Botão Excluir: só aparece se for o dono ou se for admin e a visita for dele
+    var isOwner = me && (v.produtorId === me.id || v.produtor === me.nome || v.produtor === me.login);
+    var isAdmin = me && me.role === 'admin';
+    if(isOwner){
+      html += '<button style="font-size:11px;padding:5px 10px;border:1px solid #FCA5A5;border-radius:7px;background:#FEF2F2;color:#DC2626;cursor:pointer;display:flex;align-items:center;gap:4px" data-id="'+v.id+'" data-act="del"><svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>Excluir</button>';
+    }
+    // Botão Ocultar: só para admin em visitas de outros
+    if(isAdmin && !isOwner){
+      var jaOculta = ocultas.indexOf(v.id) !== -1;
+      html += '<button style="font-size:11px;padding:5px 10px;border:1px solid #E2E8F0;border-radius:7px;background:#F8FAFC;color:#64748B;cursor:pointer;display:flex;align-items:center;gap:4px" data-id="'+v.id+'" data-act="ocultar"><svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'+(jaOculta?'Reativar':'Ocultar')+'</button>';
+    }
     html += '</div>';
     html += '</div></div>';
   });
@@ -3008,6 +3036,7 @@ function renderDash(){
         var act = t.getAttribute('data-act');
         if(act === 'edit'){ e.preventDefault(); editV(id); }
         if(act === 'del'){ e.preventDefault(); delVisita(id); }
+        if(act === 'ocultar'){ e.preventDefault(); ocultarVisita(id); }
         if(act === 'equipe'){ e.preventDefault(); eqOpenModal(id); }
         if(act === 'wa'){ e.preventDefault(); _dashEnviarWA(id); }
         return;
@@ -3067,6 +3096,34 @@ function editV(id){
   loadForm(v);
   irParaForm();
 }
+function ocultarVisita(id){
+  var SK_OCULTAS = 'gep_ocultas_v1';
+  var ocultas = JSON.parse(localStorage.getItem(SK_OCULTAS)||'[]');
+  var idx = ocultas.indexOf(id);
+  if(idx === -1){
+    ocultas.push(id);
+    toast('Visita ocultada da sua tela.','ok');
+  } else {
+    ocultas.splice(idx,1);
+    toast('Visita reativada.','ok');
+  }
+  localStorage.setItem(SK_OCULTAS, JSON.stringify(ocultas));
+  // Mostrar botão "Ver ocultas" se houver ocultas
+  var btn = document.getElementById('btnMostrarOcultas');
+  if(btn) btn.style.display = ocultas.length ? 'flex' : 'none';
+  renderDash();
+}
+
+function toggleOcultas(){
+  var btn = document.getElementById('btnMostrarOcultas');
+  var lbl = document.getElementById('btnOcultasLabel');
+  if(!btn) return;
+  var show = btn.dataset.show === '1';
+  btn.dataset.show = show ? '0' : '1';
+  if(lbl) lbl.textContent = show ? 'Ver ocultas' : 'Ocultar novamente';
+  renderDash();
+}
+
 function delVisita(id){
   if(!confirm('Excluir esta visita? Esta ação não pode ser desfeita.')) return;
   var vs = loadV().filter(function(v){ return v.id!==id; });
