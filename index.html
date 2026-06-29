@@ -2875,7 +2875,7 @@ function resetSys(){
 /* ── NAVEGAÇÃO ABAS ── */
 function goTab(tab){
   // Esconder todas as páginas
-  var allPgs = ['tpDash','tpForm','tpAdmin'];
+  var allPgs = ['tpDash','tpForm','tpAdmin','vpAjuda'];
   allPgs.forEach(function(id){
     var el = document.getElementById(id);
     if(el) el.style.display = 'none';
@@ -2887,14 +2887,13 @@ function goTab(tab){
     if(el) el.classList.remove('on');
   });
   // Mostrar página selecionada
-  var pageMap = { dash:'tpDash', form:'tpForm', admin:'tpAdmin' };
+  var pageMap = { dash:'tpDash', form:'tpForm', admin:'tpAdmin', ajuda:'vpAjuda' };
   var tabMap  = { dash:'ntDash', form:'ntForm', admin:'ntAdmin' };
   var pg = document.getElementById(pageMap[tab]);
   var nt = document.getElementById(tabMap[tab]);
   if(pg) pg.style.display = 'block';
   if(nt) nt.classList.add('on');
   window.scrollTo(0,0);
-  if(tab==='ajuda'){ var vp=document.getElementById('vpAjuda'); if(vp) vp.style.display=''; }
   if(tab==='dash') try{ renderDash(); }catch(e){}
   if(tab==='admin') try{ renderAdmin(); }catch(e){}
   if(tab==='form'){
@@ -6758,6 +6757,7 @@ function renderSecListPg(){
 
 /* ══ Patch sbGo para Produtores e Secretarias ══ */
 /* Atualizar _pageMeta e _pageMap para novas páginas */
+_pageMeta['ajuda']       = {title:'Central de Ajuda', bread:'Sistema', btn:false};
 _pageMeta['produtores']  = {title:'Produtores',  bread:'Administração', btn:false};
 _pageMeta['secretarias'] = {title:'Secretarias', bread:'Administração', btn:false};
 _pageMap['produtores']   = 'vpAdmin';
