@@ -4098,7 +4098,39 @@ function saveUser(){
   saveU(users); closeModal(); renderUList(); toast('Usuário salvo!','ok');
 }
 function delU(id){ if(!confirm('Excluir este usuário?')) return; saveU(loadU().filter(function(u){return u.id!==id;})); renderUList(); toast('Usuário excluído.','ok'); }
-function toggleU(id){ var users=loadU(); var u=users.find(function(x){return x.id===id;}); if(!u) return; if(id==='root'){toast('Admin raiz não pode ser desativado','err');return;} u.ativo=u.ativo==0?1:0; saveU(users); renderUList(); toast(u.ativo?'Usuário ativado.':'Usuário desativado.','ok'); }
+function toggleU(id){
+  var users=loadU();
+  var u=users.find(function(x){return x.id===id;});
+  if(!u) return;
+  if(id==='root'){toast('Admin raiz não pode ser desativado','err');return;}
+  u.ativo=u.ativo==0?1:0;
+  saveU(users);
+  // Se desativando: invalidar sessão salva imediatamente
+  if(u.ativo==0){
+    try{
+      var sess = JSON.parse(localStorage.getItem('gep_session_v1')||'null');
+      if(sess && sess.id===id){
+        localStorage.removeItem('gep_session_v1');
+        toast('Usuário desativado. Sessão encerrada.','ok');
+      } else {
+        // Salvar lista de IDs bloqueados para checar no auto-login
+        var bloq = JSON.parse(localStorage.getItem('gep_bloqueados_v1')||'[]');
+        if(bloq.indexOf(id)===-1) bloq.push(id);
+        localStorage.setItem('gep_bloqueados_v1', JSON.stringify(bloq));
+        toast('Usuário desativado.','ok');
+      }
+    }catch(e){ toast('Usuário desativado.','ok'); }
+  } else {
+    // Reativando: remover da lista de bloqueados
+    try{
+      var bloq2 = JSON.parse(localStorage.getItem('gep_bloqueados_v1')||'[]');
+      var idx = bloq2.indexOf(id);
+      if(idx>-1){ bloq2.splice(idx,1); localStorage.setItem('gep_bloqueados_v1', JSON.stringify(bloq2)); }
+    }catch(e){}
+    toast('Usuário ativado.','ok');
+  }
+  renderUList();
+}
 document.getElementById('modalOv').addEventListener('click',function(e){ if(e.target===this) closeModal(); });
 
 /* ── INIT ── */
