@@ -1,18 +1,16 @@
 /* Service Worker — GEP Gestão de Eventos Pro */
-const CACHE_VERSION = 'gep-v15-78';
+const CACHE_VERSION = 'gep-v15-79';
 const CACHE_NAME = 'gestao-eventos-' + CACHE_VERSION;
 
-/* Arquivos essenciais para funcionar offline */
 const PRECACHE = [
   '/gestao-de-eventos/',
   '/gestao-de-eventos/index.html',
-  '/gestao-de-eventos/produtor.png',
   '/gestao-de-eventos/manifest.json',
   '/gestao-de-eventos/icons/icon-192.png',
-  '/gestao-de-eventos/icons/icon-512.png'
+  '/gestao-de-eventos/icons/icon-512.png',
+  '/gestao-de-eventos/icons/maskable-192.png'
 ];
 
-/* Instala e faz precache dos arquivos essenciais */
 self.addEventListener('install', function(event) {
   event.waitUntil(
     caches.open(CACHE_NAME).then(function(cache) {
@@ -23,16 +21,13 @@ self.addEventListener('install', function(event) {
   );
 });
 
-/* Ao ativar: limpa caches antigos e avisa clientes */
 self.addEventListener('activate', function(event) {
   event.waitUntil(
     caches.keys().then(function(keys) {
       return Promise.all(
         keys.filter(function(k) {
           return k.indexOf('gestao-eventos-') === 0 && k !== CACHE_NAME;
-        }).map(function(k) {
-          return caches.delete(k);
-        })
+        }).map(function(k) { return caches.delete(k); })
       );
     }).then(function() {
       return self.clients.claim();
@@ -46,13 +41,14 @@ self.addEventListener('activate', function(event) {
   );
 });
 
-/* Estratégia: rede primeiro, cache como reserva (funciona offline) */
 self.addEventListener('fetch', function(event) {
   if (event.request.method !== 'GET') return;
+  if (event.request.url.indexOf('chrome-extension') !== -1) return;
+  if (event.request.url.indexOf('googleapis.com') !== -1) return;
 
   event.respondWith(
     fetch(event.request).then(function(response) {
-      if (response && response.status === 200) {
+      if (response && response.status === 200 && response.type !== 'opaque') {
         var copy = response.clone();
         caches.open(CACHE_NAME).then(function(cache) {
           cache.put(event.request, copy);

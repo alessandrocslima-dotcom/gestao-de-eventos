@@ -1213,14 +1213,13 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 <div class="toast" id="toast"></div>
 
 <!-- INSTALL BAR -->
+<!-- LOGIN -->
+<div class="pg on" id="pgLogin">
 <div class="install-bar" id="iBar">
   <span>📲 Adicione à tela inicial para usar como app</span>
   <button class="btn-inst" id="btnInst">Instalar</button>
   <button class="btn-instx" id="btnInstX"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
 </div>
-
-<!-- LOGIN -->
-<div class="pg on" id="pgLogin">
 <div id="loginErr" style="display:none"></div>
 <div class="gep-card">
 
@@ -2518,8 +2517,21 @@ var SL = ['Empresa','Local','Estrutura','Detalhes','Resumo'];
 
 /* ── PWA ── */
 var dp;
-window.addEventListener('beforeinstallprompt', function(e){ e.preventDefault(); dp=e; document.getElementById('iBar').classList.add('on'); });
-document.getElementById('btnInst').onclick = function(){ if(dp){ dp.prompt(); dp.userChoice.then(function(){ dp=null; document.getElementById('iBar').classList.remove('on'); }); } };
+// Captura ANTES do load — crítico para Android
+window.addEventListener('beforeinstallprompt', function(e){
+  e.preventDefault();
+  dp = e;
+  var bar = document.getElementById('iBar');
+  if(bar) bar.classList.add('on');
+});
+window.addEventListener('appinstalled', function(){
+  dp = null;
+  var bar = document.getElementById('iBar');
+  if(bar) bar.classList.remove('on');
+});
+document.getElementById('btnInst').onclick = function(){
+  if(dp){ dp.prompt(); dp.userChoice.then(function(){ dp=null; document.getElementById('iBar').classList.remove('on'); }); }
+};
 document.getElementById('btnInstX').onclick = function(){ document.getElementById('iBar').classList.remove('on'); };
 
 /* ── TOAST ── */
@@ -2575,17 +2587,20 @@ function _aplicarLogin(found){
 }
 
 function doLogin(){
-  // Detecta qual versão está visível (mobile ou desktop) e pega os campos corretos
-  var desktopEl = document.getElementById('gepName');
-  var mobileEl  = document.getElementById('gepLoginM');
+  // Detecta qual campo tem valor preenchido (mobile ou desktop)
+  var desktopU = document.getElementById('gepName');
+  var mobileU  = document.getElementById('gepLoginM');
+  var desktopP = document.getElementById('gepPwd');
+  var mobileP  = document.getElementById('gepPwdM');
   var uEl, pEl;
-  // Se o campo mobile estiver visível (offsetParent != null), usa mobile
-  if(mobileEl && mobileEl.offsetParent !== null){
-    uEl = mobileEl;
-    pEl = document.getElementById('gepPwdM');
+  // Usa o campo que tiver valor, priorizando mobile se ambos tiverem
+  var mobileVal = mobileU ? mobileU.value.trim() : '';
+  var desktopVal = desktopU ? desktopU.value.trim() : '';
+  if(mobileVal){
+    uEl = mobileU; pEl = mobileP;
   } else {
-    uEl = desktopEl || document.getElementById('lUser');
-    pEl = document.getElementById('gepPwd') || document.getElementById('lPass');
+    uEl = desktopU || document.getElementById('lUser');
+    pEl = desktopP || document.getElementById('lPass');
   }
   var u = uEl ? uEl.value.trim() : '';
   var p = pEl ? pEl.value.trim() : '';
