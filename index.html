@@ -2891,12 +2891,15 @@ window.mascoteUpdate = mascoteUpdate;
 function mascoteMobileUpdate(){
   var root = document.getElementById('gepBannerM');
   if(!root) return;
-  var g = root.querySelector('#gepMGreet'); if(g) g.textContent = greeting();
+  var h = new Date().getHours();
+  var gr = h<12?'Bom dia':h<18?'Boa tarde':'Boa noite';
+  var g = root.querySelector('#gepMGreet'); if(g) g.textContent = gr;
   var n = root.querySelector('#gepMName');
   var ep = document.getElementById('epWelcome');
   var fullName = ep ? (ep.getAttribute('data-user')||'Alessandro Lima') : 'Alessandro Lima';
   if(n) n.textContent = fullName.split(/\s+/)[0];
-  var d = root.querySelector('#gepMDate'); if(d) d.textContent = dateLabel();
+  var d = root.querySelector('#gepMDate');
+  if(d){ try{ d.textContent = new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'}).replace(/^./,function(c){return c.toUpperCase();}); }catch(e){} }
   var c = root.querySelector('#gepMCount');
   if(c && ep) c.textContent = ep.getAttribute('data-count')||'0';
   var mascot = document.getElementById('gepMMascot');
