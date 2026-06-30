@@ -5287,13 +5287,13 @@ function orcBuildCatOpts(selVal){
   return html;
 }
 
-function orcAddItemRow(tbody, it){
+function orcAddItemRow(tbody, it, prepend){
   it = it||{srv:'',desc:'',qty:1,price:'',freq:1,unidade:'Dia',forn:'',pgto:'45D',obs:''};
   var uns = ['Dia','Unid','Hora','Evento','Serviço','Diária'];
   var pgtos = ['30D','45D','60D','À Vista','15D','28D'];
   var vf = (it.qty||0)*parseMoney(it.price)*(it.freq||1);
 
-  var tr = tbody.insertRow();
+  var tr = tbody.insertRow(prepend ? 0 : -1);
 
   // TD Serviço
   var tdSrv = tr.insertCell();
@@ -5584,14 +5584,16 @@ function orcWACotacao(){
   var mapa = '';
   var mapaWaze = '';
   if(v.gpsMain && v.gpsMain.lat){
-    mapa = 'https://www.google.com/maps?q=' + v.gpsMain.lat + ',' + v.gpsMain.lng;
-    mapaWaze = 'https://waze.com/ul?ll=' + v.gpsMain.lat + ',' + v.gpsMain.lng + '&navigate=yes';
+    var _clat = parseFloat(v.gpsMain.lat).toFixed(5);
+    var _clng = parseFloat(v.gpsMain.lng).toFixed(5);
+    mapa = 'https://maps.app.goo.gl?q=' + _clat + ',' + _clng;
+    mapaWaze = 'https://waze.com/ul?ll=' + _clat + ',' + _clng;
   } else if(v.linkLoc){
     mapa = v.linkLoc;
   }
   if(mapa){
-    m += '🗺 Maps: ' + mapa + '\n';
-    if(mapaWaze) m += '🚗 Waze: ' + mapaWaze + '\n';
+    m += '🗺 ' + mapa + '\n';
+    if(mapaWaze) m += '🚗 ' + mapaWaze + '\n';
   }
 
   // Montagem (se houver)
@@ -5604,18 +5606,16 @@ function orcWACotacao(){
   }
 
   // Demanda
-  m += '\n► *DEMANDA*\n\n';
-  var num = 1;
+  m += '\n*DEMANDA*\n';
   itens.forEach(function(it){
     var srvLabel = orcSrvDisplay(it.srv)||'';
     if(!srvLabel && !it.desc) return;
     var linha = srvLabel||(it.desc||'');
     if(srvLabel && it.desc) linha = srvLabel+' — '+it.desc;
-    m += num + '. ' + linha;
-    m += ' - Qtd: ' + (it.qty||1) + ' ' + it.unidade;
+    var _qty = (it.qty !== undefined && it.qty !== '' && it.qty !== null) ? it.qty : 1;
+    m += '▪ ' + linha + ' - Qtd: ' + _qty;
     if((it.freq||1) > 1) m += ' x ' + it.freq + ' dias';
     m += '\n';
-    num++;
   });
 
   // Encerramento
@@ -5895,7 +5895,7 @@ function orcConfirmarImport(){
       forn: '',
       pgto: '45D',
       obs: it.obs||''
-    });
+    }, true);
   });
 
   orcUpdateTotal();
@@ -5977,8 +5977,10 @@ function orcAbrirCotacaoForn(){
     var mapa = '';
     var mapaWaze = '';
     if(v.gpsMain && v.gpsMain.lat){
-      mapa = 'https://www.google.com/maps?q=' + v.gpsMain.lat + ',' + v.gpsMain.lng;
-      mapaWaze = 'https://waze.com/ul?ll=' + v.gpsMain.lat + ',' + v.gpsMain.lng + '&navigate=yes';
+      var _flat = parseFloat(v.gpsMain.lat).toFixed(5);
+      var _flng = parseFloat(v.gpsMain.lng).toFixed(5);
+      mapa = 'https://maps.app.goo.gl?q=' + _flat + ',' + _flng;
+      mapaWaze = 'https://waze.com/ul?ll=' + _flat + ',' + _flng;
     } else if(v.linkLoc){
       mapa = v.linkLoc;
     }
@@ -8574,7 +8576,9 @@ function agDmImportarVT(){
   // Importar localização: prioridade GPS principal > link colado
   var linkLocal = '';
   if(v.gpsMain && v.gpsMain.lat && v.gpsMain.lng){
-    linkLocal = 'https://www.google.com/maps?q=' + v.gpsMain.lat + ',' + v.gpsMain.lng;
+    var _blat = parseFloat(v.gpsMain.lat).toFixed(5);
+    var _blng = parseFloat(v.gpsMain.lng).toFixed(5);
+    linkLocal = 'https://maps.app.goo.gl?q=' + _blat + ',' + _blng;
   } else if(v.linkLoc){
     linkLocal = v.linkLoc;
   }
