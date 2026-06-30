@@ -2435,47 +2435,6 @@ function saveV(a){
   if(typeof cloudSaveList==='function') cloudSaveList('visitas_lista', a);
 }
 
-/* ── FIRESTORE — salvar visita na nuvem ── */
-function saveVisitaCloud(data){
-  if(!db){ console.warn('Firebase não disponível'); return; }
-  try {
-    var cleanData = JSON.parse(JSON.stringify(data));
-    // Remover fotos base64 — muito pesado para Firestore
-    cleanData.fotos = data.fotos ? String(data.fotos.length) + ' fotos' : '0 fotos';
-    // Remover arrays complexos vazios
-    if(!cleanData.eqItens) cleanData.eqItens = [];
-    if(!cleanData.equipeItens) cleanData.equipeItens = [];
-    if(!cleanData.servicoItens) cleanData.servicoItens = [];
-    if(!cleanData.orcItens) cleanData.orcItens = [];
-    db.collection('visitas').doc(String(data.id)).set(cleanData)
-      .then(function(){
-        console.log('Visita salva na nuvem com sucesso! ID:', data.id);
-        toast('Sincronizado com a nuvem!', 'ok');
-      })
-      .catch(function(e){
-        console.error('Erro Firestore:', e.code, e.message);
-        toast('Salvo localmente (nuvem indisponível)', '');
-      });
-  } catch(err) {
-    console.error('Erro ao preparar dados:', err);
-  }
-}
-
-/* ── FIRESTORE — carregar visitas da nuvem ── */
-function loadVisitasCloud(callback){
-  if(!db){ callback(loadV()); return; }
-  db.collection('visitas').orderBy('criadoEm','desc').get()
-    .then(function(snap){
-      var visitas = [];
-      snap.forEach(function(doc){ visitas.push(doc.data()); });
-      callback(visitas);
-    })
-    .catch(function(e){
-      console.warn('Erro ao carregar da nuvem, usando local:', e);
-      callback(loadV());
-    });
-}
-
 /* ══ HELPER GENÉRICO DE SINCRONIZAÇÃO CLOUD (v14) ══ */
 /* Salva uma lista inteira no Firestore como documento único */
 function cloudSaveList(colecao, lista){
@@ -2621,14 +2580,6 @@ function sincronizarTudo(onComplete){
 }
 window.sincronizarTudo = sincronizarTudo;
 
-
-/* ── FIRESTORE — excluir visita ── */
-function deleteVisitaCloud(id){
-  if(!db) return;
-  db.collection('visitas').doc(id).delete()
-    .catch(function(e){ console.warn('Erro ao excluir da nuvem:', e); });
-}
-
 function loadE(){ try{ return JSON.parse(localStorage.getItem(SK_E)||'[]'); }catch(e){ return []; } }
 function saveE(a){ try{ localStorage.setItem(SK_E, JSON.stringify(a)); }catch(e){} if(typeof cloudSaveList==='function') cloudSaveList('empresas', a); }
 
@@ -2732,7 +2683,7 @@ function _aplicarLogin(found){
     if(typeof _autoSeedCatalogo==='function') _autoSeedCatalogo();
     // Popular select da VT com itens do catálogo
     if(typeof eqPopulateSelect==='function') eqPopulateSelect(); if(typeof somPopulateSelect==='function') somPopulateSelect(); if(typeof equipesPopulateSelect==='function') equipesPopulateSelect(); if(typeof servicosPopulateSelect==='function') servicosPopulateSelect();
-    // Iniciar sincronização automática em background (a cada 2 min)
+    // Iniciar sincronização automática em background (a cada 20 min)
     if(typeof iniciarSyncAutomatico==='function') iniciarSyncAutomatico();
   }, 200);
 }
@@ -3038,17 +2989,11 @@ function renderDash(){
   if(greet) greet.textContent = (h<12?'Bom dia':h<18?'Boa tarde':'Boa noite') + ', ' + (me?me.nome||me.login:'');
   mascoteUpdate();
   if(typeof mascoteMobileUpdate==='function') mascoteMobileUpdate();
-  // Tentar carregar da nuvem, fallback para local
+  // Usa SEMPRE o cache local — a sincronização com a nuvem acontece em background
+  // de forma controlada (sincronizarBackground, a cada 20 min), não a cada render.
   var all = loadV();
   // VISIBILIDADE: cada usuário vê só as visitas em que participa (admin vê todas)
   all = filtrarVisitasVisiveis(all);
-  // Sincronizar em background com a nuvem
-  loadVisitasCloud(function(cloudData){
-    if(cloudData && cloudData.length > 0){
-      saveV(cloudData); // atualizar cache local
-      try{ renderDash(); }catch(e){} // re-renderizar com dados da nuvem
-    }
-  });
   var mes = new Date().getMonth(), ano = new Date().getFullYear();
   var mesCont = 0;
   all.forEach(function(v){ if(v.dataEvento){ var d=new Date(v.dataEvento+'T12:00'); if(d.getMonth()===mes&&d.getFullYear()===ano) mesCont++; } });
@@ -3229,8 +3174,7 @@ function toggleOcultas(){
 function delVisita(id){
   if(!confirm('Excluir esta visita? Esta ação não pode ser desfeita.')) return;
   var vs = loadV().filter(function(v){ return v.id!==id; });
-  saveV(vs);
-  deleteVisitaCloud(id); // excluir da nuvem também
+  saveV(vs); // já remove da nuvem via cloudSaveList (lista atualizada sem o item)
   toast('Visita excluída.','ok'); renderDash();
 }
 
@@ -3628,8 +3572,7 @@ function saveVisita(){
   var d=collectData(), vs=loadV();
   if(editId){ var ix=vs.findIndex(function(v){return v.id===editId;}); if(ix>=0) vs[ix]=d; else vs.push(d); }
   else vs.push(d);
-  saveV(vs);
-  saveVisitaCloud(d); // salvar também na nuvem
+  saveV(vs); // já sincroniza com a nuvem via cloudSaveList (1 escrita, lista inteira)
   editId=null;
   window.isEditing=false;
   isEditing=false;
@@ -5491,7 +5434,9 @@ function orcGetCurrentStatus(){
 }
 
 /* ── Salvar ── */
+var _orcAutoSaveTimer = null;
 function orcAutoSave(){
+  // Debounce: salva localmente sempre, mas só envia pra nuvem 800ms após parar de digitar
   if(!orcCurrentVid) return;
   var orcs = loadOrc();
   orcs[orcCurrentVid] = {
@@ -5503,7 +5448,14 @@ function orcAutoSave(){
     savedTs: nowTs(),
     owner: (typeof _meuId==='function') ? _meuId() : null
   };
-  saveOrc(orcs);
+  // Salva local imediatamente (rápido, sem custo de rede)
+  localStorage.setItem(SK_ORC, JSON.stringify(orcs));
+  if(typeof marcarMudanca==='function') marcarMudanca();
+  // Envia pra nuvem só após uma pausa na digitação — evita 1 escrita por tecla
+  if(_orcAutoSaveTimer) clearTimeout(_orcAutoSaveTimer);
+  _orcAutoSaveTimer = setTimeout(function(){
+    if(typeof cloudSaveList==='function') cloudSaveList('orcamentos', orcs);
+  }, 800);
 }
 
 function orcSalvar(){
@@ -8434,7 +8386,7 @@ function eqRenderModal(v){
 function eqSalvarVisita(v){
   var vs = loadV();
   var ix = vs.findIndex(function(x){ return x.id===v.id; });
-  if(ix>=0){ vs[ix]=v; saveV(vs); if(typeof saveVisitaCloud==='function') saveVisitaCloud(v); }
+  if(ix>=0){ vs[ix]=v; saveV(vs); }
 }
 
 function eqAddParticipante(){
@@ -9774,7 +9726,7 @@ window.agEDmRender = agEDmRender;
 
 /* ══ SINCRONIZAÇÃO AUTOMÁTICA EM BACKGROUND (v15) ══ */
 var _syncAutoTimer = null;
-var _syncAutoInterval = 15 * 60 * 1000; // 15 minutos
+var _syncAutoInterval = 20 * 60 * 1000; // 20 minutos
 
 function _syncIndicatorShow(){
   var el = document.getElementById('syncIndicator');
@@ -9789,16 +9741,18 @@ function _syncIndicatorHide(){
 var _ultimaSync = 0;
 var _houveMudanca = false;
 
-// Marcar que houve mudança local (chamar ao salvar qualquer dado)
+// Marcar que houve mudança local — NÃO força resync completo (o save já escreveu na nuvem)
+// Serve só para garantir que, se passar muito tempo sem nenhuma ação, ainda sincronizamos 1x
 function marcarMudanca(){ _houveMudanca = true; }
 
 function sincronizarBackground(){
   if(!db){ return; }
   if(!me){ return; }
-  // Só sincroniza se houve mudança local OU se passou mais de 15 min desde a última sync
+  // Sincroniza periodicamente para PEGAR mudanças de outros dispositivos/usuários —
+  // não precisa ser a cada save local (o save já escreve direto na nuvem)
   var agora = Date.now();
   var passouTempo = (agora - _ultimaSync) > _syncAutoInterval;
-  if(!_houveMudanca && !passouTempo) return;
+  if(!passouTempo) return;
   _houveMudanca = false;
   _ultimaSync = agora;
   _syncIndicatorShow();
