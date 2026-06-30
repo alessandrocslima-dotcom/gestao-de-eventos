@@ -5123,7 +5123,7 @@ var orcCurrentVid = null;
 var orcEditSecId = null;
 
 function loadOrc(){ try{ return JSON.parse(localStorage.getItem(SK_ORC)||'{}'); }catch(e){ return {}; } }
-function saveOrc(o){ localStorage.setItem(SK_ORC, JSON.stringify(o)); if(typeof cloudSaveList==='function') cloudSaveList('orcamentos', o); }
+function saveOrc(o){ localStorage.setItem(SK_ORC, JSON.stringify(o)); if(typeof marcarMudanca==='function') marcarMudanca(); if(typeof cloudSaveList==='function') cloudSaveList('orcamentos', o); }
 function loadSec(){ try{ return JSON.parse(localStorage.getItem(SK_SEC)||'[]'); }catch(e){ return []; } }
 function saveSec(a){ localStorage.setItem(SK_SEC, JSON.stringify(a)); if(typeof cloudSaveList==='function') cloudSaveList('secretarias', a); }
 
@@ -9772,7 +9772,7 @@ window.agEDmRender = agEDmRender;
 
 /* ══ SINCRONIZAÇÃO AUTOMÁTICA EM BACKGROUND (v15) ══ */
 var _syncAutoTimer = null;
-var _syncAutoInterval = 2 * 60 * 1000; // 2 minutos
+var _syncAutoInterval = 15 * 60 * 1000; // 15 minutos
 
 function _syncIndicatorShow(){
   var el = document.getElementById('syncIndicator');
@@ -9784,14 +9784,25 @@ function _syncIndicatorHide(){
   if(el) el.style.display = 'none';
 }
 
+var _ultimaSync = 0;
+var _houveMudanca = false;
+
+// Marcar que houve mudança local (chamar ao salvar qualquer dado)
+function marcarMudanca(){ _houveMudanca = true; }
+
 function sincronizarBackground(){
   if(!db){ return; }
-  if(!me){ return; } // só sincroniza se estiver logado
+  if(!me){ return; }
+  // Só sincroniza se houve mudança local OU se passou mais de 15 min desde a última sync
+  var agora = Date.now();
+  var passouTempo = (agora - _ultimaSync) > _syncAutoInterval;
+  if(!_houveMudanca && !passouTempo) return;
+  _houveMudanca = false;
+  _ultimaSync = agora;
   _syncIndicatorShow();
   sincronizarTudo(function(ok){
     _syncIndicatorHide();
     if(ok){
-      // Re-render telas que possam ter dados novos (sem barulho)
       try{ if(typeof renderDash==='function') renderDash(); }catch(e){}
       try{ if(typeof agRenderAll==='function') agRenderAll(); }catch(e){}
       try{ if(typeof renderForns==='function') renderForns(); }catch(e){}
@@ -9809,7 +9820,7 @@ function iniciarSyncAutomatico(){
     if(document.hidden) return;
     sincronizarBackground();
   }, _syncAutoInterval);
-  console.log('🔄 Sincronização automática iniciada (a cada 2 min)');
+  console.log('🔄 Sincronização automática iniciada (a cada 15 min ou ao salvar)');
 }
 
 function pararSyncAutomatico(){
