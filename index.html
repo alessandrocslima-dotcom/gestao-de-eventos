@@ -8633,7 +8633,7 @@ function agDmEnviarWA(){
   var m = saud + '! Segue abaixo as informações do evento:\n\n';
 
   // === DADOS DO EVENTO ===
-  m += '*Nº do Evento:* ' + (ev.numOfc||'—') + '\n';
+  m += '*Nº do Evento:* ' + (ev.numOfc||'—').replace(/^Evento\s*/i,'') + '\n';
   m += '*Data:* ' + (dataFmt||'—') + '\n';
   m += '*Local:* ' + (ev.local||'—') + '\n';
   var link = document.getElementById('agDmLink').value.trim();
