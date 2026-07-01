@@ -8632,32 +8632,21 @@ function agDmEnviarWA(){
   // Frase de abertura
   var m = saud + '! Segue abaixo as informações do evento:\n\n';
 
-  // === DADOS DO EVENTO (sem título, vai direto) ===
-  m += 'Número do Evento: ' + (ev.numOfc||'—') + '\n';
-  m += 'Data do Evento: ' + (dataFmt||'—') + '\n';
-  if(ev.hora){
-    var horaTxt = fmtHora(ev.hora);
-    if(ev.horaFim) horaTxt += ' às ' + fmtHora(ev.horaFim);
-    m += 'Horário: ' + horaTxt + '\n';
-  }
-  m += 'Local: ' + (ev.local||'—') + '\n';
+  // === DADOS DO EVENTO ===
+  m += '*Nº do Evento:* ' + (ev.numOfc||'—') + '\n';
+  m += '*Data:* ' + (dataFmt||'—') + '\n';
+  m += '*Local:* ' + (ev.local||'—') + '\n';
   var link = document.getElementById('agDmLink').value.trim();
   if(link){
-    m += '🗺 Maps: ' + link + '\n';
-    // Se o link for GPS capturado, adicionar Waze
     var matchCoords = link.match(/[?&]q=(-?[\d.]+),(-?[\d.]+)/);
-    if(matchCoords) m += '🚗 https://waze.com/ul?ll=' + matchCoords[1] + ',' + matchCoords[2] + '\n';
-  }
-
-  // === MONTAGEM (se houver) ===
-  if(ev.montData || ev.montHora){
-    var montTxt = '';
-    if(ev.montData){
-      var d = new Date(ev.montData+'T00:00:00');
-      montTxt = String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();
+    if(matchCoords){
+      var _alat = parseFloat(matchCoords[1]).toFixed(5);
+      var _alng = parseFloat(matchCoords[2]).toFixed(5);
+      m += '🗺 https://maps.app.goo.gl?q=' + _alat + ',' + _alng + '\n';
+      m += '🚗 https://waze.com/ul?ll=' + _alat + ',' + _alng + '\n';
+    } else {
+      m += '🗺 ' + link + '\n';
     }
-    if(ev.montHora) montTxt += (montTxt?' às ':'')+fmtHora(ev.montHora);
-    m += 'Montagem: ' + montTxt + '\n';
   }
 
   // === ÁREA DE RISCO (só aparece quando TEM risco) ===
@@ -8667,19 +8656,19 @@ function agDmEnviarWA(){
     if(rd) m += rd + '\n';
   }
 
-  // === LOGÍSTICA (sem título) ===
+  // === LOGÍSTICA ===
   var saidaH = document.getElementById('agDmSaidaHora').value;
   var saidaL = document.getElementById('agDmSaidaLocal').value.trim();
   var retorno = document.getElementById('agDmRetorno').value;
   if(saidaH || saidaL || retorno){
     m += '\n';
-    if(saidaH) m += 'Horário de Saída: ' + fmtHora(saidaH) + '\n';
-    if(saidaL) m += 'Local de Saída: ' + saidaL + '\n';
-    if(retorno) m += 'Previsão de Retorno: ' + fmtHora(retorno) + '\n';
+    if(saidaH) m += '*Horário de Saída:* ' + fmtHora(saidaH) + '\n';
+    if(saidaL) m += '*Local de Saída:* ' + saidaL + '\n';
+    if(retorno) m += '\n*Previsão de Retorno:* ' + fmtHora(retorno) + '\n';
   }
 
   // === DEMANDAS ===
-  m += '\n► *DEMANDAS*\n\n';
+  m += '\n*DEMANDAS*\n';
   if(_agDmItens.length){
     _agDmItens.forEach(function(it){
       m += '- ' + it.nome;
