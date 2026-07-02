@@ -2667,6 +2667,9 @@ function _aplicarLogin(found){
     localStorage.removeItem('gep_session_v1');
   }
   document.getElementById('loginErr').classList.remove('on');
+  // Resetar botão de sincronizar caso tenha ficado travado
+  var _bSync = document.getElementById('btnSync');
+  if(_bSync){ _bSync.disabled = false; _bSync.innerHTML = '<span class="sb-ico">🔄</span><span class="sb-lbl">Sincronizar</span>'; }
   document.getElementById('pgLogin').style.display = 'none';
   document.getElementById('pgLogin').classList.remove('on');
   document.getElementById('pgApp').style.display = 'flex';
@@ -8837,14 +8840,16 @@ window.agEvtImportarVT = agEvtImportarVT;
 /* Botão manual de sincronizar */
 function btnSincronizar(){
   var btn = document.getElementById('btnSync');
-  if(btn){ btn.disabled = true; btn.innerHTML = '⏳ Sincronizando...'; }
+  // Garantir que botão começa no estado correto
+  if(btn){ btn.disabled = false; btn.innerHTML = '<span class="sb-ico">🔄</span><span class="sb-lbl">Sincronizar</span>'; }
+  if(btn){ btn.disabled = true; btn.innerHTML = '<span class="sb-ico">⏳</span><span class="sb-lbl">Sincronizando...</span>'; }
   if(typeof sincronizarTudo !== 'function'){
     toast('Firebase não disponível','err');
-    if(btn){ btn.disabled = false; btn.innerHTML = '🔄 Sincronizar'; }
+    if(btn){ btn.disabled = false; btn.innerHTML = '<span class="sb-ico">🔄</span><span class="sb-lbl">Sincronizar</span>'; }
     return;
   }
   sincronizarTudo(function(ok){
-    if(btn){ btn.disabled = false; btn.innerHTML = '🔄 Sincronizar'; }
+    if(btn){ btn.disabled = false; btn.innerHTML = '<span class="sb-ico">🔄</span><span class="sb-lbl">Sincronizar</span>'; }
     if(ok){
       toast('Sincronizado com a nuvem!','ok');
       // Re-render telas
