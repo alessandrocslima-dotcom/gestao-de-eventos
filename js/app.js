@@ -766,7 +766,7 @@ var SERVICOS_DEFAULT = [
 function carregarCatalogoServicos() {
   var raw = localStorage.getItem('catalogo_servicos_v1');
   if (raw) { try { return JSON.parse(raw); } catch(e) {} }
-  return SERVICOS_DEFAULT.slice();
+  return [];
 }
 
 function salvarCatalogoServicos(lista) {
