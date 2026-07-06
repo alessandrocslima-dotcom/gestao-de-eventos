@@ -7,7 +7,19 @@ window.onerror = function(msg, src, line, col, err) {
   document.body.appendChild(div);
 };
 
-const $ = (id) => document.getElementById(id);
+// Null-safe $: retorna objeto inerte em vez de null para evitar crashes
+var _gepSafe = (function(){
+  var noop = function(){};
+  var safe = { addEventListener:noop, removeEventListener:noop, click:noop,
+    querySelectorAll:function(){ return []; }, querySelector:function(){ return null; },
+    classList:{ add:noop, remove:noop, contains:function(){ return false; } },
+    style:{} };
+  ['textContent','innerHTML','value','innerText'].forEach(function(p){
+    Object.defineProperty(safe, p, { get:function(){ return ''; }, set:noop });
+  });
+  return safe;
+})();
+const $ = (id) => document.getElementById(id) || _gepSafe;
 
 var TITULOS_ABA = {
   inicial:      'Planilha Inicial',

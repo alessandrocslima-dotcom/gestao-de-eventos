@@ -238,34 +238,31 @@ function gepInjectItems(ws, trs, selPrefix, cadIndex, maxRow) {
   return soma;
 }
 
-$('gerarBtn').addEventListener('click', function() {
-  var btn = this;
-  $('msg').textContent = 'Gerando planilha...';
-  btn.disabled = true;
-  // Espera o navegador pintar a mensagem antes do trabalho pesado (senão a
-  // tela "congela" sem mostrar nada). Envolve tudo em try/catch para que um
-  // erro nunca deixe o botão preso em "Gerando planilha...".
+// Função global de exportação — chamada pelo botão da topbar do GEP
+window.gerarExcel = function() {
+  var msgEl = document.getElementById('msg');
+  if (msgEl) msgEl.textContent = 'Gerando planilha...';
   setTimeout(function() {
     var p;
     try {
       p = gerarWorkbook();
     } catch (err) {
       console.error(err);
-      $('msg').textContent = 'Erro ao gerar planilha: ' + (err && err.message ? err.message : err);
-      btn.disabled = false;
+      if (msgEl) msgEl.textContent = 'Erro: ' + (err && err.message ? err.message : err);
       return;
     }
     Promise.resolve(p).then(function() {
-      $('msg').textContent = 'Planilha gerada e baixada!';
-      btn.disabled = false;
-      setTimeout(function() { $('msg').textContent = ''; }, 5000);
+      if (msgEl) { msgEl.textContent = 'Planilha baixada!'; setTimeout(function(){ msgEl.textContent=''; }, 4000); }
     }).catch(function(err) {
       console.error(err);
-      $('msg').textContent = 'Erro ao gerar planilha: ' + (err && err.message ? err.message : err);
-      btn.disabled = false;
+      if (msgEl) msgEl.textContent = 'Erro: ' + (err && err.message ? err.message : err);
     });
   }, 50);
-});
+};
+
+// Compatibilidade com botão gerarBtn (se existir)
+var _gerarBtnEl = document.getElementById('gerarBtn');
+if (_gerarBtnEl) _gerarBtnEl.addEventListener('click', window.gerarExcel);
 
 // Monta um índice do Cadastro de Fornecedores (nome -> dados) a partir das
 // linhas do formulário, para substituir os VLOOKUPs por consulta direta em JS.
