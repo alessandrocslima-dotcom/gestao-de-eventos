@@ -9,11 +9,12 @@ window.onerror = function(msg, src, line, col, err) {
 
 // Null-safe $: retorna objeto inerte em vez de null para evitar crashes
 var _gepSafe = (function(){
-  var noop = function(){};
+  var noop = function(){ return _gepSafe; };
   var safe = { addEventListener:noop, removeEventListener:noop, click:noop,
+    appendChild:noop, removeChild:noop, insertBefore:noop, remove:noop,
     querySelectorAll:function(){ return []; }, querySelector:function(){ return null; },
-    classList:{ add:noop, remove:noop, contains:function(){ return false; } },
-    style:{} };
+    classList:{ add:noop, remove:noop, contains:function(){ return false; }, toggle:noop },
+    style:{}, options:[], children:[] };
   ['textContent','innerHTML','value','innerText'].forEach(function(p){
     Object.defineProperty(safe, p, { get:function(){ return ''; }, set:noop });
   });
@@ -27,8 +28,7 @@ var TITULOS_ABA = {
   fechamento:   'Fechamento',
   fornecedores: 'Fornecedores',
   verba:        'Verba de Produção',
-  cadastro:     'Cadastro de Fornecedores',
-  servicos:     'Catálogo de Serviços'
+  servicos:     'Catálogo de Serviços' // removido
 };
 
 var TAB_GRUPOS = {
@@ -95,7 +95,7 @@ fillSelect($('clienteFech'), LISTAS.secretarias, '-- selecione o cliente/secreta
 fillSelect($('produtorFech'), LISTAS.produtores, '-- selecione o produtor --');
 
 // ---------------------------------------------------------------------
-// Cadastro de Fornecedores: agora é uma tabela editável (aba "Cadastro de
+// Cadastro de Fornecedores: removido (gerenciado pelo GEP)
 // Fornecedores"), carregada inicialmente com a base embutida em LISTAS.
 // fornecedorNomes/fornecedorPrazo/fornecedorData/datalist são recalculados
 // a partir dessa tabela (refreshFornecedorLookups), então qualquer edição,
@@ -108,355 +108,29 @@ var fornecedorData = {};
 
 var dl = document.getElementById('dl-fornecedores');
 
-function addCadastroRow(data) {
-  data = data || {};
-  var tbody = $('cadastroBody');
-  var tr = document.createElement('tr');
-  tr.innerHTML =
-    '<td><input type="text" class="cad-nome" value="' + (data.nome || '') + '"></td>' +
-    '<td><input type="text" class="cad-cnpj" value="' + (data.cnpj || '') + '"></td>' +
-    '<td><input type="text" class="cad-contato" value="' + (data.contato || '') + '"></td>' +
-    '<td><input type="text" class="cad-telefone" value="' + (data.telefone || '') + '"></td>' +
-    '<td><input type="text" class="cad-prazo" value="' + (data.prazo || '') + '"></td>' +
-    '<td><input type="text" class="cad-servico" value="' + (data.servico || '') + '"></td>' +
-    '<td><button type="button" class="btn-del-row">×</button></td>';
-  tbody.appendChild(tr);
-  tr.querySelectorAll('input').forEach(function(inp) { inp.addEventListener('input', refreshFornecedorLookups); });
-  tr.querySelector('.btn-del-row').addEventListener('click', function() { tr.remove(); refreshFornecedorLookups(); });
-}
+function addCadastroRow(data) { /* aba Cadastro removida */ }
 
 function refreshFornecedorLookups() {
+  // Lê fornecedores do GEP (vtp_fornecedores_v1) em vez do DOM
   fornecedorPrazo = {};
   fornecedorData = {};
   var nomes = [];
-  document.querySelectorAll('#cadastroBody tr').forEach(function(tr) {
-    var nome = tr.querySelector('.cad-nome').value.trim();
+  var forns = [];
+  try { forns = JSON.parse(localStorage.getItem('vtp_fornecedores_v1')||'[]'); } catch(e) {}
+  forns.forEach(function(f) {
+    var nome = (f.nome||f.name||'').trim();
     if (!nome) return;
-    var rec = {
-      cnpj: tr.querySelector('.cad-cnpj').value,
-      contato: tr.querySelector('.cad-contato').value,
-      telefone: tr.querySelector('.cad-telefone').value,
-      prazo: tr.querySelector('.cad-prazo').value,
-      servico: tr.querySelector('.cad-servico').value
-    };
-    if (!(nome in fornecedorData)) { fornecedorData[nome] = rec; fornecedorPrazo[nome] = rec.prazo; nomes.push(nome); }
+    fornecedorData[nome] = f;
+    fornecedorPrazo[nome] = f.prazo || '';
+    nomes.push(nome);
   });
-  fornecedorNomes = nomes.sort(function(a,b) { return a.localeCompare(b,'pt-BR'); });
-  dl.innerHTML = '';
-  fornecedorNomes.forEach(function(n) {
-    var opt = document.createElement('option');
-    opt.value = n;
-    dl.appendChild(opt);
-  });
-}
-
-LISTAS.fornecedores.forEach(function(f) { addCadastroRow(f); });
-$('addCadastroRowBtn').addEventListener('click', function() { addCadastroRow(); refreshFornecedorLookups(); });
-refreshFornecedorLookups();
-
-// ---------------------------------------------------------------------
-// Fábrica de tabelas de itens "internas" (10 colunas, iguais à Planilha
-// Inicial): usada tanto para a aba 1 quanto para a aba 3 (Fechamento).
-// ---------------------------------------------------------------------
-function createInternalTable(tbodyId, totalSpanId, onTotalChange) {
-  var counter = 0;
-
-  function addRow(data) {
-    data = data || {};
-    var tbody = $(tbodyId);
-    var tr = document.createElement('tr');
-    tr.dataset.rid = tbodyId + counter++;
-
-    tr.innerHTML =
-      '<td><input type="text" list="dl-catalogo-gep" class="f-servico" autocomplete="off" oninput="gepAutoFillServico(this)" value="' + (data.servico || '') + '"></td>' +
-      '<td><input type="text" class="f-desc" value="' + (data.desc || '') + '"></td>' +
-      '<td><input type="number" class="f-qtde" step="any" value="' + (data.qtde != null ? data.qtde : 1) + '"></td>' +
-      '<td><input type="number" class="f-preco" step="any" value="' + (data.preco != null ? data.preco : 0) + '"></td>' +
-      '<td><input type="number" class="f-freq" step="any" value="' + (data.freq != null ? data.freq : 1) + '"></td>' +
-      '<td><select class="f-unidade"></select></td>' +
-      '<td class="valor-final">R$ 0,00</td>' +
-      '<td><input list="dl-fornecedores" class="f-fornecedor" value="' + (data.fornecedor || '') + '"></td>' +
-      '<td><select class="f-forma"></select></td>' +
-      '<td><input type="text" class="f-obs" value="' + (data.obs || '') + '"></td>' +
-      '<td><button type="button" class="btn-del-row">×</button></td>';
-    tbody.appendChild(tr);
-
-    fillSelect(tr.querySelector('.f-unidade'), LISTAS.unidades, '--');
-    fillSelect(tr.querySelector('.f-forma'), LISTAS.formas, '--');
-
-    if (data.unidade) tr.querySelector('.f-unidade').value = data.unidade;
-    if (data.forma) tr.querySelector('.f-forma').value = data.forma;
-
-    var recalc = function() { updateRowTotal(tr); };
-    tr.querySelectorAll('.f-qtde, .f-preco, .f-freq').forEach(function(el) { el.addEventListener('input', recalc); });
-
-    tr.querySelector('.f-fornecedor').addEventListener('change', function(e) {
-      var nome = e.target.value.trim();
-      if (fornecedorPrazo[nome]) tr.querySelector('.f-forma').value = fornecedorPrazo[nome];
+  fornecedorNomes = nomes.sort(function(a,b){ return a.localeCompare(b,'pt-BR'); });
+  var dl = document.getElementById('dl-fornecedores');
+  if (dl) {
+    dl.innerHTML = '';
+    fornecedorNomes.forEach(function(n){
+      var opt = document.createElement('option'); opt.value = n; dl.appendChild(opt);
     });
-
-    tr.querySelector('.btn-del-row').addEventListener('click', function() {
-      tr.remove();
-      updateTotal();
-    });
-
-    updateRowTotal(tr);
-    return tr;
-  }
-
-  function updateRowTotal(tr) {
-    var q = parseFloat(tr.querySelector('.f-qtde').value) || 0;
-    var p = parseFloat(tr.querySelector('.f-preco').value) || 0;
-    var f = parseFloat(tr.querySelector('.f-freq').value) || 0;
-    var total = q * p * f;
-    tr.querySelector('.valor-final').textContent = total.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
-    tr.dataset.total = total;
-    updateTotal();
-  }
-
-  function updateTotal() {
-    var total = 0;
-    document.querySelectorAll('#' + tbodyId + ' tr').forEach(function(tr) { total += parseFloat(tr.dataset.total) || 0; });
-    $(totalSpanId).textContent = total.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
-    $(totalSpanId).dataset.raw = total;
-    if (onTotalChange) onTotalChange(total);
-  }
-
-  return { addRow: addRow, updateTotal: updateTotal };
-}
-
-// Subtotal da "Despesas com Outro / Verba de Produção" (linha única
-// espelhando a estrutura da planilha original), Total do Evento (serviços +
-// verba) e valor total com margem de lucro — tudo recalculado ao vivo.
-function updateTotalVerbaEst() {
-  var q = parseFloat($('verbaEstQtde').value) || 0;
-  var p = parseFloat($('verbaEstUnitario').value) || 0;
-  var total = q * p;
-  $('totalVerbaEst').textContent = total.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
-  updateValorComMargem();
-}
-['verbaEstQtde','verbaEstUnitario'].forEach(function(id) { $(id).addEventListener('input', updateTotalVerbaEst); });
-
-function updateValorComMargem() {
-  var totalServicos = parseFloat($('totalGeral').dataset.raw) || 0;
-  var q = parseFloat($('verbaEstQtde').value) || 0;
-  var p = parseFloat($('verbaEstUnitario').value) || 0;
-  var totalVerba = q * p;
-  var totalEvento = totalServicos + totalVerba;
-  var margem = parseFloat($('margemLucro').value) || 0;
-  var valor = totalEvento * (1 + margem / 100);
-  $('totalDoEvento').textContent = totalEvento.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
-  $('valorComMargem').textContent = valor.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
-  $('custoBaseMargem').textContent = totalEvento.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
-}
-$('margemLucro').addEventListener('input', function() { updateValorComMargem(); });
-
-var inicialTable = createInternalTable('itensBody', 'totalGeral', updateValorComMargem);
-var fechamentoTable = createInternalTable('fechamentoItensBody', 'totalFechamento');
-
-$('addRowBtn').addEventListener('click', function() { inicialTable.addRow(); });
-inicialTable.addRow(); inicialTable.addRow(); inicialTable.addRow();
-
-$('addFechamentoRowBtn').addEventListener('click', function() { fechamentoTable.addRow(); });
-
-// ---------------------------------------------------------------------
-// ABA 2: Itens da proposta ao Cliente (tabela mais simples, sem
-// fornecedor/forma de pagamento — não interessa ao cliente ver isso)
-// ---------------------------------------------------------------------
-var clienteRowCount = 0;
-
-function addClienteRow(data) {
-  data = data || {};
-  var tbody = $('clienteItensBody');
-  var tr = document.createElement('tr');
-  tr.dataset.rid = 'crow' + (clienteRowCount++);
-
-  tr.innerHTML =
-    '<td><input type="text" class="cf-servico" value="' + (data.servico || '') + '"></td>' +
-    '<td><input type="text" class="cf-desc" value="' + (data.desc || '') + '"></td>' +
-    '<td><input type="number" class="cf-qtde" step="any" value="' + (data.qtde != null ? data.qtde : 1) + '"></td>' +
-    '<td><input type="number" class="cf-preco" step="any" value="' + (data.preco != null ? data.preco : 0) + '"></td>' +
-    '<td><input type="number" class="cf-freq" step="any" value="' + (data.freq != null ? data.freq : 1) + '"></td>' +
-    '<td class="valor-final">R$ 0,00</td>' +
-    '<td><button type="button" class="btn-del-row">×</button></td>';
-  tbody.appendChild(tr);
-
-  var recalc = function() { updateClienteRowTotal(tr); };
-  tr.querySelectorAll('.cf-qtde, .cf-preco, .cf-freq').forEach(function(el) { el.addEventListener('input', recalc); });
-  tr.querySelector('.btn-del-row').addEventListener('click', function() { tr.remove(); updateTotalCliente(); });
-
-  updateClienteRowTotal(tr);
-}
-
-function updateClienteRowTotal(tr) {
-  var q = parseFloat(tr.querySelector('.cf-qtde').value) || 0;
-  var p = parseFloat(tr.querySelector('.cf-preco').value) || 0;
-  var f = parseFloat(tr.querySelector('.cf-freq').value) || 0;
-  var total = q * p * f;
-  tr.querySelector('.valor-final').textContent = total.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
-  tr.dataset.total = total;
-  updateTotalCliente();
-}
-
-function updateTotalCliente() {
-  var total = 0;
-  document.querySelectorAll('#clienteItensBody tr').forEach(function(tr) { total += parseFloat(tr.dataset.total) || 0; });
-  $('totalCliente').textContent = total.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
-}
-
-$('addClienteRowBtn').addEventListener('click', function() { addClienteRow(); });
-
-// Traz itens da Planilha Inicial para o Cliente (idempotente: cada linha
-// da Inicial só é trazida uma vez para o Cliente, controlada por um flag
-// próprio, independente do flag usado para o Fechamento).
-function trazerItensDaInicial() {
-  document.querySelectorAll('#itensBody tr').forEach(function(tr) {
-    if (tr.dataset.broughtCliente === 'true') return;
-    var servico = tr.querySelector('.f-servico').value;
-    var desc = tr.querySelector('.f-desc').value.trim();
-    var preco = parseFloat(tr.querySelector('.f-preco').value) || 0;
-    // Pula linhas vazias (sem serviço selecionado e sem descrição/preço)
-    if ((!servico || servico === '--') && !desc && preco === 0) return;
-    addClienteRow({
-      servico: servico,
-      desc: desc,
-      qtde: parseFloat(tr.querySelector('.f-qtde').value) || 0,
-      preco: preco,
-      freq: parseFloat(tr.querySelector('.f-freq').value) || 0
-    });
-    tr.dataset.broughtCliente = 'true';
-  });
-}
-$('trazerItensBtn').addEventListener('click', trazerItensDaInicial);
-
-// Traz itens da Planilha Inicial para o Fechamento (com fornecedor e forma
-// de pagamento inclusos, pois é um documento interno assim como a Inicial).
-// Também idempotente, com flag próprio.
-function trazerItensParaFechamento() {
-  document.querySelectorAll('#itensBody tr').forEach(function(tr) {
-    if (tr.dataset.broughtFechamento === 'true') return;
-    var servico = tr.querySelector('.f-servico').value;
-    var desc = tr.querySelector('.f-desc').value.trim();
-    var preco = parseFloat(tr.querySelector('.f-preco').value) || 0;
-    // Pula linhas vazias (sem serviço selecionado e sem descrição/preço)
-    if ((!servico || servico === '--') && !desc && preco === 0) return;
-    fechamentoTable.addRow({
-      servico: servico,
-      desc: desc,
-      qtde: parseFloat(tr.querySelector('.f-qtde').value) || 0,
-      preco: preco,
-      freq: parseFloat(tr.querySelector('.f-freq').value) || 0,
-      unidade: tr.querySelector('.f-unidade').value,
-      fornecedor: tr.querySelector('.f-fornecedor').value,
-      forma: tr.querySelector('.f-forma').value,
-      obs: tr.querySelector('.f-obs').value
-    });
-    tr.dataset.broughtFechamento = 'true';
-  });
-}
-$('trazerFechamentoBtn').addEventListener('click', trazerItensParaFechamento);
-
-function formatDateBR(iso) {
-  if (!iso) return '';
-  var parts = iso.split('-');
-  return parts[2] + '/' + parts[1] + '/' + parts[0];
-}
-
-// Converte 'YYYY-MM-DD' num objeto Date real (UTC), para virar data de
-// verdade no Excel (permite aritmética como $J$3+30), não apenas texto.
-function isoToDate(iso) {
-  if (!iso) return null;
-  var p = iso.split('-');
-  return new Date(Date.UTC(parseInt(p[0],10), parseInt(p[1],10)-1, parseInt(p[2],10)));
-}
-
-// Soma dias a uma data ISO 'YYYY-MM-DD' e devolve outra data ISO.
-function addDiasIso(iso, dias) {
-  if (!iso) return '';
-  var d = isoToDate(iso);
-  d.setUTCDate(d.getUTCDate() + dias);
-  return d.toISOString().slice(0,10);
-}
-
-// Extrai o número de dias de um prazo tipo "30D"/"45d". Retorna null se
-// não for um prazo em dias reconhecível (ex: "A VISTA", "A combinar").
-function parseDiasPrazo(prazo) {
-  if (!prazo) return null;
-  var m = String(prazo).trim().match(/^(\d+)\s*d$/i);
-  return m ? parseInt(m[1], 10) : null;
-}
-
-function isAVistaPrazo(prazo) {
-  return /a\s*vista/i.test(String(prazo || ''));
-}
-
-function syncResumoCliente() {
-  $('cProjeto').value = $('numEvento').value;
-  $('cEvento').value = $('nomeEvento').value;
-  $('cData').value = formatDateBR($('dataInicio').value);
-  $('cHorario').value = $('horario').value;
-  $('cLocal').value = $('local').value;
-  $('cPax').value = $('publicoEstimado').value;
-}
-
-$('avancarClienteBtn').addEventListener('click', function() {
-  syncResumoCliente();
-  if (document.querySelectorAll('#clienteItensBody tr').length === 0) trazerItensDaInicial();
-  showTab('cliente');
-});
-$('voltarInicialBtn').addEventListener('click', function() { showTab('inicial'); });
-
-function syncHeaderFechamento() {
-  $('numEventoFech').value = $('numEvento').value;
-  $('clienteFech').value = $('cliente').value;
-  $('nomeEventoFech').value = $('nomeEvento').value;
-  $('dataInicioFech').value = $('dataInicio').value;
-  $('dataTerminoFech').value = $('dataTermino').value;
-  $('horarioFech').value = $('horario').value;
-  $('localFech').value = $('local').value;
-  $('publicoEstimadoFech').value = $('publicoEstimado').value;
-  $('montagemFech').value = $('montagem').value;
-  $('produtorFech').value = $('produtor').value;
-}
-$('atualizarHeaderFechBtn').addEventListener('click', syncHeaderFechamento);
-
-$('avancarFechamentoBtn').addEventListener('click', function() {
-  if (!$('numEventoFech').value) syncHeaderFechamento();
-  if (document.querySelectorAll('#fechamentoItensBody tr').length === 0) trazerItensParaFechamento();
-  showTab('fechamento');
-});
-$('voltarClienteBtn').addEventListener('click', function() { showTab('cliente'); });
-
-// ---------------------------------------------------------------------
-// ABA 4: Pagamento a Fornecedores
-// ---------------------------------------------------------------------
-var fornecedorRowCount = 0;
-
-function getEventoDataInicioIso() {
-  return $('dataInicioFech').value || $('dataInicio').value;
-}
-
-// Decide a forma de pagamento padrão e os dias de prazo a partir do texto
-// de prazo do fornecedor (ex: "30D" -> faturado/30, "A VISTA" -> avista,
-// qualquer outra coisa (vazio, "-", "A combinar", "50% + 50%") -> parcial,
-// exigindo condição anotada em Observações.
-function vencimentoInfoFor(prazo) {
-  var dias = parseDiasPrazo(prazo);
-  if (dias != null) return { forma: 'faturado', dias: dias };
-  if (isAVistaPrazo(prazo)) return { forma: 'avista', dias: null };
-  return { forma: 'parcial', dias: null };
-}
-
-function updateFornecedorVencimento(tr) {
-  var checked = tr.querySelector('.ff-forma-check:checked');
-  var vencCell = tr.querySelector('.ff-vencimento');
-  if (!checked) { vencCell.textContent = ''; return; }
-  if (checked.value === 'faturado') {
-    var dias = parseInt(tr.dataset.dias, 10);
-    var dataInicioIso = getEventoDataInicioIso();
-    vencCell.textContent = (dataInicioIso && !isNaN(dias)) ? formatDateBR(addDiasIso(dataInicioIso, dias)) : 'Condições em OBS';
-  } else {
-    vencCell.textContent = 'Condições em OBS';
   }
 }
 
@@ -755,89 +429,17 @@ $('imprimirVerbaBtn').addEventListener('click', function() {
 // em todos os eventos. Edições aqui atualizam o datalist dl-servicos.
 // =====================================================================
 
-var SERVICOS_DEFAULT = [
-  'Iluminação Cênica','Iluminação de Palco','Sonorização','Gerador',
-  'Estrutura de Palco','Estrutura Metálica','Tendas','Segurança','Brigadistas',
-  'Decoração','Buffet','Filmagem','Fotografia','Transmissão ao Vivo',
-  'Rádio Comunicação','Limpeza','Transporte','Hospedagem','Locução',
-  'Atrações Artísticas'
-];
-
-function carregarCatalogoServicos() {
-  var raw = localStorage.getItem('catalogo_servicos_v1');
-  if (raw) { try { return JSON.parse(raw); } catch(e) {} }
-  return [];
-}
-
-function salvarCatalogoServicos(lista) {
-  localStorage.setItem('catalogo_servicos_v1', JSON.stringify(lista));
-}
+// Catálogo: gerenciado pelo GEP (vtp_catalogo_v1)
+function carregarCatalogoServicos() { return []; }
+function salvarCatalogoServicos(lista) {}
 
 function atualizarDlServicos() {
-  var lista = carregarCatalogoServicos();
-  var dl = document.getElementById('dl-servicos');
-  if (!dl) return;
-  dl.innerHTML = '';
-  lista.forEach(function(s) {
-    var opt = document.createElement('option');
-    opt.value = s;
-    dl.appendChild(opt);
-  });
+  // dl-servicos é preenchido pelo GEP via plnlInitGEPData
 }
+function salvarDoCatalogoServicos() {}
 
-function salvarDoCatalogoServicos() {
-  var lista = [];
-  document.querySelectorAll('#catalogoServicosBody .cat-serv-nome').forEach(function(inp) {
-    var v = inp.value.trim();
-    if (v) lista.push(v);
-  });
-  salvarCatalogoServicos(lista);
-  atualizarDlServicos();
-}
-
-function renderCatalogoServicos() {
-  var lista = carregarCatalogoServicos();
-  var tbody = $('catalogoServicosBody');
-  if (!tbody) return;
-  tbody.innerHTML = '';
-  lista.forEach(function(s) {
-    var tr = document.createElement('tr');
-    tr.innerHTML =
-      '<td><input type="text" class="cat-serv-nome" value="' + s.replace(/"/g,'&quot;') + '"></td>' +
-      '<td><button type="button" class="btn-del-row">×</button></td>';
-    tbody.appendChild(tr);
-    tr.querySelector('.cat-serv-nome').addEventListener('input', salvarDoCatalogoServicos);
-    tr.querySelector('.btn-del-row').addEventListener('click', function() {
-      tr.remove();
-      salvarDoCatalogoServicos();
-    });
-  });
-}
-
-(function() {
-  var addBtn = $('addCatalogoServicoBtn');
-  var novoInp = $('novoServicoInput');
-  if (!addBtn || !novoInp) return;
-
-  function adicionarServico() {
-    var v = novoInp.value.trim();
-    if (!v) return;
-    var lista = carregarCatalogoServicos();
-    lista.push(v);
-    salvarCatalogoServicos(lista);
-    novoInp.value = '';
-    renderCatalogoServicos();
-    atualizarDlServicos();
-  }
-
-  addBtn.addEventListener('click', adicionarServico);
-  novoInp.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') { e.preventDefault(); adicionarServico(); }
-  });
-})();
-
-renderCatalogoServicos();
-atualizarDlServicos();
+function renderCatalogoServicos() {}
+// renderCatalogoServicos: aba removida
 
 // =====================================================================
 // AUTO-SAVE com localStorage
@@ -1007,11 +609,7 @@ function carregarEstado() {
       $('verbaBody').innerHTML = '';
       s.verba.forEach(function(r) { addVerbaRow(r); });
     }
-    if (s.cadastro && s.cadastro.length) {
-      $('cadastroBody').innerHTML = '';
-      s.cadastro.forEach(function(r) { addCadastroRow(r); });
-      refreshFornecedorLookups();
-    }
+    refreshFornecedorLookups(); // s.cadastro: aba removida
 
     atualizarTopbar();
     updateValorComMargem();
