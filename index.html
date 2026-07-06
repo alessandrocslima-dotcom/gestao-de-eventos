@@ -5111,15 +5111,16 @@ function plnlRenderList(){
   }
   body.innerHTML = list.map(function(p){
     var nomeEvento = (p.dados && p.dados.nomeEvento) ? p.dados.nomeEvento : '';
-    var sub = nomeEvento ? '<span style="color:#64748B;font-size:11px">'+nomeEvento+'</span>' : '';
+    var sub = nomeEvento ? '<span style="color:#64748B;font-size:11px">'+escHtml(nomeEvento)+'</span>' : '';
+    var eid = escHtml(p.id);
     return '<div style="display:flex;align-items:center;gap:12px;padding:12px;border:1px solid #E2E8F0;border-radius:10px;margin-bottom:8px;background:#fff">'
       +'<div style="flex:1;min-width:0">'
         +'<div style="font-weight:600;font-size:13px;color:#0F172A">'+escHtml(p.nome||'Sem nome')+'</div>'
-        +(sub?'<div>'+escHtml(sub)+'</div>':'')
+        +(sub?'<div>'+sub+'</div>':'')
         +'<div style="color:#94A3B8;font-size:11px;margin-top:2px">'+escHtml(p.criadoEm||'')+'</div>'
       +'</div>'
-      +'<button onclick="plnlAbrir(''+p.id+'')" style="padding:7px 14px;background:#2563EB;color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer">Abrir</button>'
-      +'<button onclick="plnlExcluir(''+p.id+'')" style="padding:7px 10px;background:#FEF2F2;color:#DC2626;border:1px solid #FECACA;border-radius:7px;font-size:12px;cursor:pointer">Excluir</button>'
+      +'<button data-plnlid="'+eid+'" onclick="plnlAbrir(this.dataset.plnlid)" style="padding:7px 14px;background:#2563EB;color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer">Abrir</button>'
+      +'<button data-plnlid="'+eid+'" onclick="plnlExcluir(this.dataset.plnlid)" style="padding:7px 10px;background:#FEF2F2;color:#DC2626;border:1px solid #FECACA;border-radius:7px;font-size:12px;cursor:pointer">Excluir</button>'
     +'</div>';
   }).join('');
 }
