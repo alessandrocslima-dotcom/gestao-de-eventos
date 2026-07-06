@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orçamento de Evento</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#ffffff">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Spectral:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<div class="app-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo-icon">O</div>
+      <div>
+        <div class="logo-title">Orçamento</div>
+        <div class="logo-sub">de Evento</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label" data-group="Evento">Evento</div>
+      <a class="nav-item active" data-tab="inicial" href="#" onclick="showTab('inicial');return false;">
+        <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg></span>Planilha Inicial
+      </a>
+      <a class="nav-item" data-tab="cliente" href="#" onclick="showTab('cliente');return false;">
+        <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-6.5 8-6.5S20 16 20 20"/></svg></span>Cliente
+      </a>
+      <a class="nav-item" data-tab="fechamento" href="#" onclick="showTab('fechamento');return false;">
+        <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6a1 1 0 0 1 1 1v1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h1V5a1 1 0 0 1 1-1Z"/><path d="M9 13l2 2 4-4"/></svg></span>Fechamento
+      </a>
+
+      <div class="nav-section-label" data-group="Financeiro">Financeiro</div>
+      <a class="nav-item" data-tab="fornecedores" href="#" onclick="showTab('fornecedores');return false;">
+        <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h11v9H3z"/><path d="M14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="1.6"/><circle cx="17.5" cy="18" r="1.6"/></svg></span>Fornecedores
+      </a>
+      <a class="nav-item" data-tab="verba" href="#" onclick="showTab('verba');return false;">
+        <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2h1a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-1v0a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/><circle cx="16.5" cy="13" r="1.3"/></svg></span>Verba de Produção
+      </a>
+
+      <div class="nav-section-label" data-group="Configuração">Configuração</div>
+      <a class="nav-item" data-tab="cadastro" href="#" onclick="showTab('cadastro');return false;">
+        <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><circle cx="12" cy="10" r="2.6"/><path d="M8.5 16.5c.6-1.6 2-2.2 3.5-2.2s2.9.6 3.5 2.2"/></svg></span>Cadastro de Fornecedores
+      </a>
+      <a class="nav-item" data-tab="servicos" href="#" onclick="showTab('servicos');return false;">
+        <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="12" y2="16"/></svg></span>Catálogo de Serviços
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="btn-novo" onclick="novoEvento()">+ Novo Evento</button>
+    </div>
+  </aside>
+
+  <!-- MAIN AREA -->
+  <div class="main-area">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <span class="topbar-group" id="topbarGroup">Evento</span>
+        <span class="topbar-sep">/</span>
+        <span class="topbar-title" id="topbarTitle">Planilha Inicial</span>
+        <span class="topbar-badge" id="topbarBadge"></span>
+      </div>
+      <div class="topbar-right">
+        <span class="save-status" id="saveStatus">●&nbsp;Salvo</span>
+        <button class="btn-export" id="gerarBtn">↓ Exportar Excel</button>
+      </div>
+    </div>
+
+    <!-- CONTENT AREA -->
+    <div class="content-area">
+
+      <!-- Datalists globais -->
+      <datalist id="dl-fornecedores"></datalist>
+      <datalist id="dl-servicos">
+        <option value="Iluminação Cênica">
+        <option value="Iluminação de Palco">
+        <option value="Sonorização">
+        <option value="Gerador">
+        <option value="Estrutura de Palco">
+        <option value="Estrutura Metálica">
+        <option value="Tendas">
+        <option value="Segurança">
+        <option value="Brigadistas">
+        <option value="Decoração">
+        <option value="Buffet">
+        <option value="Filmagem">
+        <option value="Fotografia">
+        <option value="Transmissão ao Vivo">
+        <option value="Rádio Comunicação">
+        <option value="Limpeza">
+        <option value="Transporte">
+        <option value="Hospedagem">
+        <option value="Locução">
+        <option value="Atrações Artísticas">
+      </datalist>
+
+      <!-- ===== ABA 1: PLANILHA INICIAL ===== -->
+      <div class="tab-section active" id="tab-inicial">
+
+        <div class="event-header-strip">
+          <div class="field-inline">
+            <label>Nº Evento</label>
+            <input type="text" id="numEvento" placeholder="134.26" style="width:88px">
+          </div>
+          <div class="field-inline" style="flex:1">
+            <label>Nome da Ação / Evento</label>
+            <input type="text" id="nomeEvento">
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Dados do Evento</div>
+          <div class="form-grid">
+            <div class="form-field">
+              <label>Cliente / Secretaria</label>
+              <select id="cliente"></select>
+            </div>
+            <div class="form-field">
+              <label>Data Início</label>
+              <input type="date" id="dataInicio">
+            </div>
+            <div class="form-field">
+              <label>Data Término</label>
+              <input type="date" id="dataTermino">
+            </div>
+            <div class="form-field">
+              <label>Horário</label>
+              <input type="text" id="horario" placeholder="ex: 13H">
+            </div>
+            <div class="form-field">
+              <label>Local</label>
+              <input type="text" id="local">
+            </div>
+            <div class="form-field">
+              <label>Público Estimado</label>
+              <input type="text" id="publicoEstimado">
+            </div>
+            <div class="form-field">
+              <label>Montagem</label>
+              <input type="text" id="montagem" placeholder="ex: 11H">
+            </div>
+            <div class="form-field">
+              <label>Produtor Responsável</label>
+              <select id="produtor"></select>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Itens do Orçamento (custo interno)</div>
+          <div class="table-wrap">
+            <table id="itensTable">
+              <thead>
+                <tr>
+                  <th class="col-servico">Serviço</th>
+                  <th class="col-desc">Descrição</th>
+                  <th class="col-num">Qtde</th>
+                  <th class="col-num">Preço Unit.</th>
+                  <th class="col-num">Freq.</th>
+                  <th class="col-sm">Unidade</th>
+                  <th class="col-num">Valor Final</th>
+                  <th class="col-forn">Fornecedor</th>
+                  <th class="col-sm">Pagamento</th>
+                  <th class="col-obs">OBS</th>
+                  <th class="col-del"></th>
+                </tr>
+              </thead>
+              <tbody id="itensBody"></tbody>
+            </table>
+          </div>
+          <div class="table-actions">
+            <button type="button" class="btn-table-add" id="addRowBtn">+ Adicionar item</button>
+          </div>
+          <div class="total-bar">Total interno: <span id="totalGeral">R$ 0,00</span></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Verba de Produção Estimada</div>
+          <div class="form-grid">
+            <div class="form-field col-span-2">
+              <label>Descritivo</label>
+              <input type="text" id="verbaEstDescritivo" value="Verba para produção com comprovação pós evento">
+            </div>
+            <div class="form-field">
+              <label>Qtde</label>
+              <input type="number" id="verbaEstQtde" step="any" value="1">
+            </div>
+            <div class="form-field">
+              <label>R$ Unitário</label>
+              <input type="number" id="verbaEstUnitario" step="any" value="0">
+            </div>
+            <div class="form-field">
+              <label>Nome da Empresa</label>
+              <input type="text" id="nomeEmpresa" placeholder="ex: Sua Empresa de Eventos Ltda">
+            </div>
+            <div class="form-field col-span-2">
+              <label>Observação</label>
+              <input type="text" id="verbaEstObs" value="Contra apresentação somente com notas fiscais">
+            </div>
+          </div>
+          <div class="total-bar">Subtotal verba: <span id="totalVerbaEst">R$ 0,00</span></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Margem de Lucro e Total</div>
+          <div class="form-grid" style="align-items:end">
+            <div class="form-field">
+              <label>Margem de Lucro (%)</label>
+              <input type="number" id="margemLucro" step="any" value="20">
+            </div>
+            <div class="form-field">
+              <label>Total do Evento (Serviços + Verba)</label>
+              <div class="total-display" id="totalDoEvento">R$ 0,00</div>
+            </div>
+            <div class="form-field">
+              <label>Valor Total com Margem</label>
+              <div class="total-display total-display--hl" id="valorComMargem">R$ 0,00</div>
+              <div class="total-hint">Total <span id="custoBaseMargem">R$ 0,00</span> × margem</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-actions">
+          <button type="button" class="btn-next" id="avancarClienteBtn">Avançar para Cliente →</button>
+        </div>
+      </div>
+
+      <!-- ===== ABA 2: CLIENTE ===== -->
+      <div class="tab-section" id="tab-cliente">
+        <div class="info-note">
+          Este é o documento que será encaminhado ao cliente. Os dados do evento vêm automaticamente da Planilha Inicial.
+          Use "Trazer itens" para importar os itens já lançados (o preço pode ser editado para aplicar markup).
+        </div>
+
+        <div class="card card--accent">
+          <div class="card-title">Resumo do Evento</div>
+          <div class="form-grid">
+            <div class="form-field"><label>Projeto Nº</label><input type="text" id="cProjeto" readonly></div>
+            <div class="form-field col-span-2"><label>Evento</label><input type="text" id="cEvento" readonly></div>
+            <div class="form-field"><label>Data</label><input type="text" id="cData" readonly></div>
+            <div class="form-field"><label>Horário</label><input type="text" id="cHorario" readonly></div>
+            <div class="form-field"><label>Local</label><input type="text" id="cLocal" readonly></div>
+            <div class="form-field"><label>PAX / Público</label><input type="text" id="cPax" readonly></div>
+          </div>
+        </div>
+
+        <div class="card card--accent">
+          <div class="card-title">Itens da Proposta ao Cliente</div>
+          <div class="table-wrap">
+            <table id="clienteItensTable">
+              <thead>
+                <tr>
+                  <th class="col-servico">Serviço</th>
+                  <th class="col-desc">Descrição</th>
+                  <th class="col-num">Qtde</th>
+                  <th class="col-num">R$ Unitário</th>
+                  <th class="col-num">Freq.</th>
+                  <th class="col-num">Valor Final</th>
+                  <th class="col-del"></th>
+                </tr>
+              </thead>
+              <tbody id="clienteItensBody"></tbody>
+            </table>
+          </div>
+          <div class="table-actions">
+            <button type="button" class="btn-table-sec" id="trazerItensBtn">↺ Trazer itens da Planilha Inicial</button>
+            <button type="button" class="btn-table-add" id="addClienteRowBtn">+ Adicionar item</button>
+          </div>
+          <div class="total-bar">Valor total ao cliente: <span id="totalCliente">R$ 0,00</span></div>
+        </div>
+
+        <div class="card card--accent">
+          <div class="card-title">Condições</div>
+          <div class="form-grid">
+            <div class="form-field col-span-3">
+              <label>Observações</label>
+              <textarea id="observacoes" rows="2"></textarea>
+            </div>
+            <div class="form-field">
+              <label>Prazo de Validade do Orçamento</label>
+              <input type="text" id="prazoValidade" placeholder="ex: 10 dias">
+            </div>
+          </div>
+        </div>
+
+        <div class="section-actions">
+          <button type="button" class="btn-back" id="voltarInicialBtn">← Planilha Inicial</button>
+          <button type="button" class="btn-next" id="avancarFechamentoBtn">Avançar para Fechamento →</button>
+        </div>
+      </div>
+
+      <!-- ===== ABA 3: FECHAMENTO ===== -->
+      <div class="tab-section" id="tab-fechamento">
+        <div class="info-note">
+          Aqui o produtor fecha os custos reais do evento. Use "Trazer itens" para importar e ajuste o que mudou.
+        </div>
+
+        <div class="card card--fech">
+          <div class="card-title">Dados do Evento</div>
+          <div class="form-grid">
+            <div class="form-field"><label>Nº do Evento</label><input type="text" id="numEventoFech"></div>
+            <div class="form-field"><label>Cliente / Secretaria</label><select id="clienteFech"></select></div>
+            <div class="form-field col-span-2"><label>Nome da Ação / Evento</label><input type="text" id="nomeEventoFech"></div>
+            <div class="form-field"><label>Data Início</label><input type="date" id="dataInicioFech"></div>
+            <div class="form-field"><label>Data Término</label><input type="date" id="dataTerminoFech"></div>
+            <div class="form-field"><label>Horário</label><input type="text" id="horarioFech"></div>
+            <div class="form-field"><label>Local</label><input type="text" id="localFech"></div>
+            <div class="form-field"><label>Público Estimado</label><input type="text" id="publicoEstimadoFech"></div>
+            <div class="form-field"><label>Montagem</label><input type="text" id="montagemFech"></div>
+            <div class="form-field"><label>Produtor Responsável</label><select id="produtorFech"></select></div>
+          </div>
+          <div class="table-actions" style="margin-top:8px">
+            <button type="button" class="btn-table-sec" id="atualizarHeaderFechBtn">↺ Atualizar dados (da Planilha Inicial)</button>
+          </div>
+        </div>
+
+        <div class="card card--fech">
+          <div class="card-title">Itens de Fechamento</div>
+          <div class="table-wrap">
+            <table id="fechamentoItensTable">
+              <thead>
+                <tr>
+                  <th class="col-servico">Serviço</th>
+                  <th class="col-desc">Descrição</th>
+                  <th class="col-num">Qtde</th>
+                  <th class="col-num">Preço Unit.</th>
+                  <th class="col-num">Freq.</th>
+                  <th class="col-sm">Unidade</th>
+                  <th class="col-num">Valor Final</th>
+                  <th class="col-forn">Fornecedor</th>
+                  <th class="col-sm">Pagamento</th>
+                  <th class="col-obs">OBS</th>
+                  <th class="col-del"></th>
+                </tr>
+              </thead>
+              <tbody id="fechamentoItensBody"></tbody>
+            </table>
+          </div>
+          <div class="table-actions">
+            <button type="button" class="btn-table-sec" id="trazerFechamentoBtn">↺ Trazer itens da Planilha Inicial</button>
+            <button type="button" class="btn-table-add" id="addFechamentoRowBtn">+ Adicionar item</button>
+          </div>
+          <div class="total-bar">Total de fechamento: <span id="totalFechamento">R$ 0,00</span></div>
+        </div>
+
+        <div class="section-actions">
+          <button type="button" class="btn-back" id="voltarClienteBtn">← Cliente</button>
+          <button type="button" class="btn-next" id="avancarFornecedoresBtn">Avançar para Fornecedores →</button>
+        </div>
+      </div>
+
+      <!-- ===== ABA 4: FORNECEDORES ===== -->
+      <div class="tab-section" id="tab-fornecedores">
+        <div class="info-note">
+          Controle de pagamento aos fornecedores. Use "Trazer fornecedores" para importar automaticamente cada fornecedor
+          único usado no fechamento com valor total já preenchido.
+        </div>
+
+        <div class="card card--forn">
+          <div class="card-title">Resumo do Evento</div>
+          <div class="form-grid">
+            <div class="form-field"><label>Cliente</label><input type="text" id="fCliente" readonly></div>
+            <div class="form-field"><label>Nº do Evento</label><input type="text" id="fNumEvento" readonly></div>
+            <div class="form-field col-span-2"><label>Evento</label><input type="text" id="fEvento" readonly></div>
+            <div class="form-field"><label>Data Início</label><input type="text" id="fDataInicio" readonly></div>
+            <div class="form-field"><label>Local</label><input type="text" id="fLocal" readonly></div>
+            <div class="form-field"><label>Produtor</label><input type="text" id="fProdutor" readonly></div>
+          </div>
+        </div>
+
+        <div class="card card--forn">
+          <div class="card-title">Fornecedores</div>
+          <div class="table-wrap">
+            <table id="fornecedoresTable">
+              <thead>
+                <tr>
+                  <th class="col-forn">Fornecedor</th>
+                  <th>CNPJ</th>
+                  <th>Contato</th>
+                  <th>Telefone</th>
+                  <th class="col-num">Valor Final</th>
+                  <th class="col-sm">Pagamento</th>
+                  <th>Vencimento</th>
+                  <th class="col-obs">Observações</th>
+                  <th class="col-del"></th>
+                </tr>
+              </thead>
+              <tbody id="fornecedoresBody"></tbody>
+            </table>
+          </div>
+          <div class="table-actions">
+            <button type="button" class="btn-table-sec" id="trazerFornecedoresBtn">↺ Trazer fornecedores do Fechamento</button>
+            <button type="button" class="btn-table-add" id="addFornecedorRowBtn">+ Adicionar fornecedor</button>
+          </div>
+          <div class="total-bar">Total a pagar: <span id="totalFornecedores">R$ 0,00</span></div>
+        </div>
+
+        <div class="section-actions">
+          <button type="button" class="btn-back" id="voltarFechamentoBtn">← Fechamento</button>
+          <button type="button" class="btn-print" id="imprimirFornecedoresBtn">Imprimir</button>
+          <button type="button" class="btn-next" id="avancarVerbaBtn">Avançar para Verba →</button>
+        </div>
+      </div>
+
+      <!-- ===== ABA 5: VERBA DE PRODUÇÃO ===== -->
+      <div class="tab-section" id="tab-verba">
+        <div class="info-note">
+          Registre aqui os gastos de verba de produção. Ao final, use "Exportar Excel" para baixar o arquivo completo.
+        </div>
+
+        <div class="card card--verba">
+          <div class="card-title">Resumo do Evento</div>
+          <div class="form-grid">
+            <div class="form-field"><label>Nº do Evento</label><input type="text" id="vNumEvento" readonly></div>
+            <div class="form-field"><label>Data do Evento</label><input type="text" id="vData" readonly></div>
+            <div class="form-field col-span-2"><label>Evento</label><input type="text" id="vEvento" readonly></div>
+            <div class="form-field"><label>Produtor</label><input type="text" id="vProdutor" readonly></div>
+          </div>
+        </div>
+
+        <div class="card card--verba">
+          <div class="card-title">Itens de Verba de Produção</div>
+          <div class="table-wrap">
+            <table id="verbaTable">
+              <thead>
+                <tr>
+                  <th class="col-forn">Produtor</th>
+                  <th class="col-desc">Item</th>
+                  <th class="col-num">Valor (R$)</th>
+                  <th class="col-obs">OBS</th>
+                  <th class="col-del"></th>
+                </tr>
+              </thead>
+              <tbody id="verbaBody"></tbody>
+            </table>
+          </div>
+          <div class="table-actions">
+            <button type="button" class="btn-table-add" id="addVerbaRowBtn">+ Adicionar item</button>
+          </div>
+          <div class="total-bar">Total de verba gasta: <span id="totalVerba">R$ 0,00</span></div>
+          <div id="totalPorProdutor" style="margin-top:10px;border-top:1px solid var(--border);padding-top:10px;font-size:13px;color:var(--text-secondary)"></div>
+        </div>
+
+        <div class="section-actions">
+          <button type="button" class="btn-back" id="voltarFornecedoresBtn">← Fornecedores</button>
+          <button type="button" class="btn-print" id="imprimirVerbaBtn">Imprimir</button>
+          <span class="msg" id="msg"></span>
+        </div>
+      </div>
+
+      <!-- ===== ABA CADASTRO ===== -->
+      <div class="tab-section" id="tab-cadastro">
+        <div class="info-note info-note--cad">
+          Cadastro editável de fornecedores. Alterações aqui atualizam imediatamente o autocomplete usado nas outras abas
+          e também são exportadas para a planilha Excel.
+        </div>
+        <div class="card card--cad">
+          <div class="card-title">Fornecedores Cadastrados</div>
+          <div class="table-wrap">
+            <table id="cadastroTable">
+              <thead>
+                <tr>
+                  <th class="col-forn">Fornecedor</th>
+                  <th>CNPJ / CPF</th>
+                  <th>Contato</th>
+                  <th>Telefone</th>
+                  <th>Prazo de Pagamento</th>
+                  <th class="col-desc">Serviço</th>
+                  <th class="col-del"></th>
+                </tr>
+              </thead>
+              <tbody id="cadastroBody"></tbody>
+            </table>
+          </div>
+          <div class="table-actions">
+            <button type="button" class="btn-table-add" id="addCadastroRowBtn">+ Adicionar fornecedor</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== ABA CATÁLOGO DE SERVIÇOS ===== -->
+      <div class="tab-section" id="tab-servicos">
+        <div class="info-note info-note--cad">
+          Catálogo editável de serviços. Os serviços cadastrados aqui aparecem como sugestões no campo "Serviço" das tabelas de itens.
+          As alterações são salvas automaticamente e ficam disponíveis em todos os orçamentos.
+        </div>
+        <div class="card card--cad">
+          <div class="card-title">Serviços Cadastrados</div>
+          <div class="table-wrap">
+            <table id="catalogoServicosTable">
+              <thead>
+                <tr>
+                  <th>Nome do Serviço</th>
+                  <th class="col-del"></th>
+                </tr>
+              </thead>
+              <tbody id="catalogoServicosBody"></tbody>
+            </table>
+          </div>
+          <div class="table-actions" style="margin-top:10px;">
+            <input type="text" id="novoServicoInput" placeholder="Nome do novo serviço..." style="flex:1;max-width:320px;">
+            <button type="button" class="btn-table-add" id="addCatalogoServicoBtn">+ Adicionar</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end content-area -->
+  </div><!-- end main-area -->
+</div><!-- end app-layout -->
+
+<script src="lib/exceljs.min.js"></script>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script src="js/excel.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+  }
+</script>
+</body>
+</html>
