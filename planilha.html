@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Planilha Orçamentária</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Reset e base */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Outfit', 'Inter', sans-serif; background: #F1F5F9; color: #0F172A; font-size: 13px; }
+
+/* ── Topbar GEP-style ── */
+.plnl-topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: #0F172A; color: #fff;
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 18px; border-bottom: 1px solid #1E293B;
+  min-height: 52px;
+}
+.plnl-topbar-title { font-size: 14px; font-weight: 600; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.plnl-topbar-sub { font-size: 11px; color: #94A3B8; }
+.plnl-btn { padding: 7px 13px; border: none; border-radius: 7px; font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; font-family: inherit; }
+.plnl-btn-close { background: #1E293B; color: #94A3B8; }
+.plnl-btn-close:hover { background: #334155; color: #fff; }
+.plnl-btn-save { background: #16A34A; color: #fff; }
+.plnl-btn-save:hover { background: #15803D; }
+.plnl-btn-excel { background: #2563EB; color: #fff; }
+.plnl-btn-excel:hover { background: #1D4ED8; }
+.plnl-btn-vincular { background: #7C3AED; color: #fff; }
+.plnl-btn-vincular:hover { background: #6D28D9; }
+#plnlNomeInput {
+  background: #1E293B; border: 1px solid #334155; border-radius: 7px;
+  color: #fff; padding: 6px 10px; font-size: 13px; font-weight: 600;
+  font-family: inherit; min-width: 200px; flex: 1; max-width: 340px;
+}
+#plnlNomeInput::placeholder { color: #475569; }
+#plnlNomeInput:focus { outline: none; border-color: #2563EB; }
+
+/* ── Tabs ── */
+.plnl-tabs-bar {
+  background: #fff; border-bottom: 2px solid #E2E8F0;
+  display: flex; gap: 0; overflow-x: auto; padding: 0 16px;
+  position: sticky; top: 52px; z-index: 90;
+}
+.plnl-tabs-bar::-webkit-scrollbar { height: 3px; }
+.plnl-tabs-bar::-webkit-scrollbar-thumb { background: #CBD5E1; }
+.plnl-tab {
+  padding: 12px 16px; font-size: 12.5px; font-weight: 500;
+  color: #64748B; cursor: pointer; white-space: nowrap;
+  border-bottom: 2px solid transparent; margin-bottom: -2px;
+  transition: color .15s, border-color .15s;
+}
+.plnl-tab:hover { color: #1D4ED8; }
+.plnl-tab.active { color: #1D4ED8; border-bottom-color: #2563EB; font-weight: 600; }
+
+/* ── Conteúdo ── */
+.content-area { padding: 16px; max-width: 1100px; }
+.tab-section { display: none; }
+.tab-section.active { display: block; }
+
+/* ── Cards ── */
+.card { background: #fff; border: 1px solid #E2E8F0; border-radius: 12px; margin-bottom: 14px; overflow: hidden; }
+.card-title { font-size: 13px; font-weight: 700; color: #0F172A; padding: 12px 16px; border-bottom: 1px solid #F1F5F9; background: #F8FAFC; }
+.card--accent .card-title { background: #EFF6FF; color: #1D4ED8; border-bottom-color: #DBEAFE; }
+.card--fech .card-title { background: #F0FDF4; color: #166534; border-bottom-color: #DCFCE7; }
+.card--forn .card-title { background: #FFFBEB; color: #92400E; border-bottom-color: #FEF3C7; }
+.card--verba .card-title { background: #FFF1F2; color: #9F1239; border-bottom-color: #FFE4E6; }
+.card--cad .card-title { background: #F8FAFC; }
+
+/* ── Form grid ── */
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; padding: 14px 16px; }
+.form-field { display: flex; flex-direction: column; gap: 4px; }
+.form-field.col-span-2 { grid-column: span 2; }
+.form-field.col-span-3 { grid-column: span 3; }
+.form-field label { font-size: 11px; font-weight: 600; color: #475569; text-transform: uppercase; letter-spacing: .4px; }
+.form-field input, .form-field select, .form-field textarea {
+  padding: 8px 10px; border: 1.5px solid #E2E8F0; border-radius: 7px;
+  font-size: 13px; color: #0F172A; background: #fff; font-family: inherit;
+  transition: border-color .15s;
+}
+.form-field input:focus, .form-field select:focus, .form-field textarea:focus {
+  outline: none; border-color: #2563EB;
+}
+.form-field input[readonly], .form-field input[disabled] {
+  background: #F8FAFC; color: #64748B;
+}
+.form-field textarea { resize: vertical; min-height: 60px; }
+.total-display { padding: 8px 10px; background: #F1F5F9; border-radius: 7px; font-weight: 700; font-size: 14px; color: #0F172A; }
+.total-display--hl { background: #EFF6FF; color: #1D4ED8; }
+.total-hint { font-size: 11px; color: #94A3B8; margin-top: 3px; }
+
+/* ── Tabelas ── */
+.table-wrap { overflow-x: auto; padding: 0 16px; }
+table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+thead tr { background: #F8FAFC; }
+th { padding: 9px 8px; text-align: left; font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: .4px; border-bottom: 1.5px solid #E2E8F0; white-space: nowrap; }
+td { padding: 8px 6px; border-bottom: 1px solid #F1F5F9; vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+td input, td select { width: 100%; padding: 5px 7px; border: 1.5px solid transparent; border-radius: 5px; font-size: 12px; font-family: inherit; background: transparent; color: #0F172A; }
+td input:focus, td select:focus { outline: none; border-color: #2563EB; background: #fff; }
+td input[list] { min-width: 120px; }
+.col-del { width: 30px; }
+.col-num { width: 90px; }
+.col-sm { width: 80px; }
+.col-servico { width: 130px; }
+.col-forn { min-width: 150px; }
+.col-desc { min-width: 160px; }
+.col-obs { min-width: 120px; }
+.btn-del { background: none; border: none; cursor: pointer; color: #DC2626; font-size: 15px; padding: 2px 6px; border-radius: 4px; }
+.btn-del:hover { background: #FEF2F2; }
+
+/* ── Rodapé de tabela ── */
+.table-actions { display: flex; gap: 8px; padding: 10px 16px; flex-wrap: wrap; align-items: center; }
+.btn-table-add { padding: 7px 12px; background: #EFF6FF; color: #1D4ED8; border: 1px solid #BFDBFE; border-radius: 7px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; }
+.btn-table-add:hover { background: #DBEAFE; }
+.btn-table-sec { padding: 7px 12px; background: #F0FDF4; color: #166534; border: 1px solid #BBF7D0; border-radius: 7px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; }
+.btn-table-sec:hover { background: #DCFCE7; }
+.total-bar { padding: 10px 16px; background: #F8FAFC; border-top: 1px solid #E2E8F0; font-size: 13px; font-weight: 600; color: #0F172A; }
+
+/* ── Info note ── */
+.info-note { margin-bottom: 12px; padding: 10px 14px; background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 8px; font-size: 12px; color: #1E40AF; }
+.info-note--cad { background: #F0FDF4; border-color: #BBF7D0; color: #166534; }
+
+/* ── Ações de seção ── */
+.section-actions { display: flex; gap: 8px; align-items: center; padding: 14px 0 4px; flex-wrap: wrap; }
+.btn-next { padding: 9px 18px; background: #2563EB; color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+.btn-next:hover { background: #1D4ED8; }
+.btn-back { padding: 9px 18px; background: #F1F5F9; color: #475569; border: 1px solid #E2E8F0; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+.btn-back:hover { background: #E2E8F0; }
+.btn-print { padding: 9px 14px; background: #F8FAFC; color: #475569; border: 1px solid #E2E8F0; border-radius: 8px; font-size: 13px; cursor: pointer; font-family: inherit; }
+.msg { font-size: 12px; color: #64748B; }
+
+/* ── Modal vincular ── */
+.plnl-modal-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:999; align-items:center; justify-content:center; }
+.plnl-modal-bg.open { display:flex; }
+.plnl-modal { background:#fff; border-radius:14px; padding:24px; max-width:480px; width:90%; }
+.plnl-modal h3 { font-size:15px; font-weight:700; margin-bottom:14px; color:#0F172A; }
+.plnl-modal select { width:100%; padding:10px; border:1.5px solid #E2E8F0; border-radius:8px; font-size:13px; font-family:inherit; color:#0F172A; margin-bottom:14px; }
+.plnl-modal-btns { display:flex; gap:8px; justify-content:flex-end; }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR GEP-style -->
+<div class="plnl-topbar">
+  <button class="plnl-btn plnl-btn-close" onclick="plnlClose()" title="Fechar">✕ Fechar</button>
+  <input type="text" id="plnlNomeInput" placeholder="Nome da planilha..." oninput="plnlAutoSave()">
+  <button class="plnl-btn plnl-btn-vincular" onclick="plnlAbrirVincular()">🔗 Vincular evento</button>
+  <button class="plnl-btn plnl-btn-save" onclick="plnlSalvar()">💾 Salvar</button>
+  <button class="plnl-btn plnl-btn-excel" onclick="gerarExcel()">📊 Exportar Excel</button>
+</div>
+
+<!-- BARRA DE ABAS -->
+<div class="plnl-tabs-bar">
+  <div class="plnl-tab active" onclick="plnlTab('inicial')">Planilha Inicial</div>
+  <div class="plnl-tab" onclick="plnlTab('cliente')">Cliente</div>
+  <div class="plnl-tab" onclick="plnlTab('fechamento')">Fechamento</div>
+  <div class="plnl-tab" onclick="plnlTab('fornecedores')">Fornecedores</div>
+  <div class="plnl-tab" onclick="plnlTab('verba')">Verba de Produção</div>
+  <div class="plnl-tab" onclick="plnlTab('cadastro')">Cadastro</div>
+  <div class="plnl-tab" onclick="plnlTab('servicos')">Catálogo</div>
+</div>
+
+<!-- CONTEÚDO DAS ABAS -->
+<div class="content-area">
+
+      <!-- Datalists globais -->
+      <datalist id="dl-fornecedores"></datalist>
+      <datalist id="dl-servicos">
+        <option value="Iluminação Cênica">
+        <option value="Iluminação de Palco">
+        <option value="Sonorização">
+        <option value="Gerador">
+        <option value="Estrutura de Palco">
+        <option value="Estrutura Metálica">
+        <option value="Tendas">
+        <option value="Segurança">
+        <option value="Brigadistas">
+        <option value="Decoração">
+        <option value="Buffet">
+        <option value="Filmagem">
+        <option value="Fotografia">
+        <option value="Transmissão ao Vivo">
+        <option value="Rádio Comunicação">
+        <option value="Limpeza">
+        <option value="Transporte">
+        <option value="Hospedagem">
+        <option value="Locução">
+        <option value="Atrações Artísticas">
+      </datalist>
+
+      <!-- ===== ABA 1: PLANILHA INICIAL ===== -->
+      <div class="tab-section active" id="tab-inicial">
+
+        <div class="event-header-strip">
+          <div class="field-inline">
+            <label>Nº Evento</label>
+            <input type="text" id="numEvento" placeholder="134.26" style="width:88px">
+          </div>
+          <div class="field-inline" style="flex:1">
+            <label>Nome da Ação / Evento</label>
+            <input type="text" id="nomeEvento">
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Dados do Evento</div>
+          <div class="form-grid">
+            <div class="form-field">
+              <label>Cliente / Secretaria</label>
+              <select id="cliente"></select>
+            </div>
+            <div class="form-field">
+              <label>Data Início</label>
+              <input type="date" id="dataInicio">
+            </div>
+            <div class="form-field">
+              <label>Data Término</label>
+              <input type="date" id="dataTermino">
+            </div>
+            <div class="form-field">
+              <label>Horário</label>
+              <input type="text" id="horario" placeholder="ex: 13H">
+            </div>
+            <div class="form-field">
+              <label>Local</label>
+              <input type="text" id="local">
+            </div>
+            <div class="form-field">
+              <label>Público Estimado</label>
+              <input type="text" id="publicoEstimado">
+            </div>
+            <div class="form-field">
+              <label>Montagem</label>
+              <input type="text" id="montagem" placeholder="ex: 11H">
+            </div>
+            <div class="form-field">
+              <label>Produtor Responsável</label>
+              <select id="produtor"></select>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Itens do Orçamento (custo interno)</div>
+          <div class="table-wrap">
+            <table id="itensTable">
+              <thead>
+                <tr>
+                  <th class="col-servico">Serviço</th>
+                  <th class="col-desc">Descrição</th>
+                  <th class="col-num">Qtde</th>
+                  <th class="col-num">Preço Unit.</th>
+                  <th class="col-num">Freq.</th>
+                  <th class="col-sm">Unidade</th>
+                  <th class="col-num">Valor Final</th>
+                  <th class="col-forn">Fornecedor</th>
+                  <th class="col-sm">Pagamento</th>
+                  <th class="col-obs">OBS</th>
+                  <th class="col-del"></th>
+                </tr>
+              </thead>
+              <tbody id="itensBody"></tbody>
+            </table>
+          </div>
+          <div class="table-actions">
+            <button type="button" class="btn-table-add" id="addRowBtn">+ Adicionar item</button>
+          </div>
+          <div class="total-bar">Total interno: <span id="totalGeral">R$ 0,00</span></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Verba de Produção Estimada</div>
+          <div class="form-grid">
+            <div class="form-field col-span-2">
+              <label>Descritivo</label>
+              <input type="text" id="verbaEstDescritivo" value="Verba para produção com comprovação pós evento">
+            </div>
+            <div class="form-field">
+              <label>Qtde</label>
+              <input type="number" id="verbaEstQtde" step="any" value="1">
+            </div>
+            <div class="form-field">
+              <label>R$ Unitário</label>
+              <input type="number" id="verbaEstUnitario" step="any" value="0">
+            </div>
+            <div class="form-field">
+              <label>Nome da Empresa</label>
+              <input type="text" id="nomeEmpresa" placeholder="ex: Sua Empresa de Eventos Ltda">
+            </div>
+            <div class="form-field col-span-2">
+              <label>Observação</label>
+              <input type="text" id="verbaEstObs" value="Contra apresentação somente com notas fiscais">
+            </div>
+          </div>
+          <div class="total-bar">Subtotal verba: <span id="totalVerbaEst">R$ 0,00</span></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Margem de Lucro e Total</div>
+          <div class="form-grid" style="align-items:end">
+            <div class="form-field">
+              <label>Margem de Lucro (%)</label>
+              <input type="number" id="margemLucro" step="any" value="20">
+            </div>
+            <div class="form-field">
+              <label>Total do Evento (Serviços + Verba)</label>
+              <div class="total-display" id="totalDoEvento">R$ 0,00</div>
+            </div>
+            <div class="form-field">
+              <label>Valor Total com Margem</label>
+              <div class="total-display total-display--hl" id="valorComMargem">R$ 0,00</div>
+              <div class="total-hint">Total <span id="custoBaseMargem">R$ 0,00</span> × margem</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-actions">
+          <button type="button" class="btn-next" id="avancarClienteBtn">Avançar para Cliente →</button>
+        </div>
+      </div>
+
+      <!-- ===== ABA 2: CLIENTE ===== -->
+      <div class="tab-section" id="tab-cliente">
+        <div class="info-note">
+          Este é o documento que será encaminhado ao cliente. Os dados do evento vêm automaticamente da Planilha Inicial.
+          Use "Trazer itens" para importar os itens já lançados (o preço pode ser editado para aplicar markup).
+        </div>
+
+        <div class="card card--accent">
+          <div class="card-title">Resumo do Evento</div>
+          <div class="form-grid">
+            <div class="form-field"><label>Projeto Nº</label><input type="text" id="cProjeto" readonly></div>
+            <div class="form-field col-span-2"><label>Evento</label><input type="text" id="cEvento" readonly></div>
+            <div class="form-field"><label>Data</label><input type="text" id="cData" readonly></div>
+            <div class="form-field"><label>Horário</label><input type="text" id="cHorario" readonly></div>
+            <div class="form-field"><label>Local</label><input type="text" id="cLocal" readonly></div>
+            <div class="form-field"><label>PAX / Público</label><input type="text" id="cPax" readonly></div>
+          </div>
+        </div>
+
+        <div class="card card--accent">
+          <div class="card-title">Itens da Proposta ao Cliente</div>
+          <div class="table-wrap">
+            <table id="clienteItensTable">
+              <thead>
+                <tr>
+                  <th class="col-servico">Serviço</th>
+                  <th class="col-desc">Descrição</th>
+                  <th class="col-num">Qtde</th>
+                  <th class="col-num">R$ Unitário</th>
+                  <th class="col-num">Freq.</th>
+                  <th class="col-num">Valor Final</th>
+                  <th class="col-del"></th>
+                </tr>
+              </thead>
+              <tbody id="clienteItensBody"></tbody>
+            </table>
+          </div>
+          <div class="table-actions">
+            <button type="button" class="btn-table-sec" id="trazerItensBtn">↺ Trazer itens da Planilha Inicial</button>
+            <button type="button" class="btn-table-add" id="addClienteRowBtn">+ Adicionar item</button>
+          </div>
+          <div class="total-bar">Valor total ao cliente: <span id="totalCliente">R$ 0,00</span></div>
+        </div>
+
+        <div class="card card--accent">
+          <div class="card-title">Condições</div>
+          <div class="form-grid">
+            <div class="form-field col-span-3">
+              <label>Observações</label>
+              <textarea id="observacoes" rows="2"></textarea>
+            </div>
+            <div class="form-field">
+              <label>Prazo de Validade do Orçamento</label>
+              <input type="text" id="prazoValidade" placeholder="ex: 10 dias">
+            </div>
+          </div>
+        </div>
+
+        <div class="section-actions">
+          <button type="button" class="btn-back" id="voltarInicialBtn">← Planilha Inicial</button>
+          <button type="button" class="btn-next" id="avancarFechamentoBtn">Avançar para Fechamento →</button>
+        </div>
+      </div>
+
+      <!-- ===== ABA 3: FECHAMENTO ===== -->
+      <div class="tab-section" id="tab-fechamento">
+        <div class="info-note">
+          Aqui o produtor fecha os custos reais do evento. Use "Trazer itens" para importar e ajuste o que mudou.
+        </div>
+
+        <div class="card card--fech">
+          <div class="card-title">Dados do Evento</div>
+          <div class="form-grid">
+            <div class="form-field"><label>Nº do Evento</label><input type="text" id="numEventoFech"></div>
+            <div class="form-field"><label>Cliente / Secretaria</label><select id="clienteFech"></select></div>
+            <div class="form-field col-span-2"><label>Nome da Ação / Evento</label><input type="text" id="nomeEventoFech"></div>
+            <div class="form-field"><label>Data Início</label><input type="date" id="dataInicioFech"></div>
+            <div class="form-field"><label>Data Término</label><input type="date" id="dataTerminoFech"></div>
+            <div class="form-field"><label>Horário</label><input type="text" id="horarioFech"></div>
+            <div class="form-field"><label>Local</label><input type="text" id="localFech"></div>
+            <div class="form-field"><label>Público Estimado</label><input type="text" id="publicoEstimadoFech"></div>
+            <div class="form-field"><label>Montagem</label><input type="text" id="montagemFech"></div>
+            <div class="form-field"><label>Produtor Responsável</label><select id="produtorFech"></select></div>
+          </div>
+          <div class="table-actions" style="margin-top:8px">
+            <button type="button" class="btn-table-sec" id="atualizarHeaderFechBtn">↺ Atualizar dados (da Planilha Inicial)</button>
+          </div>
+        </div>
+
+        <div class="card card--fech">
+          <div class="card-title">Itens de Fechamento</div>
+          <div class="table-wrap">
+            <table id="fechamentoItensTable">
+              <thead>
+                <tr>
+                  <th class="col-servico">Serviço</th>
+                  <th class="col-desc">Descrição</th>
+                  <th class="col-num">Qtde</th>
+                  <th class="col-num">Preço Unit.</th>
+                  <th class="col-num">Freq.</th>
+                  <th class="col-sm">Unidade</th>
+                  <th class="col-num">Valor Final</th>
+                  <th class="col-forn">Fornecedor</th>
+                  <th class="col-sm">Pagamento</th>
+                  <th class="col-obs">OBS</th>
+                  <th class="col-del"></th>
+                </tr>
+              </thead>
+              <tbody id="fechamentoItensBody"></tbody>
+            </table>
+          </div>
+          <div class="table-actions">
+            <button type="button" class="btn-table-sec" id="trazerFechamentoBtn">↺ Trazer itens da Planilha Inicial</button>
+            <button type="button" class="btn-table-add" id="addFechamentoRowBtn">+ Adicionar item</button>
+          </div>
+          <div class="total-bar">Total de fechamento: <span id="totalFechamento">R$ 0,00</span></div>
+        </div>
+
+        <div class="section-actions">
+          <button type="button" class="btn-back" id="voltarClienteBtn">← Cliente</button>
+          <button type="button" class="btn-next" id="avancarFornecedoresBtn">Avançar para Fornecedores →</button>
+        </div>
+      </div>
+
+      <!-- ===== ABA 4: FORNECEDORES ===== -->
+      <div class="tab-section" id="tab-fornecedores">
+        <div class="info-note">
+          Controle de pagamento aos fornecedores. Use "Trazer fornecedores" para importar automaticamente cada fornecedor
+          único usado no fechamento com valor total já preenchido.
+        </div>
+
+        <div class="card card--forn">
+          <div class="card-title">Resumo do Evento</div>
+          <div class="form-grid">
+            <div class="form-field"><label>Cliente</label><input type="text" id="fCliente" readonly></div>
+            <div class="form-field"><label>Nº do Evento</label><input type="text" id="fNumEvento" readonly></div>
+            <div class="form-field col-span-2"><label>Evento</label><input type="text" id="fEvento" readonly></div>
+            <div class="form-field"><label>Data Início</label><input type="text" id="fDataInicio" readonly></div>
+            <div class="form-field"><label>Local</label><input type="text" id="fLocal" readonly></div>
+            <div class="form-field"><label>Produtor</label><input type="text" id="fProdutor" readonly></div>
+          </div>
+        </div>
+
+        <div class="card card--forn">
+          <div class="card-title">Fornecedores</div>
+          <div class="table-wrap">
+            <table id="fornecedoresTable">
+              <thead>
+                <tr>
+                  <th class="col-forn">Fornecedor</th>
+                  <th>CNPJ</th>
+                  <th>Contato</th>
+                  <th>Telefone</th>
+                  <th class="col-num">Valor Final</th>
+                  <th class="col-sm">Pagamento</th>
+                  <th>Vencimento</th>
+                  <th class="col-obs">Observações</th>
+                  <th class="col-del"></th>
+                </tr>
+              </thead>
+              <tbody id="fornecedoresBody"></tbody>
+            </table>
+          </div>
+          <div class="table-actions">
+            <button type="button" class="btn-table-sec" id="trazerFornecedoresBtn">↺ Trazer fornecedores do Fechamento</button>
+            <button type="button" class="btn-table-add" id="addFornecedorRowBtn">+ Adicionar fornecedor</button>
+          </div>
+          <div class="total-bar">Total a pagar: <span id="totalFornecedores">R$ 0,00</span></div>
+        </div>
+
+        <div class="section-actions">
+          <button type="button" class="btn-back" id="voltarFechamentoBtn">← Fechamento</button>
+          <button type="button" class="btn-print" id="imprimirFornecedoresBtn">Imprimir</button>
+          <button type="button" class="btn-next" id="avancarVerbaBtn">Avançar para Verba →</button>
+        </div>
+      </div>
+
+      <!-- ===== ABA 5: VERBA DE PRODUÇÃO ===== -->
+      <div class="tab-section" id="tab-verba">
+        <div class="info-note">
+          Registre aqui os gastos de verba de produção. Ao final, use "Exportar Excel" para baixar o arquivo completo.
+        </div>
+
+        <div class="card card--verba">
+          <div class="card-title">Resumo do Evento</div>
+          <div class="form-grid">
+            <div class="form-field"><label>Nº do Evento</label><input type="text" id="vNumEvento" readonly></div>
+            <div class="form-field"><label>Data do Evento</label><input type="text" id="vData" readonly></div>
+            <div class="form-field col-span-2"><label>Evento</label><input type="text" id="vEvento" readonly></div>
+            <div class="form-field"><label>Produtor</label><input type="text" id="vProdutor" readonly></div>
+          </div>
+        </div>
+
+        <div class="card card--verba">
+          <div class="card-title">Itens de Verba de Produção</div>
+          <div class="table-wrap">
+            <table id="verbaTable">
+              <thead>
+                <tr>
+                  <th class="col-forn">Produtor</th>
+                  <th class="col-desc">Item</th>
+                  <th class="col-num">Valor (R$)</th>
+                  <th class="col-obs">OBS</th>
+                  <th class="col-del"></th>
+                </tr>
+              </thead>
+              <tbody id="verbaBody"></tbody>
+            </table>
+          </div>
+          <div class="table-actions">
+            <button type="button" class="btn-table-add" id="addVerbaRowBtn">+ Adicionar item</button>
+          </div>
+          <div class="total-bar">Total de verba gasta: <span id="totalVerba">R$ 0,00</span></div>
+          <div id="totalPorProdutor" style="margin-top:10px;border-top:1px solid var(--border);padding-top:10px;font-size:13px;color:var(--text-secondary)"></div>
+        </div>
+
+        <div class="section-actions">
+          <button type="button" class="btn-back" id="voltarFornecedoresBtn">← Fornecedores</button>
+          <button type="button" class="btn-print" id="imprimirVerbaBtn">Imprimir</button>
+          <span class="msg" id="msg"></span>
+        </div>
+      </div>
+
+      <!-- ===== ABA CADASTRO ===== -->
+      <div class="tab-section" id="tab-cadastro">
+        <div class="info-note info-note--cad">
+          Cadastro editável de fornecedores. Alterações aqui atualizam imediatamente o autocomplete usado nas outras abas
+          e também são exportadas para a planilha Excel.
+        </div>
+        <div class="card card--cad">
+          <div class="card-title">Fornecedores Cadastrados</div>
+          <div class="table-wrap">
+            <table id="cadastroTable">
+              <thead>
+                <tr>
+                  <th class="col-forn">Fornecedor</th>
+                  <th>CNPJ / CPF</th>
+                  <th>Contato</th>
+                  <th>Telefone</th>
+                  <th>Prazo de Pagamento</th>
+                  <th class="col-desc">Serviço</th>
+                  <th class="col-del"></th>
+                </tr>
+              </thead>
+              <tbody id="cadastroBody"></tbody>
+            </table>
+          </div>
+          <div class="table-actions">
+            <button type="button" class="btn-table-add" id="addCadastroRowBtn">+ Adicionar fornecedor</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== ABA CATÁLOGO DE SERVIÇOS ===== -->
+      <div class="tab-section" id="tab-servicos">
+        <div class="info-note info-note--cad">
+          Catálogo editável de serviços. Os serviços cadastrados aqui aparecem como sugestões no campo "Serviço" das tabelas de itens.
+          As alterações são salvas automaticamente e ficam disponíveis em todos os orçamentos.
+        </div>
+        <div class="card card--cad">
+          <div class="card-title">Serviços Cadastrados</div>
+          <div class="table-wrap">
+            <table id="catalogoServicosTable">
+              <thead>
+                <tr>
+                  <th>Nome do Serviço</th>
+                  <th class="col-del"></th>
+                </tr>
+              </thead>
+              <tbody id="catalogoServicosBody"></tbody>
+            </table>
+          </div>
+          <div class="table-actions" style="margin-top:10px;">
+            <input type="text" id="novoServicoInput" placeholder="Nome do novo serviço..." style="flex:1;max-width:320px;">
+            <button type="button" class="btn-table-add" id="addCatalogoServicoBtn">+ Adicionar</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end content-area -->
+
+<!-- MODAL: Vincular Evento -->
+<div class="plnl-modal-bg" id="plnlVincularModal">
+  <div class="plnl-modal">
+    <h3>🔗 Vincular a uma Visita / Evento</h3>
+    <select id="plnlVincularSel">
+      <option value="">-- selecione --</option>
+    </select>
+    <div class="plnl-modal-btns">
+      <button class="plnl-btn plnl-btn-close" onclick="plnlFecharVincular()">Cancelar</button>
+      <button class="plnl-btn plnl-btn-save" onclick="plnlConfirmarVincular()">Vincular e preencher</button>
+    </div>
+  </div>
+</div>
+
+<!-- datalist para fornecedores (autocomplete) -->
+<datalist id="dl-fornecedores"></datalist>
+<datalist id="dl-servicos"></datalist>
+
+<script src="lib/exceljs.min.js"></script>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script src="js/excel.js"></script>
+<script>
+/* ── Integração GEP ── */
+var _plnlId = null;
+var _plnlIsNew = false;
+var _autoSaveTimer = null;
+
+function plnlGetId(){
+  if(_plnlId) return _plnlId;
+  var params = new URLSearchParams(window.location.search);
+  _plnlId = params.get('id') || localStorage.getItem('plnl_open_id') || ('plnl_'+Date.now());
+  _plnlIsNew = localStorage.getItem('plnl_is_new') === '1';
+  return _plnlId;
+}
+
+/* Trocar showTab do app original pelo plnlTab */
+function plnlTab(name){
+  document.querySelectorAll('.tab-section').forEach(function(s){ s.classList.remove('active'); });
+  document.querySelectorAll('.plnl-tab').forEach(function(t){ t.classList.remove('active'); });
+  var sec = document.getElementById('tab-'+name);
+  if(sec) sec.classList.add('active');
+  var tabs = ['inicial','cliente','fechamento','fornecedores','verba','cadastro','servicos'];
+  var idx = tabs.indexOf(name);
+  var allTabs = document.querySelectorAll('.plnl-tab');
+  if(allTabs[idx]) allTabs[idx].classList.add('active');
+  atualizarTopbar && atualizarTopbar();
+}
+/* Override showTab do app.js */
+window.showTab = function(name){ plnlTab(name); };
+
+/* ── Carregar dados GEP nos dropdowns ── */
+function plnlInitGEPData(){
+  /* Fornecedores */
+  var forns = [];
+  try{ forns = JSON.parse(localStorage.getItem('vtp_fornecedores_v1')||'[]'); }catch(e){}
+  var dl = document.getElementById('dl-fornecedores');
+  if(dl){ dl.innerHTML = ''; forns.forEach(function(f){ var o=document.createElement('option'); o.value=f.nome||f.name||''; dl.appendChild(o); }); }
+  window.fornecedorNomes = forns.map(function(f){ return f.nome||f.name||''; });
+  window.fornecedorPrazo = {};
+  window.fornecedorData = {};
+  forns.forEach(function(f){
+    var n = f.nome||f.name||'';
+    if(f.prazo) window.fornecedorPrazo[n] = f.prazo;
+    window.fornecedorData[n] = f;
+  });
+
+  /* Catálogo de serviços */
+  var cat = [];
+  try{ cat = JSON.parse(localStorage.getItem('vtp_catalogo_v1')||'[]'); }catch(e){}
+  var dlS = document.getElementById('dl-servicos');
+  if(dlS){ dlS.innerHTML=''; cat.forEach(function(s){ var o=document.createElement('option'); o.value=s.nome||s||''; dlS.appendChild(o); }); }
+
+  /* Secretarias no select cliente */
+  var secs = [];
+  try{ secs = JSON.parse(localStorage.getItem('vtp_secretarias_v1')||'[]'); }catch(e){}
+  var secNames = secs.map(function(s){ return s.nome||s||''; }).filter(Boolean);
+  if(!secNames.length && window.LISTAS) secNames = window.LISTAS.secretarias||[];
+  ['cliente','clienteFech'].forEach(function(id){
+    var sel=document.getElementById(id);
+    if(!sel) return;
+    sel.innerHTML='<option value="">-- selecione --</option>';
+    secNames.forEach(function(s){ var o=document.createElement('option'); o.value=s; o.textContent=s; sel.appendChild(o); });
+  });
+
+  /* Produtores */
+  var prods = [];
+  try{ prods = JSON.parse(localStorage.getItem('vtp_produtores_v1')||'[]'); }catch(e){}
+  var prodNames = prods.map(function(p){ return p.nome||p||''; }).filter(Boolean);
+  if(!prodNames.length && window.LISTAS) prodNames = window.LISTAS.produtores||[];
+  ['produtor','produtorFech'].forEach(function(id){
+    var sel=document.getElementById(id);
+    if(!sel) return;
+    sel.innerHTML='<option value="">-- selecione --</option>';
+    prodNames.forEach(function(s){ var o=document.createElement('option'); o.value=s; o.textContent=s; sel.appendChild(o); });
+  });
+
+  /* Catálogo de serviços na aba Catálogo */
+  if(typeof renderCatalogoServicos==='function') renderCatalogoServicos();
+}
+
+/* ── Carregar planilha salva ── */
+function plnlCarregarDados(){
+  var id = plnlGetId();
+  var list = [];
+  try{ list = JSON.parse(localStorage.getItem('vtp_planilhas_v1')||'[]'); }catch(e){}
+  var p = list.find(function(x){ return x.id===id; });
+  if(!p || _plnlIsNew) return; // nova planilha = em branco
+
+  /* Preencher nome */
+  var ni = document.getElementById('plnlNomeInput');
+  if(ni && p.nome) ni.value = p.nome;
+
+  /* Preencher dados das abas */
+  var d = p.dados || {};
+  function setVal(id, val){ var el=document.getElementById(id); if(el && val!==undefined) el.value=val||''; }
+  setVal('numEvento', d.numEvento);
+  setVal('nomeEvento', d.nomeEvento);
+  setVal('cliente', d.cliente);
+  setVal('dataInicio', d.dataInicio);
+  setVal('dataTermino', d.dataTermino);
+  setVal('horario', d.horario);
+  setVal('local', d.local);
+  setVal('publicoEstimado', d.publicoEstimado);
+  setVal('montagem', d.montagem);
+  setVal('produtor', d.produtor);
+  setVal('verbaEstDescritivo', d.verbaEstDescritivo);
+  setVal('verbaEstQtde', d.verbaEstQtde);
+  setVal('verbaEstUnitario', d.verbaEstUnitario);
+  setVal('nomeEmpresa', d.nomeEmpresa);
+  setVal('verbaEstObs', d.verbaEstObs);
+  setVal('margemLucro', d.margemLucro);
+
+  /* Itens */
+  if(d.itens) restoreItens('itensBody', d.itens, 'inicial');
+  if(d.clienteItens) restoreItens('clienteItensBody', d.clienteItens, 'cliente');
+  if(d.fechamentoItens) restoreItens('fechamentoItensBody', d.fechamentoItens, 'fechamento');
+  if(d.fornecedoresItens) restoreItens('fornecedoresBody', d.fornecedoresItens, 'forn');
+  if(d.verbaItens) restoreItens('verbaBody', d.verbaItens, 'verba');
+
+  /* Cadastro de fornecedores */
+  if(d.cadastroRows && typeof renderCadastro==='function'){
+    window._cadastroData = d.cadastroRows;
+    renderCadastro();
+  }
+
+  /* Recalcular totais */
+  if(typeof calcTotal==='function') calcTotal();
+  if(typeof calcTotalCliente==='function') calcTotalCliente();
+  if(typeof calcTotalFechamento==='function') calcTotalFechamento();
+  if(typeof calcTotalFornecedores==='function') calcTotalFornecedores();
+  if(typeof calcTotalVerba==='function') calcTotalVerba();
+  if(typeof atualizarHeadersLinkados==='function') atualizarHeadersLinkados();
+}
+
+function restoreItens(bodyId, itens, tipo){
+  if(!itens || !itens.length) return;
+  itens.forEach(function(item){
+    if(tipo==='inicial' && typeof addRowFn==='function') addRowFn(item);
+    else if(tipo==='cliente' && typeof addClienteRowFn==='function') addClienteRowFn(item);
+    else if(tipo==='fechamento' && typeof addFechamentoRowFn==='function') addFechamentoRowFn(item);
+    else if(tipo==='forn' && typeof addFornecedorRowFn==='function') addFornecedorRowFn(item);
+    else if(tipo==='verba' && typeof addVerbaRowFn==='function') addVerbaRowFn(item);
+  });
+}
+
+/* ── Coletar dados para salvar ── */
+function plnlColetarDados(){
+  function getVal(id){ var el=document.getElementById(id); return el?el.value:''; }
+  function getItens(bodyId){
+    var rows = document.querySelectorAll('#'+bodyId+' tr');
+    var result = [];
+    rows.forEach(function(tr){
+      var inputs = tr.querySelectorAll('input,select');
+      var obj = {};
+      inputs.forEach(function(inp){ if(inp.name) obj[inp.name]=inp.value; });
+      if(Object.keys(obj).length) result.push(obj);
+    });
+    return result;
+  }
+  return {
+    numEvento: getVal('numEvento'),
+    nomeEvento: getVal('nomeEvento'),
+    cliente: getVal('cliente'),
+    dataInicio: getVal('dataInicio'),
+    dataTermino: getVal('dataTermino'),
+    horario: getVal('horario'),
+    local: getVal('local'),
+    publicoEstimado: getVal('publicoEstimado'),
+    montagem: getVal('montagem'),
+    produtor: getVal('produtor'),
+    verbaEstDescritivo: getVal('verbaEstDescritivo'),
+    verbaEstQtde: getVal('verbaEstQtde'),
+    verbaEstUnitario: getVal('verbaEstUnitario'),
+    nomeEmpresa: getVal('nomeEmpresa'),
+    verbaEstObs: getVal('verbaEstObs'),
+    margemLucro: getVal('margemLucro'),
+    itens: getItens('itensBody'),
+    clienteItens: getItens('clienteItensBody'),
+    fechamentoItens: getItens('fechamentoItensBody'),
+    fornecedoresItens: getItens('fornecedoresBody'),
+    verbaItens: getItens('verbaBody'),
+    cadastroRows: window._cadastroData || []
+  };
+}
+
+/* ── Salvar ── */
+function plnlSalvar(){
+  var id = plnlGetId();
+  var nome = (document.getElementById('plnlNomeInput').value||'').trim() || 'Planilha sem nome';
+  var list = [];
+  try{ list = JSON.parse(localStorage.getItem('vtp_planilhas_v1')||'[]'); }catch(e){}
+  var idx = list.findIndex(function(x){ return x.id===id; });
+  var agora = new Date().toLocaleDateString('pt-BR')+' '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  var entry = { id:id, nome:nome, criadoEm: agora, dados: plnlColetarDados() };
+  if(idx>=0) list[idx]=entry; else list.unshift(entry);
+  localStorage.setItem('vtp_planilhas_v1', JSON.stringify(list));
+  localStorage.removeItem('plnl_is_new');
+  _plnlIsNew = false;
+  if(window.parent && window.parent !== window){
+    window.parent.postMessage({type:'plnl_saved', id:id, nome:nome}, '*');
+  }
+  /* Feedback visual */
+  var btn = document.querySelector('.plnl-btn-save');
+  if(btn){ var old=btn.textContent; btn.textContent='✓ Salvo!'; setTimeout(function(){ btn.textContent=old; }, 1500); }
+}
+
+function plnlAutoSave(){
+  clearTimeout(_autoSaveTimer);
+  _autoSaveTimer = setTimeout(plnlSalvar, 2000);
+}
+
+/* ── Fechar ── */
+function plnlClose(){
+  plnlSalvar();
+  if(window.parent && window.parent !== window){
+    window.parent.postMessage({type:'plnl_close'}, '*');
+  }
+}
+
+/* ── Vincular evento ── */
+function plnlAbrirVincular(){
+  var sel = document.getElementById('plnlVincularSel');
+  sel.innerHTML = '<option value="">-- selecione --</option>';
+  var vts = [];
+  try{ vts = JSON.parse(localStorage.getItem('vtp_visitas_v2')||'[]'); }catch(e){}
+  vts.forEach(function(v){
+    if(!v || !v.nome) return;
+    var o = document.createElement('option');
+    o.value = v.id;
+    o.textContent = (v.nome||'Sem nome') + (v.dataEvento?' — '+v.dataEvento:'');
+    sel.appendChild(o);
+  });
+  document.getElementById('plnlVincularModal').classList.add('open');
+}
+
+function plnlFecharVincular(){
+  document.getElementById('plnlVincularModal').classList.remove('open');
+}
+
+function plnlConfirmarVincular(){
+  var sel = document.getElementById('plnlVincularSel');
+  var vid = sel.value;
+  if(!vid){ alert('Selecione um evento'); return; }
+  var vts = [];
+  try{ vts = JSON.parse(localStorage.getItem('vtp_visitas_v2')||'[]'); }catch(e){}
+  var vt = vts.find(function(v){ return v.id===vid; });
+  if(!vt){ plnlFecharVincular(); return; }
+
+  /* Preencher campos com dados da VT */
+  function setVal(id,val){ var el=document.getElementById(id); if(el&&val) el.value=val; }
+  setVal('numEvento', vt.numEvento||vt.numero||'');
+  setVal('nomeEvento', vt.nome||vt.nomeEvento||'');
+  setVal('cliente', vt.secretaria||vt.cliente||'');
+  setVal('dataInicio', vt.dataEvento||vt.dataInicio||'');
+  setVal('dataTermino', vt.dataTermino||'');
+  setVal('horario', vt.horario||'');
+  setVal('local', vt.local||vt.endereco||'');
+  setVal('publicoEstimado', vt.publico||vt.publicoEstimado||'');
+  setVal('produtor', vt.produtor||'');
+  setVal('montagem', vt.montagem||'');
+  /* Também preencher nome da planilha */
+  var ni = document.getElementById('plnlNomeInput');
+  if(ni && !ni.value) ni.value = vt.nome||vt.nomeEvento||'';
+
+  /* Atualizar headers linkados no fechamento */
+  if(typeof atualizarHeadersLinkados==='function') atualizarHeadersLinkados();
+
+  plnlFecharVincular();
+  plnlSalvar();
+}
+
+/* ── Inicialização ── */
+document.addEventListener('DOMContentLoaded', function(){
+  plnlInitGEPData();
+  setTimeout(function(){ plnlCarregarDados(); }, 100);
+});
+
+/* Salvar antes de fechar a aba/iframe */
+window.addEventListener('beforeunload', function(){ plnlSalvar(); });
+</script>
+</body>
+</html>

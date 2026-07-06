@@ -1351,7 +1351,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
           <div class="gep-foot-dev">Desenvolvido por</div>
           <div class="gep-foot-name">Alessandro Lima</div>
           <div class="gep-foot-copy">© 2026 · Todos os direitos reservados</div>
-          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-93</span></div>
+          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-114</span></div>
         </div>
       </div>
     </div>
@@ -1415,7 +1415,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div class="d">Desenvolvido por</div>
       <div class="n">Alessandro Lima</div>
       <div class="c">© 2026 · Todos os direitos reservados</div>
-      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-93</span></div>
+      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-114</span></div>
     </div>
   </div>
 
@@ -1471,7 +1471,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       </div>
 
       <!-- Planilha Inicial -->
-      <div class="sb-item" data-tip="Planilha Inicial" onclick="window.open('orcamento.html','_blank')">
+      <div class="sb-item" data-tip="Planilha Inicial" onclick="sbGo('planilha',this)">
         <span class="sb-ico">📊</span><span class="sb-lbl">Planilha Inicial</span>
       </div>
 
@@ -2037,6 +2037,36 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
           </div>
 
         </div>
+      </div>
+
+
+      <!-- PLANILHA ORÇAMENTÁRIA -->
+      <div class="vp" id="vpPlanilha">
+
+        <!-- ESTADO: LISTA -->
+        <div id="plnl-list-state">
+          <div class="pg-hdr">
+            <h1>📊 Planilha Orçamentária</h1>
+            <p>Crie e gerencie planilhas de orçamento com exportação Excel profissional</p>
+          </div>
+          <div class="panel">
+            <div class="panel-hdr">
+              <span class="panel-title">📋 Planilhas salvas</span>
+              <button class="btn-outline-blue" style="padding:8px 14px;font-size:12px" onclick="plnlNova()">+ Nova Planilha</button>
+            </div>
+            <div id="plnl-list-body" style="padding:8px"></div>
+          </div>
+        </div>
+
+        <!-- ESTADO: EDITOR iframe -->
+        <div id="plnl-editor-state" style="display:none">
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 0 8px;border-bottom:1px solid #E2E8F0;margin-bottom:10px">
+            <button class="btn-voltar" onclick="plnlVoltarLista()">&#8249; Voltar para lista</button>
+            <span id="plnl-editor-nome" style="font-size:14px;font-weight:600;color:#0F172A;flex:1"></span>
+          </div>
+          <iframe id="plnl-iframe" src="" style="width:100%;border:none;border-radius:10px;height:calc(100vh - 180px)"></iframe>
+        </div>
+
       </div>
 
       <!-- AGENDA DE EVENTOS -->
@@ -2822,7 +2852,7 @@ function resetSys(){
 /* ── NAVEGAÇÃO ABAS ── */
 function goTab(tab){
   // Esconder todas as páginas
-  var allPgs = ['vpDash','vpForm','vpAdmin','vpOrcamentos','vpEventos','vpRealizados','vpEmpresasCad','vpProdutores','vpFornecedores','vpSecretarias','vpRelVisitas','vpRelEventos','vpExportacoes','vpAjuda'];
+  var allPgs = ['vpDash','vpForm','vpAdmin','vpOrcamentos','vpPlanilha','vpEventos','vpRealizados','vpEmpresasCad','vpProdutores','vpFornecedores','vpSecretarias','vpRelVisitas','vpRelEventos','vpExportacoes','vpAjuda'];
   allPgs.forEach(function(id){
     var el = document.getElementById(id);
     if(el) el.style.display = 'none';
@@ -4809,6 +4839,7 @@ var _pageMeta = {
   'admin-catalogo':{title:'Catálogo de Itens',    bread:'Administração',    btn:false},
   'admin-backup':  {title:'Backup',                bread:'Administração',    btn:false},
   'orcamentos':    {title:'Orçamentos',           bread:'Operacional',      btn:true},
+  'planilha':      {title:'Planilha Orçamentária', bread:'Operacional',     btn:false},
   'eventos':       {title:'Agenda de Eventos',    bread:'Eventos',          btn:false},
   'programacao':   {title:'Programação',          bread:'Eventos',          btn:false},
   'empresas-cad':  {title:'Empresas',             bread:'Cadastros',        btn:false},
@@ -4829,6 +4860,7 @@ var _pageMap = {
   'admin-catalogo':    'vpAdmin',
   'admin-backup':      'vpAdmin',
   'orcamentos':     'vpOrcamentos',
+  'planilha':       'vpPlanilha',
   'eventos':        'vpEventos',
   'programacao':    'vpProgramacao',
   'empresas-cad':   'vpEmpresasCad',
@@ -5058,6 +5090,95 @@ saveEmp = function(){
 };
 
 // Expor tudo globalmente
+
+/* ═══════════════════════════════════════════════════════════
+   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-114
+   ═══════════════════════════════════════════════════════════ */
+var SK_PLNL = 'vtp_planilhas_v1';
+
+function plnlLoad(){ try{ return JSON.parse(localStorage.getItem(SK_PLNL)||'[]'); }catch(e){ return []; } }
+function plnlSave(a){ localStorage.setItem(SK_PLNL, JSON.stringify(a)); if(typeof marcarMudanca==='function') marcarMudanca(); }
+
+function plnlRenderList(){
+  var list = plnlLoad();
+  var body = document.getElementById('plnl-list-body');
+  if(!body) return;
+  if(!list.length){
+    body.innerHTML = '<div style="text-align:center;padding:32px;color:#94A3B8;font-size:13px">'
+      +'<div style="font-size:32px;margin-bottom:8px">📊</div>'
+      +'Nenhuma planilha criada ainda.<br>Clique em <b>+ Nova Planilha</b> para começar.</div>';
+    return;
+  }
+  body.innerHTML = list.map(function(p){
+    var nomeEvento = (p.dados && p.dados.nomeEvento) ? p.dados.nomeEvento : '';
+    var sub = nomeEvento ? '<span style="color:#64748B;font-size:11px">'+nomeEvento+'</span>' : '';
+    return '<div style="display:flex;align-items:center;gap:12px;padding:12px;border:1px solid #E2E8F0;border-radius:10px;margin-bottom:8px;background:#fff">'
+      +'<div style="flex:1;min-width:0">'
+        +'<div style="font-weight:600;font-size:13px;color:#0F172A">'+escHtml(p.nome||'Sem nome')+'</div>'
+        +(sub?'<div>'+escHtml(sub)+'</div>':'')
+        +'<div style="color:#94A3B8;font-size:11px;margin-top:2px">'+escHtml(p.criadoEm||'')+'</div>'
+      +'</div>'
+      +'<button onclick="plnlAbrir(''+p.id+'')" style="padding:7px 14px;background:#2563EB;color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer">Abrir</button>'
+      +'<button onclick="plnlExcluir(''+p.id+'')" style="padding:7px 10px;background:#FEF2F2;color:#DC2626;border:1px solid #FECACA;border-radius:7px;font-size:12px;cursor:pointer">Excluir</button>'
+    +'</div>';
+  }).join('');
+}
+
+function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function plnlNova(){
+  var id = 'plnl_'+Date.now();
+  localStorage.setItem('plnl_open_id', id);
+  localStorage.setItem('plnl_is_new', '1');
+  plnlMostrarEditor(id, 'Nova Planilha');
+}
+
+function plnlAbrir(id){
+  var list = plnlLoad();
+  var p = list.find(function(x){ return x.id===id; });
+  localStorage.setItem('plnl_open_id', id);
+  localStorage.setItem('plnl_is_new', '0');
+  plnlMostrarEditor(id, p ? (p.nome||'Planilha') : 'Planilha');
+}
+
+function plnlMostrarEditor(id, nome){
+  document.getElementById('plnl-list-state').style.display = 'none';
+  var es = document.getElementById('plnl-editor-state');
+  es.style.display = 'block';
+  document.getElementById('plnl-editor-nome').textContent = nome;
+  var ifr = document.getElementById('plnl-iframe');
+  ifr.src = 'planilha.html?id='+encodeURIComponent(id)+'&t='+Date.now();
+}
+
+function plnlVoltarLista(){
+  document.getElementById('plnl-editor-state').style.display = 'none';
+  document.getElementById('plnl-list-state').style.display = 'block';
+  var ifr = document.getElementById('plnl-iframe');
+  ifr.src = '';
+  plnlRenderList();
+}
+
+function plnlExcluir(id){
+  if(!confirm('Excluir esta planilha permanentemente?')) return;
+  var list = plnlLoad().filter(function(p){ return p.id!==id; });
+  plnlSave(list);
+  plnlRenderList();
+  toast('Planilha excluída','ok');
+}
+
+// Receber mensagens do iframe da planilha
+window.addEventListener('message', function(ev){
+  if(!ev.data) return;
+  if(ev.data.type==='plnl_saved'){
+    // Atualizar nome no header
+    if(ev.data.nome) document.getElementById('plnl-editor-nome').textContent = ev.data.nome;
+    toast('Planilha salva!','ok');
+  }
+  if(ev.data.type==='plnl_close'){
+    plnlVoltarLista();
+  }
+});
+
 window.sbGo=sbGo; window.sbOpen=sbOpen; window.sbClose=sbClose;
 window.sbToggleCollapse=sbToggleCollapse; window.sbToggleSub=sbToggleSub;
 window.sbSetUser=sbSetUser; window.sbUpdateBadge=sbUpdateBadge;
@@ -5707,6 +5828,7 @@ var _sbGoOrig = sbGo;
 window.sbGo = function(page, el){
   _sbGoOrig(page, el);
   if(page==='orcamentos')  { if(typeof orcPopulateSelector==='function') orcPopulateSelector(); }
+  if(page==='planilha')    { if(typeof plnlRenderList==='function') plnlRenderList(); }
   if(page==='fornecedores'){ if(typeof renderFornList==='function') renderFornList(); }
   if(page==='agenda'){
     if(typeof agRenderAll==='function'){
