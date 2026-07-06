@@ -168,7 +168,7 @@ function createInternalTable(tbodyId, totalSpanId, onTotalChange) {
     tr.dataset.rid = tbodyId + counter++;
 
     tr.innerHTML =
-      '<td><input type="text" list="dl-servicos" class="f-servico" value="' + (data.servico || '') + '"></td>' +
+      '<td><input type="text" list="dl-catalogo-gep" class="f-servico" autocomplete="off" oninput="gepAutoFillServico(this)" value="' + (data.servico || '') + '"></td>' +
       '<td><input type="text" class="f-desc" value="' + (data.desc || '') + '"></td>' +
       '<td><input type="number" class="f-qtde" step="any" value="' + (data.qtde != null ? data.qtde : 1) + '"></td>' +
       '<td><input type="number" class="f-preco" step="any" value="' + (data.preco != null ? data.preco : 0) + '"></td>' +

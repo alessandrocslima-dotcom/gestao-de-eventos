@@ -160,8 +160,8 @@ td input[list] { min-width: 120px; }
   <div class="plnl-tab" onclick="plnlTab('fechamento')">Fechamento</div>
   <div class="plnl-tab" onclick="plnlTab('fornecedores')">Fornecedores</div>
   <div class="plnl-tab" onclick="plnlTab('verba')">Verba de Produção</div>
-  <div class="plnl-tab" onclick="plnlTab('cadastro')">Cadastro</div>
-  <div class="plnl-tab" onclick="plnlTab('servicos')">Catálogo</div>
+  
+  
 </div>
 
 <!-- CONTEÚDO DAS ABAS -->
@@ -195,20 +195,17 @@ td input[list] { min-width: 120px; }
       <!-- ===== ABA 1: PLANILHA INICIAL ===== -->
       <div class="tab-section active" id="tab-inicial">
 
-        <div class="event-header-strip">
-          <div class="field-inline">
-            <label>Nº Evento</label>
-            <input type="text" id="numEvento" placeholder="134.26" style="width:88px">
-          </div>
-          <div class="field-inline" style="flex:1">
-            <label>Nome da Ação / Evento</label>
-            <input type="text" id="nomeEvento">
-          </div>
-        </div>
-
         <div class="card">
           <div class="card-title">Dados do Evento</div>
           <div class="form-grid">
+            <div class="form-field">
+              <label>Nº Evento</label>
+              <input type="text" id="numEvento" placeholder="134.26">
+            </div>
+            <div class="form-field col-span-2">
+              <label>Nome da Ação / Evento</label>
+              <input type="text" id="nomeEvento">
+            </div>
             <div class="form-field">
               <label>Cliente / Secretaria</label>
               <select id="cliente"></select>
@@ -250,17 +247,17 @@ td input[list] { min-width: 120px; }
             <table id="itensTable">
               <thead>
                 <tr>
-                  <th class="col-servico">Serviço</th>
-                  <th class="col-desc">Descrição</th>
-                  <th class="col-num">Qtde</th>
-                  <th class="col-num">Preço Unit.</th>
-                  <th class="col-num">Freq.</th>
-                  <th class="col-sm">Unidade</th>
-                  <th class="col-num">Valor Final</th>
-                  <th class="col-forn">Fornecedor</th>
-                  <th class="col-sm">Pagamento</th>
-                  <th class="col-obs">OBS</th>
-                  <th class="col-del"></th>
+                  <th style="min-width:140px">Serviço</th>
+                  <th style="min-width:160px">Descrição</th>
+                  <th style="width:60px;text-align:center">Qtde</th>
+                  <th style="width:90px;text-align:right">Preço Unit.</th>
+                  <th style="width:55px;text-align:center">Freq.</th>
+                  <th style="width:90px">Unidade</th>
+                  <th style="width:100px;text-align:right">Valor Final</th>
+                  <th style="min-width:150px">Fornecedor</th>
+                  <th style="width:90px">Pagamento</th>
+                  <th style="min-width:100px">OBS</th>
+                  <th style="width:28px"></th>
                 </tr>
               </thead>
               <tbody id="itensBody"></tbody>
@@ -547,59 +544,11 @@ td input[list] { min-width: 120px; }
       </div>
 
       <!-- ===== ABA CADASTRO ===== -->
-      <div class="tab-section" id="tab-cadastro">
-        <div class="info-note info-note--cad">
-          Cadastro editável de fornecedores. Alterações aqui atualizam imediatamente o autocomplete usado nas outras abas
-          e também são exportadas para a planilha Excel.
-        </div>
-        <div class="card card--cad">
-          <div class="card-title">Fornecedores Cadastrados</div>
-          <div class="table-wrap">
-            <table id="cadastroTable">
-              <thead>
-                <tr>
-                  <th class="col-forn">Fornecedor</th>
-                  <th>CNPJ / CPF</th>
-                  <th>Contato</th>
-                  <th>Telefone</th>
-                  <th>Prazo de Pagamento</th>
-                  <th class="col-desc">Serviço</th>
-                  <th class="col-del"></th>
-                </tr>
-              </thead>
-              <tbody id="cadastroBody"></tbody>
-            </table>
-          </div>
-          <div class="table-actions">
-            <button type="button" class="btn-table-add" id="addCadastroRowBtn">+ Adicionar fornecedor</button>
-          </div>
-        </div>
+      
       </div>
 
       <!-- ===== ABA CATÁLOGO DE SERVIÇOS ===== -->
-      <div class="tab-section" id="tab-servicos">
-        <div class="info-note info-note--cad">
-          Catálogo editável de serviços. Os serviços cadastrados aqui aparecem como sugestões no campo "Serviço" das tabelas de itens.
-          As alterações são salvas automaticamente e ficam disponíveis em todos os orçamentos.
-        </div>
-        <div class="card card--cad">
-          <div class="card-title">Serviços Cadastrados</div>
-          <div class="table-wrap">
-            <table id="catalogoServicosTable">
-              <thead>
-                <tr>
-                  <th>Nome do Serviço</th>
-                  <th class="col-del"></th>
-                </tr>
-              </thead>
-              <tbody id="catalogoServicosBody"></tbody>
-            </table>
-          </div>
-          <div class="table-actions" style="margin-top:10px;">
-            <input type="text" id="novoServicoInput" placeholder="Nome do novo serviço..." style="flex:1;max-width:320px;">
-            <button type="button" class="btn-table-add" id="addCatalogoServicoBtn">+ Adicionar</button>
-          </div>
-        </div>
+      
       </div>
 
     </div><!-- end content-area -->
@@ -621,6 +570,7 @@ td input[list] { min-width: 120px; }
 <!-- datalist para fornecedores (autocomplete) -->
 <datalist id="dl-fornecedores"></datalist>
 <datalist id="dl-servicos"></datalist>
+<datalist id="dl-catalogo-gep"></datalist>
 
 <script src="lib/exceljs.min.js"></script>
 <script src="js/data.js"></script>
@@ -646,7 +596,7 @@ function plnlTab(name){
   document.querySelectorAll('.plnl-tab').forEach(function(t){ t.classList.remove('active'); });
   var sec = document.getElementById('tab-'+name);
   if(sec) sec.classList.add('active');
-  var tabs = ['inicial','cliente','fechamento','fornecedores','verba','cadastro','servicos'];
+  var tabs = ['inicial','cliente','fechamento','fornecedores','verba'];
   var idx = tabs.indexOf(name);
   var allTabs = document.querySelectorAll('.plnl-tab');
   if(allTabs[idx]) allTabs[idx].classList.add('active');
@@ -671,11 +621,21 @@ function plnlInitGEPData(){
     window.fornecedorData[n] = f;
   });
 
-  /* Catálogo de serviços */
+  /* Catálogo de serviços — GEP */
   var cat = [];
   try{ cat = JSON.parse(localStorage.getItem('vtp_catalogo_v1')||'[]'); }catch(e){}
-  var dlS = document.getElementById('dl-servicos');
-  if(dlS){ dlS.innerHTML=''; cat.forEach(function(s){ var o=document.createElement('option'); o.value=s.nome||s||''; dlS.appendChild(o); }); }
+  window._gepCatalogo = cat;
+  ['dl-servicos','dl-catalogo-gep'].forEach(function(dlId){
+    var dlEl = document.getElementById(dlId);
+    if(!dlEl) return;
+    dlEl.innerHTML = '';
+    cat.forEach(function(s){
+      var o = document.createElement('option');
+      o.value = s.nome || s.servico || s || '';
+      if(s.preco) o.dataset.preco = s.preco;
+      dlEl.appendChild(o);
+    });
+  });
 
   /* Secretarias no select cliente */
   var secs = [];
@@ -895,6 +855,34 @@ function plnlConfirmarVincular(){
   plnlFecharVincular();
   plnlSalvar();
 }
+
+/* ── Autocomplete catálogo GEP ── */
+window.gepAutoFillServico = function(input){
+  var val = (input.value||'').trim().toLowerCase();
+  if(!val || !window._gepCatalogo) return;
+  var item = window._gepCatalogo.find(function(s){
+    var nome = (s.nome||s.servico||s||'').toLowerCase();
+    return nome === val;
+  });
+  if(!item) return;
+  var tr = input.closest('tr');
+  if(!tr) return;
+  // Preencher preço se disponível
+  if(item.preco || item.valorUnitario){
+    var precoInput = tr.querySelector('.f-preco');
+    if(precoInput && !precoInput.value) precoInput.value = item.preco || item.valorUnitario || '';
+  }
+  // Preencher fornecedor se disponível
+  if(item.fornecedor){
+    var fornInput = tr.querySelector('.f-fornecedor');
+    if(fornInput && !fornInput.value) fornInput.value = item.fornecedor || '';
+  }
+  // Preencher descrição se disponível
+  if(item.descricao || item.desc){
+    var descInput = tr.querySelector('.f-desc');
+    if(descInput && !descInput.value) descInput.value = item.descricao || item.desc || '';
+  }
+};
 
 /* ── Inicialização ── */
 document.addEventListener('DOMContentLoaded', function(){
