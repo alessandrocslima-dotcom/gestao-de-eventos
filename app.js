@@ -122,6 +122,7 @@ function refreshFornecedorLookups() {
     if (!nome) return;
     fornecedorData[nome] = f;
     fornecedorPrazo[nome] = f.prazo || '';
+    if(f.telefone) fornecedorData[nome].telefone = f.telefone;
     nomes.push(nome);
   });
   fornecedorNomes = nomes.sort(function(a,b){ return a.localeCompare(b,'pt-BR'); });
@@ -162,6 +163,43 @@ $('margemLucro').addEventListener('input', function() { updateValorComMargem(); 
   });
 });
 
+
+// ── Formata campo de preço: mostra R$ ao sair, número ao editar ──
+function applyPriceFormat(inp) {
+  function toDisplay(v) {
+    if (!v && v !== 0) return '';
+    return v === 0 ? 'R$\u00a00,00' : v.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+  }
+  inp.addEventListener('focus', function() {
+    var v = parseFloat(this.dataset.rawVal);
+    this.type = 'number';
+    this.value = (v && v !== 0) ? v : '';
+    this.placeholder = '0';
+  });
+  inp.addEventListener('blur', function() {
+    var v = parseFloat(this.value) || 0;
+    this.dataset.rawVal = v;
+    this.type = 'text';
+    this.value = toDisplay(v);
+  });
+  inp.addEventListener('input', function() {
+    this.dataset.rawVal = parseFloat(this.value) || 0;
+  });
+  // Inicializar
+  var v = parseFloat(inp.value) || 0;
+  inp.dataset.rawVal = v;
+  inp.type = 'text';
+  inp.value = toDisplay(v);
+}
+
+// Lê o valor raw de um input de preço (funciona com formato ou sem)
+function readPrice(inp) {
+  if (!inp) return 0;
+  if (inp.dataset.rawVal !== undefined) return parseFloat(inp.dataset.rawVal) || 0;
+  var s = inp.value.replace(/[^\d,.-]/g,'').replace(',','.');
+  return parseFloat(s) || 0;
+}
+
 function createInternalTable(tbodyId, totalSpanId, onTotalChange) {
   var counter = 0;
 
@@ -187,8 +225,12 @@ function createInternalTable(tbodyId, totalSpanId, onTotalChange) {
     fillSelect(tr.querySelector('.f-forma'), LISTAS.formas, '--');
     if (data.unidade) tr.querySelector('.f-unidade').value = data.unidade;
     if (data.forma)   tr.querySelector('.f-forma').value   = data.forma;
+    var precoInp = tr.querySelector('.f-preco');
+    applyPriceFormat(precoInp);
     var recalc = function() { updateRowTotal(tr); };
-    tr.querySelectorAll('.f-qtde, .f-preco, .f-freq').forEach(function(el) { el.addEventListener('input', recalc); });
+    tr.querySelectorAll('.f-qtde, .f-freq').forEach(function(el) { el.addEventListener('input', recalc); });
+    precoInp.addEventListener('blur', recalc);
+    precoInp.addEventListener('focus', function(){ setTimeout(recalc, 50); });
     tr.querySelector('.f-fornecedor').addEventListener('change', function(e) {
       var nome = e.target.value.trim();
       if (fornecedorPrazo[nome]) tr.querySelector('.f-forma').value = fornecedorPrazo[nome];
@@ -200,7 +242,7 @@ function createInternalTable(tbodyId, totalSpanId, onTotalChange) {
 
   function updateRowTotal(tr) {
     var q = parseFloat(tr.querySelector('.f-qtde').value) || 0;
-    var p = parseFloat(tr.querySelector('.f-preco').value) || 0;
+    var p = readPrice(tr.querySelector('.f-preco'));
     var f = parseFloat(tr.querySelector('.f-freq').value) || 0;
     var total = q * p * f;
     tr.querySelector('.valor-final').textContent = total.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
@@ -229,7 +271,7 @@ inicialTable.addRow(); inicialTable.addRow(); inicialTable.addRow();
 
 function updateTotalFornecedores() {
   var total = 0;
-  document.querySelectorAll('#fornecedoresBody tr').forEach(function(tr) { total += parseFloat(tr.querySelector('.ff-valor').value) || 0; });
+  document.querySelectorAll('#fornecedoresBody tr').forEach(function(tr) { total += readPrice(tr.querySelector('.ff-valor')); });
   $('totalFornecedores').textContent = total.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
 }
 
@@ -290,14 +332,17 @@ function addFornecedorRow(data) {
     '<td><button type="button" class="btn-del-row">×</button></td>';
   tbody.appendChild(tr);
 
+  applyPriceFormat(tr.querySelector('.ff-valor'));
+  tr.querySelector('.ff-valor').addEventListener('blur', updateTotalFornecedores);
+
   tr.querySelector('.ff-nome').addEventListener('change', function(e) {
     var nome = e.target.value.trim();
     tr.dataset.fornecedorNome = nome;
     var fd = fornecedorData[nome];
     if (fd) {
-      tr.querySelector('.ff-cnpj').value = fd.cnpj;
-      tr.querySelector('.ff-contato').value = fd.contato;
-      tr.querySelector('.ff-telefone').value = fd.telefone;
+      tr.querySelector('.ff-cnpj').value = fd.cnpj || '';
+      tr.querySelector('.ff-contato').value = fd.contato || '';
+      tr.querySelector('.ff-telefone').value = fd.telefone || '';
       var inf = vencimentoInfoFor(fd.prazo);
       tr.dataset.dias = (inf.dias != null) ? inf.dias : '';
       tr.querySelectorAll('.ff-forma-check').forEach(function(cb) { cb.checked = (cb.value === inf.forma); });
@@ -378,15 +423,18 @@ function addClienteRow(data) {
     '<td class="valor-final">R$ 0,00</td>' +
     '<td><button type="button" class="btn-del-row">\u00d7</button></td>';
   tbody.appendChild(tr);
+  var cfPreco = tr.querySelector('.cf-preco');
+  applyPriceFormat(cfPreco);
   var recalc = function() { updateClienteRowTotal(tr); };
-  tr.querySelectorAll('.cf-qtde, .cf-preco, .cf-freq').forEach(function(el) { el.addEventListener('input', recalc); });
+  tr.querySelectorAll('.cf-qtde, .cf-freq').forEach(function(el) { el.addEventListener('input', recalc); });
+  cfPreco.addEventListener('blur', recalc);
   tr.querySelector('.btn-del-row').addEventListener('click', function() { tr.remove(); updateTotalCliente(); });
   updateClienteRowTotal(tr);
 }
 
 function updateClienteRowTotal(tr) {
   var q = parseFloat(tr.querySelector('.cf-qtde').value) || 0;
-  var p = parseFloat(tr.querySelector('.cf-preco').value) || 0;
+  var p = readPrice(tr.querySelector('.cf-preco'));
   var f = parseFloat(tr.querySelector('.cf-freq').value) || 0;
   var total = q * p * f;
   tr.querySelector('.valor-final').textContent = total.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
@@ -436,36 +484,48 @@ function isAVistaPrazo(prazo) {
 
 // Trazer itens da Planilha Inicial para Cliente
 function trazerItensDaInicial() {
+  // Verificar o que já existe no Cliente (por nome do serviço)
+  var existentes = new Set();
+  document.querySelectorAll('#clienteItensBody tr').forEach(function(tr) {
+    var s = (tr.querySelector('.cf-servico') || {}).value || '';
+    if (s) existentes.add(s.trim());
+  });
   document.querySelectorAll('#itensBody tr').forEach(function(tr) {
-    if (tr.dataset.broughtCliente === 'true') return;
-    var servico = tr.querySelector('.f-servico').value;
-    var desc = tr.querySelector('.f-desc').value.trim();
-    var preco = parseFloat(tr.querySelector('.f-preco').value) || 0;
-    if ((!servico || servico === '--') && !desc && preco === 0) return;
-    addClienteRow({ servico:servico, desc:desc,
-      qtde: parseFloat(tr.querySelector('.f-qtde').value) || 0,
-      preco: preco, freq: parseFloat(tr.querySelector('.f-freq').value) || 0 });
-    tr.dataset.broughtCliente = 'true';
+    var servico = (tr.querySelector('.f-servico') || {}).value || '';
+    var desc = (tr.querySelector('.f-desc') || {}).value || '';
+    var preco = readPrice(tr.querySelector('.f-preco'));
+    if ((!servico.trim() || servico === '--') && !desc.trim() && preco === 0) return;
+    if (servico && existentes.has(servico.trim())) return; // já existe no Cliente
+    addClienteRow({ servico:servico, desc:desc.trim(),
+      qtde: parseFloat((tr.querySelector('.f-qtde') || {}).value) || 0,
+      preco: preco,
+      freq: parseFloat((tr.querySelector('.f-freq') || {}).value) || 0 });
   });
 }
 $('trazerItensBtn').addEventListener('click', trazerItensDaInicial);
 
 // Trazer itens da Planilha Inicial para Fechamento
 function trazerItensParaFechamento() {
+  // Verificar o que já existe no Fechamento (por nome do serviço)
+  var existentesFech = new Set();
+  document.querySelectorAll('#fechamentoItensBody tr').forEach(function(tr) {
+    var s = (tr.querySelector('.f-servico') || {}).value || '';
+    if (s) existentesFech.add(s.trim());
+  });
   document.querySelectorAll('#itensBody tr').forEach(function(tr) {
-    if (tr.dataset.broughtFechamento === 'true') return;
-    var servico = tr.querySelector('.f-servico').value;
-    var desc = tr.querySelector('.f-desc').value.trim();
-    var preco = parseFloat(tr.querySelector('.f-preco').value) || 0;
-    if ((!servico || servico === '--') && !desc && preco === 0) return;
-    fechamentoTable.addRow({ servico:servico, desc:desc,
-      qtde: parseFloat(tr.querySelector('.f-qtde').value) || 0,
-      preco: preco, freq: parseFloat(tr.querySelector('.f-freq').value) || 0,
-      unidade: tr.querySelector('.f-unidade').value,
-      fornecedor: tr.querySelector('.f-fornecedor').value,
-      forma: tr.querySelector('.f-forma').value,
-      obs: tr.querySelector('.f-obs').value });
-    tr.dataset.broughtFechamento = 'true';
+    var servico = (tr.querySelector('.f-servico') || {}).value || '';
+    var desc = (tr.querySelector('.f-desc') || {}).value || '';
+    var preco = readPrice(tr.querySelector('.f-preco'));
+    if ((!servico.trim() || servico === '--') && !desc.trim() && preco === 0) return;
+    if (servico && existentesFech.has(servico.trim())) return; // já existe no Fechamento
+    fechamentoTable.addRow({ servico:servico, desc:desc.trim(),
+      qtde: parseFloat((tr.querySelector('.f-qtde') || {}).value) || 0,
+      preco: preco,
+      freq: parseFloat((tr.querySelector('.f-freq') || {}).value) || 0,
+      unidade: (tr.querySelector('.f-unidade') || {}).value || '',
+      fornecedor: (tr.querySelector('.f-fornecedor') || {}).value || '',
+      forma: (tr.querySelector('.f-forma') || {}).value || '',
+      obs: (tr.querySelector('.f-obs') || {}).value || '' });
   });
 }
 $('trazerFechamentoBtn').addEventListener('click', trazerItensParaFechamento);
