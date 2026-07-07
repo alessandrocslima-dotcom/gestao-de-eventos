@@ -233,6 +233,32 @@ function updateTotalFornecedores() {
   $('totalFornecedores').textContent = total.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
 }
 
+function getEventoDataInicioIso() {
+  return $('dataInicioFech').value || $('dataInicio').value;
+}
+
+function vencimentoInfoFor(prazo) {
+  var dias = parseDiasPrazo(prazo);
+  if (dias != null) return { forma: 'faturado', dias: dias };
+  if (isAVistaPrazo(prazo)) return { forma: 'avista', dias: null };
+  return { forma: 'parcial', dias: null };
+}
+
+function updateFornecedorVencimento(tr) {
+  var checked = tr.querySelector('.ff-forma-check:checked');
+  var vencCell = tr.querySelector('.ff-vencimento');
+  if (!checked) { vencCell.textContent = ''; return; }
+  if (checked.value === 'faturado') {
+    var dias = parseInt(tr.dataset.dias, 10);
+    var dataInicioIso = getEventoDataInicioIso();
+    vencCell.textContent = (dataInicioIso && !isNaN(dias))
+      ? formatDateBR(addDiasIso(dataInicioIso, dias))
+      : 'Condições em OBS';
+  } else {
+    vencCell.textContent = 'Condições em OBS';
+  }
+}
+
 function addFornecedorRow(data) {
   data = data || {};
   var tbody = $('fornecedoresBody');
