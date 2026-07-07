@@ -286,7 +286,7 @@ td input[list] { min-width: 120px; }
             </div>
             <div class="form-field">
               <label>Nome da Empresa</label>
-              <input type="text" id="nomeEmpresa" placeholder="ex: Sua Empresa de Eventos Ltda">
+              <select id="nomeEmpresa"><option value="">-- selecione --</option></select>
             </div>
             <div class="form-field col-span-2">
               <label>Observação</label>
@@ -637,17 +637,29 @@ function plnlInitGEPData(){
     });
   });
 
-  /* Secretarias no select cliente */
+  /* Secretarias — do cadastro do GEP (vtp_secretarias_v1) */
   var secs = [];
   try{ secs = JSON.parse(localStorage.getItem('vtp_secretarias_v1')||'[]'); }catch(e){}
-  var secNames = secs.map(function(s){ return s.nome||s||''; }).filter(Boolean);
-  if(!secNames.length && window.LISTAS) secNames = window.LISTAS.secretarias||[];
+  var secNames = secs.map(function(s){ return s.nome||''; }).filter(Boolean).sort();
+  if(!secNames.length && window.LISTAS) secNames = (window.LISTAS.secretarias||[]).slice().sort();
   ['cliente','clienteFech'].forEach(function(id){
     var sel=document.getElementById(id);
     if(!sel) return;
     sel.innerHTML='<option value="">-- selecione --</option>';
     secNames.forEach(function(s){ var o=document.createElement('option'); o.value=s; o.textContent=s; sel.appendChild(o); });
   });
+
+  /* Empresas — do cadastro do GEP (vtp_empresas_v1) */
+  var emps = [];
+  try{ emps = JSON.parse(localStorage.getItem('vtp_empresas_v1')||'[]'); }catch(e){}
+  var empNames = emps.map(function(e){ return e.nomeFant||e.razao||e.nome||''; }).filter(Boolean).sort();
+  var selEmp = document.getElementById('nomeEmpresa');
+  if(selEmp && selEmp.tagName === 'SELECT'){
+    selEmp.innerHTML='<option value="">-- selecione --</option>';
+    empNames.forEach(function(n){ var o=document.createElement('option'); o.value=n; o.textContent=n; selEmp.appendChild(o); });
+    /* Auto-selecionar se tiver só uma empresa */
+    if(empNames.length === 1) selEmp.value = empNames[0];
+  }
 
   /* Produtores — da lista de usuários do GEP */
   var prods = [];
@@ -666,14 +678,20 @@ function plnlInitGEPData(){
     sel.innerHTML='<option value="">-- selecione --</option>';
     prods.forEach(function(s){ var o=document.createElement('option'); o.value=s; o.textContent=s; sel.appendChild(o); });
   });
-  /* Preencher produtor com o usuário logado automaticamente */
+  /* Preencher produtor com o usuário logado — tenta parent.me primeiro */
   try{
-    var sess = JSON.parse(localStorage.getItem('gep_session_v1')||'null');
-    if(sess && sess.nome){
-      var selP = document.getElementById('produtor');
-      if(selP && !selP.value) selP.value = sess.nome;
-      var selPF = document.getElementById('produtorFech');
-      if(selPF && !selPF.value) selPF.value = sess.nome;
+    var nomeLogado = '';
+    if(window.parent && window.parent.me && window.parent.me.nome)
+      nomeLogado = window.parent.me.nome;
+    if(!nomeLogado){
+      var sess2 = JSON.parse(localStorage.getItem('gep_session_v1')||'null');
+      if(sess2) nomeLogado = sess2.nome||sess2.login||'';
+    }
+    if(nomeLogado){
+      ['produtor','produtorFech'].forEach(function(id){
+        var sel = document.getElementById(id);
+        if(sel && !sel.value) sel.value = nomeLogado;
+      });
     }
   }catch(e){}
 
