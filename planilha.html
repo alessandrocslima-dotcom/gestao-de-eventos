@@ -750,11 +750,18 @@ function plnlCarregarDados(){
   setVal('margemLucro', d.margemLucro);
 
   /* Itens */
-  if(d.itens) restoreItens('itensBody', d.itens, 'inicial');
-  if(d.clienteItens) restoreItens('clienteItensBody', d.clienteItens, 'cliente');
-  if(d.fechamentoItens) restoreItens('fechamentoItensBody', d.fechamentoItens, 'fechamento');
-  if(d.fornecedoresItens) restoreItens('fornecedoresBody', d.fornecedoresItens, 'forn');
-  if(d.verbaItens) restoreItens('verbaBody', d.verbaItens, 'verba');
+  // Filtrar itens corrompidos (salvos como {} em versões antigas)
+  function itemValido(it) {
+    if(!it || typeof it !== 'object') return false;
+    return (it.servico||it.nome||it.produtor||it.descricao||'').trim() !== '' ||
+           parseFloat(it.preco||it.valor||0) > 0;
+  }
+
+  if(d.itens) restoreItens('itensBody', d.itens.filter(itemValido), 'inicial');
+  if(d.clienteItens) restoreItens('clienteItensBody', d.clienteItens.filter(itemValido), 'cliente');
+  if(d.fechamentoItens) restoreItens('fechamentoItensBody', d.fechamentoItens.filter(itemValido), 'fechamento');
+  if(d.fornecedoresItens) restoreItens('fornecedoresBody', d.fornecedoresItens.filter(itemValido), 'forn');
+  if(d.verbaItens) restoreItens('verbaBody', d.verbaItens.filter(itemValido), 'verba');
 
   /* Cadastro de fornecedores */
   if(d.cadastroRows && typeof renderCadastro==='function'){
