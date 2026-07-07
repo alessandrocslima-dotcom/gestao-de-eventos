@@ -185,8 +185,13 @@ function applyPriceFormat(inp) {
   inp.addEventListener('input', function() {
     this.dataset.rawVal = parseFloat(this.value) || 0;
   });
-  // Inicializar
-  var v = parseFloat(inp.value) || 0;
+  // Inicializar — aceita número bruto OU string formatada ('R$ 1.160,00')
+  var rawStr = (inp.value || '').trim();
+  var v = parseFloat(rawStr);
+  if (isNaN(v)) {
+    // parsear string formatada ex: 'R$ 1.160,00' → 1160
+    v = parseFloat(rawStr.replace(/[^\d,.-]/g,'').replace(',','.')) || 0;
+  }
   inp.dataset.rawVal = v;
   inp.type = 'text';
   inp.value = toDisplay(v);
@@ -484,36 +489,48 @@ function isAVistaPrazo(prazo) {
 
 // Trazer itens da Planilha Inicial para Cliente
 function trazerItensDaInicial() {
+  // Verificar o que já existe no Cliente (por nome do serviço)
+  var existentes = new Set();
+  document.querySelectorAll('#clienteItensBody tr').forEach(function(tr) {
+    var s = (tr.querySelector('.cf-servico') || {}).value || '';
+    if (s) existentes.add(s.trim());
+  });
   document.querySelectorAll('#itensBody tr').forEach(function(tr) {
-    if (tr.dataset.broughtCliente === 'true') return;
-    var servico = tr.querySelector('.f-servico').value;
-    var desc = tr.querySelector('.f-desc').value.trim();
-    var preco = parseFloat(tr.querySelector('.f-preco').value) || 0;
-    if ((!servico || servico === '--') && !desc && preco === 0) return;
-    addClienteRow({ servico:servico, desc:desc,
-      qtde: parseFloat(tr.querySelector('.f-qtde').value) || 0,
-      preco: preco, freq: parseFloat(tr.querySelector('.f-freq').value) || 0 });
-    tr.dataset.broughtCliente = 'true';
+    var servico = (tr.querySelector('.f-servico') || {}).value || '';
+    var desc = (tr.querySelector('.f-desc') || {}).value || '';
+    var preco = readPrice(tr.querySelector('.f-preco'));
+    if ((!servico.trim() || servico === '--') && !desc.trim() && preco === 0) return;
+    if (servico && existentes.has(servico.trim())) return; // já existe no Cliente
+    addClienteRow({ servico:servico, desc:desc.trim(),
+      qtde: parseFloat((tr.querySelector('.f-qtde') || {}).value) || 0,
+      preco: preco,
+      freq: parseFloat((tr.querySelector('.f-freq') || {}).value) || 0 });
   });
 }
 $('trazerItensBtn').addEventListener('click', trazerItensDaInicial);
 
 // Trazer itens da Planilha Inicial para Fechamento
 function trazerItensParaFechamento() {
+  // Verificar o que já existe no Fechamento (por nome do serviço)
+  var existentesFech = new Set();
+  document.querySelectorAll('#fechamentoItensBody tr').forEach(function(tr) {
+    var s = (tr.querySelector('.f-servico') || {}).value || '';
+    if (s) existentesFech.add(s.trim());
+  });
   document.querySelectorAll('#itensBody tr').forEach(function(tr) {
-    if (tr.dataset.broughtFechamento === 'true') return;
-    var servico = tr.querySelector('.f-servico').value;
-    var desc = tr.querySelector('.f-desc').value.trim();
-    var preco = parseFloat(tr.querySelector('.f-preco').value) || 0;
-    if ((!servico || servico === '--') && !desc && preco === 0) return;
-    fechamentoTable.addRow({ servico:servico, desc:desc,
-      qtde: parseFloat(tr.querySelector('.f-qtde').value) || 0,
-      preco: preco, freq: parseFloat(tr.querySelector('.f-freq').value) || 0,
-      unidade: tr.querySelector('.f-unidade').value,
-      fornecedor: tr.querySelector('.f-fornecedor').value,
-      forma: tr.querySelector('.f-forma').value,
-      obs: tr.querySelector('.f-obs').value });
-    tr.dataset.broughtFechamento = 'true';
+    var servico = (tr.querySelector('.f-servico') || {}).value || '';
+    var desc = (tr.querySelector('.f-desc') || {}).value || '';
+    var preco = readPrice(tr.querySelector('.f-preco'));
+    if ((!servico.trim() || servico === '--') && !desc.trim() && preco === 0) return;
+    if (servico && existentesFech.has(servico.trim())) return; // já existe no Fechamento
+    fechamentoTable.addRow({ servico:servico, desc:desc.trim(),
+      qtde: parseFloat((tr.querySelector('.f-qtde') || {}).value) || 0,
+      preco: preco,
+      freq: parseFloat((tr.querySelector('.f-freq') || {}).value) || 0,
+      unidade: (tr.querySelector('.f-unidade') || {}).value || '',
+      fornecedor: (tr.querySelector('.f-fornecedor') || {}).value || '',
+      forma: (tr.querySelector('.f-forma') || {}).value || '',
+      obs: (tr.querySelector('.f-obs') || {}).value || '' });
   });
 }
 $('trazerFechamentoBtn').addEventListener('click', trazerItensParaFechamento);
@@ -791,8 +808,13 @@ function coletarEstado() {
     document.querySelectorAll('#' + tbodyId + ' tr').forEach(function(tr) {
       var obj = {};
       fields.forEach(function(f) {
-        var el = tr.querySelector('.' + f.cls);
-        if (el) obj[f.key] = el.tagName === 'SELECT' ? el.value : el.value;
+        if (f.radio) {
+          var checked = tr.querySelector('.' + f.cls + ':checked');
+          obj[f.key] = checked ? checked.value : '';
+        } else {
+          var el = tr.querySelector('.' + f.cls);
+          if (el) obj[f.key] = f.isPrice ? readPrice(el) : el.value;
+        }
       });
       result.push(obj);
     });
@@ -821,7 +843,7 @@ function coletarEstado() {
 
     itens: rows('itensBody', [
       {cls:'f-servico', key:'servico'}, {cls:'f-desc', key:'desc'},
-      {cls:'f-qtde', key:'qtde'}, {cls:'f-preco', key:'preco'},
+      {cls:'f-qtde', key:'qtde'}, {cls:'f-preco', key:'preco', isPrice:true},
       {cls:'f-freq', key:'freq'}, {cls:'f-unidade', key:'unidade'},
       {cls:'f-fornecedor', key:'fornecedor'}, {cls:'f-forma', key:'forma'},
       {cls:'f-obs', key:'obs'}
@@ -829,7 +851,7 @@ function coletarEstado() {
 
     clienteItens: rows('clienteItensBody', [
       {cls:'cf-servico', key:'servico'}, {cls:'cf-desc', key:'desc'},
-      {cls:'cf-qtde', key:'qtde'}, {cls:'cf-preco', key:'preco'},
+      {cls:'cf-qtde', key:'qtde'}, {cls:'cf-preco', key:'preco', isPrice:true},
       {cls:'cf-freq', key:'freq'}
     ]),
 
@@ -846,7 +868,7 @@ function coletarEstado() {
       produtor:    ($('produtorFech')    || {}).value || '',
       itens: rows('fechamentoItensBody', [
         {cls:'f-servico', key:'servico'}, {cls:'f-desc', key:'desc'},
-        {cls:'f-qtde', key:'qtde'}, {cls:'f-preco', key:'preco'},
+        {cls:'f-qtde', key:'qtde'}, {cls:'f-preco', key:'preco', isPrice:true},
         {cls:'f-freq', key:'freq'}, {cls:'f-unidade', key:'unidade'},
         {cls:'f-fornecedor', key:'fornecedor'}, {cls:'f-forma', key:'forma'},
         {cls:'f-obs', key:'obs'}
@@ -856,13 +878,14 @@ function coletarEstado() {
     fornecedores: rows('fornecedoresBody', [
       {cls:'ff-nome', key:'nome'}, {cls:'ff-cnpj', key:'cnpj'},
       {cls:'ff-contato', key:'contato'}, {cls:'ff-telefone', key:'telefone'},
-      {cls:'ff-valor', key:'valor'}, {cls:'ff-forma', key:'forma'},
-      {cls:'ff-vencimento', key:'vencimento'}, {cls:'ff-obs', key:'obs'}
+      {cls:'ff-valor', key:'valor', isPrice:true},
+      {cls:'ff-forma-check', key:'forma', radio:true},
+      {cls:'ff-obs', key:'obs'}
     ]),
 
     verba: rows('verbaBody', [
       {cls:'vb-produtor', key:'produtor'}, {cls:'vb-item', key:'item'},
-      {cls:'vb-valor', key:'valor'}, {cls:'vb-obs', key:'obs'}
+      {cls:'vb-valor', key:'valor', isPrice:true}, {cls:'vb-obs', key:'obs'}
     ]),
 
     cadastro: rows('cadastroBody', [

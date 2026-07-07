@@ -592,387 +592,302 @@ td input[list] { min-width: 120px; }
 
 <script src="lib/exceljs.min.js"></script>
 <script src="js/data.js"></script>
+<!-- PRE-INIT: configura orcamento_evento_v1 antes do carregarEstado do app.js -->
+<script>
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  var id = params.get('id') || localStorage.getItem('plnl_open_id') || '';
+  var isNew = localStorage.getItem('plnl_is_new') === '1';
+  window.__plnlId = id || ('plnl_' + Date.now());
+  window.__plnlIsNew = isNew || !id;
+  if (window.__plnlIsNew) {
+    // Nova planilha: limpar completamente
+    localStorage.removeItem('orcamento_evento_v1');
+  } else {
+    // Existente: carregar dados da planilha correta
+    try {
+      var list = JSON.parse(localStorage.getItem('vtp_planilhas_v1') || '[]');
+      var p = list.find(function(x) { return x.id === id; });
+      if (p && p.dados) {
+        localStorage.setItem('orcamento_evento_v1', JSON.stringify(p.dados));
+      } else {
+        localStorage.removeItem('orcamento_evento_v1');
+      }
+    } catch(e) { localStorage.removeItem('orcamento_evento_v1'); }
+  }
+})();
+</script>
 <script src="js/app.js"></script>
 <script src="js/excel.js"></script>
 <script>
-/* ── Integração GEP ── */
-var _plnlId = null;
-var _plnlIsNew = false;
-var _autoSaveTimer = null;
+/* ═══════════════════════════════════════════════════════════════════
+   PLANILHA ORÇAMENTÁRIA — Integração GEP
+   Arquitetura: orcamento_evento_v1 = working state (app.js)
+                vtp_planilhas_v1    = registry persistente (planilha.html)
+   ═══════════════════════════════════════════════════════════════════ */
 
-function plnlGetId(){
-  if(_plnlId) return _plnlId;
-  var params = new URLSearchParams(window.location.search);
-  _plnlId = params.get('id') || localStorage.getItem('plnl_open_id') || ('plnl_'+Date.now());
-  _plnlIsNew = localStorage.getItem('plnl_is_new') === '1';
-  return _plnlId;
-}
-
-/* Trocar showTab do app original pelo plnlTab */
-function plnlTab(name){
-  document.querySelectorAll('.tab-section').forEach(function(s){ s.classList.remove('active'); });
-  document.querySelectorAll('.plnl-tab').forEach(function(t){ t.classList.remove('active'); });
-  var sec = document.getElementById('tab-'+name);
-  if(sec) sec.classList.add('active');
+/* ── Trocar tabs ── */
+function plnlTab(name) {
+  document.querySelectorAll('.tab-section').forEach(function(s) { s.classList.remove('active'); });
+  document.querySelectorAll('.plnl-tab').forEach(function(t) { t.classList.remove('active'); });
+  var sec = document.getElementById('tab-' + name);
+  if (sec) sec.classList.add('active');
   var tabs = ['inicial','cliente','fechamento','fornecedores','verba'];
   var idx = tabs.indexOf(name);
   var allTabs = document.querySelectorAll('.plnl-tab');
-  if(allTabs[idx]) allTabs[idx].classList.add('active');
-  atualizarTopbar && atualizarTopbar();
+  if (allTabs[idx]) allTabs[idx].classList.add('active');
 }
-/* Override showTab do app.js */
-window.showTab = function(name){ plnlTab(name); };
+window.showTab = function(name) { plnlTab(name); };
 
-/* ── Carregar dados GEP nos dropdowns ── */
-function plnlInitGEPData(){
+/* ── Autocomplete catálogo GEP ── */
+window.gepAutoFillServico = function(input) {
+  var val = (input.value || '').trim().toLowerCase();
+  if (!val || !window._gepCatalogo) return;
+  var item = window._gepCatalogo.find(function(s) {
+    return (s.nome || s.servico || s || '').toLowerCase() === val;
+  });
+  if (!item) return;
+  var tr = input.closest('tr');
+  if (!tr) return;
+  if (item.preco || item.valorUnitario) {
+    var precoInp = tr.querySelector('.f-preco');
+    if (precoInp && readPrice(precoInp) === 0) {
+      precoInp.dataset.rawVal = item.preco || item.valorUnitario || 0;
+      precoInp.dispatchEvent(new Event('blur'));
+    }
+  }
+  if (item.fornecedor) {
+    var fornInp = tr.querySelector('.f-fornecedor');
+    if (fornInp && !fornInp.value) fornInp.value = item.fornecedor;
+  }
+  if (item.descricao || item.desc) {
+    var descInp = tr.querySelector('.f-desc');
+    if (descInp && !descInp.value) descInp.value = item.descricao || item.desc || '';
+  }
+};
+
+/* ── Inicializar dados do GEP nos selects ── */
+function plnlInitGEPData() {
   /* Fornecedores */
   var forns = [];
-  try{ forns = JSON.parse(localStorage.getItem('vtp_fornecedores_v1')||'[]'); }catch(e){}
-  var dl = document.getElementById('dl-fornecedores');
-  if(dl){ dl.innerHTML = ''; forns.forEach(function(f){ var o=document.createElement('option'); o.value=f.nome||f.name||''; dl.appendChild(o); }); }
-  window.fornecedorNomes = forns.map(function(f){ return f.nome||f.name||''; });
+  try { forns = JSON.parse(localStorage.getItem('vtp_fornecedores_v1') || '[]'); } catch(e) {}
+  window.fornecedorNomes = [];
   window.fornecedorPrazo = {};
-  window.fornecedorData = {};
-  forns.forEach(function(f){
-    var n = f.nome||f.name||'';
-    if(f.prazo) window.fornecedorPrazo[n] = f.prazo;
-    window.fornecedorData[n] = f;
+  window.fornecedorData  = {};
+  var dl = document.getElementById('dl-fornecedores');
+  if (dl) dl.innerHTML = '';
+  forns.forEach(function(f) {
+    var n = f.nome || f.name || '';
+    if (!n) return;
+    window.fornecedorNomes.push(n);
+    window.fornecedorPrazo[n] = f.prazo || '';
+    window.fornecedorData[n]  = f;
+    if (dl) { var o = document.createElement('option'); o.value = n; dl.appendChild(o); }
   });
 
-  /* Catálogo de serviços — GEP */
+  /* Catálogo */
   var cat = [];
-  try{ cat = JSON.parse(localStorage.getItem('vtp_catalogo_v1')||'[]'); }catch(e){}
+  try { cat = JSON.parse(localStorage.getItem('vtp_catalogo_v1') || '[]'); } catch(e) {}
   window._gepCatalogo = cat;
-  ['dl-servicos','dl-catalogo-gep'].forEach(function(dlId){
+  ['dl-servicos','dl-catalogo-gep'].forEach(function(dlId) {
     var dlEl = document.getElementById(dlId);
-    if(!dlEl) return;
+    if (!dlEl) return;
     dlEl.innerHTML = '';
-    cat.forEach(function(s){
+    cat.forEach(function(s) {
       var o = document.createElement('option');
       o.value = s.nome || s.servico || s || '';
-      if(s.preco) o.dataset.preco = s.preco;
       dlEl.appendChild(o);
     });
   });
 
-  /* Secretarias — do cadastro do GEP (vtp_secretarias_v1) */
+  /* Secretarias */
   var secs = [];
-  try{ secs = JSON.parse(localStorage.getItem('vtp_secretarias_v1')||'[]'); }catch(e){}
-  var secNames = secs.map(function(s){ return s.nome||''; }).filter(Boolean).sort();
-  if(!secNames.length && window.LISTAS) secNames = (window.LISTAS.secretarias||[]).slice().sort();
-  ['cliente','clienteFech'].forEach(function(id){
-    var sel=document.getElementById(id);
-    if(!sel) return;
-    sel.innerHTML='<option value="">-- selecione --</option>';
-    secNames.forEach(function(s){ var o=document.createElement('option'); o.value=s; o.textContent=s; sel.appendChild(o); });
+  try { secs = JSON.parse(localStorage.getItem('vtp_secretarias_v1') || '[]'); } catch(e) {}
+  var secNames = secs.map(function(s) { return s.nome || ''; }).filter(Boolean).sort();
+  if (!secNames.length && window.LISTAS) secNames = (window.LISTAS.secretarias || []).slice().sort();
+  ['cliente','clienteFech'].forEach(function(id) {
+    var sel = document.getElementById(id);
+    if (!sel) return;
+    sel.innerHTML = '<option value="">-- selecione --</option>';
+    secNames.forEach(function(s) { var o = document.createElement('option'); o.value = s; o.textContent = s; sel.appendChild(o); });
   });
 
-  /* Empresas — do cadastro do GEP (vtp_empresas_v1) */
+  /* Empresas */
   var emps = [];
-  try{ emps = JSON.parse(localStorage.getItem('vtp_empresas_v1')||'[]'); }catch(e){}
-  var empNames = emps.map(function(e){ return e.nomeFant||e.razao||e.nome||''; }).filter(Boolean).sort();
+  try { emps = JSON.parse(localStorage.getItem('vtp_empresas_v1') || '[]'); } catch(e) {}
+  var empNames = emps.map(function(e) { return e.nomeFant || e.razao || e.nome || ''; }).filter(Boolean).sort();
   var selEmp = document.getElementById('nomeEmpresa');
-  if(selEmp && selEmp.tagName === 'SELECT'){
-    selEmp.innerHTML='<option value="">-- selecione --</option>';
-    empNames.forEach(function(n){ var o=document.createElement('option'); o.value=n; o.textContent=n; selEmp.appendChild(o); });
-    /* Auto-selecionar se tiver só uma empresa */
-    if(empNames.length === 1) selEmp.value = empNames[0];
+  if (selEmp && selEmp.tagName === 'SELECT') {
+    selEmp.innerHTML = '<option value="">-- selecione --</option>';
+    empNames.forEach(function(n) { var o = document.createElement('option'); o.value = n; o.textContent = n; selEmp.appendChild(o); });
+    if (empNames.length === 1) selEmp.value = empNames[0];
   }
 
-  /* Produtores — da lista de usuários do GEP */
+  /* Produtores (usuários do GEP) */
   var prods = [];
-  try{
-    var users = JSON.parse(localStorage.getItem('vtp_users_v2')||'[]');
-    prods = users.filter(function(u){ return u.ativo!=0; })
-                 .map(function(u){ return u.nome||u.login||''; })
-                 .filter(Boolean);
-  }catch(e){}
-  if(!prods.length){
-    try{ prods = JSON.parse(localStorage.getItem('vtp_produtores_v1')||'[]').map(function(p){ return p.nome||p||''; }).filter(Boolean); }catch(e){}
+  try {
+    var users = JSON.parse(localStorage.getItem('vtp_users_v2') || '[]');
+    prods = users.filter(function(u) { return u.ativo !== 0; }).map(function(u) { return u.nome || u.login || ''; }).filter(Boolean);
+  } catch(e) {}
+  if (!prods.length) {
+    try { prods = JSON.parse(localStorage.getItem('vtp_produtores_v1') || '[]').map(function(p) { return p.nome || p || ''; }).filter(Boolean); } catch(e) {}
   }
-  ['produtor','produtorFech'].forEach(function(id){
-    var sel=document.getElementById(id);
-    if(!sel) return;
-    sel.innerHTML='<option value="">-- selecione --</option>';
-    prods.forEach(function(s){ var o=document.createElement('option'); o.value=s; o.textContent=s; sel.appendChild(o); });
+  ['produtor','produtorFech'].forEach(function(id) {
+    var sel = document.getElementById(id);
+    if (!sel) return;
+    sel.innerHTML = '<option value="">-- selecione --</option>';
+    prods.forEach(function(s) { var o = document.createElement('option'); o.value = s; o.textContent = s; sel.appendChild(o); });
   });
-  /* Preencher produtor com o usuário logado — tenta parent.me primeiro */
-  try{
+
+  /* Também chamar refreshFornecedorLookups do app.js */
+  if (typeof refreshFornecedorLookups === 'function') refreshFornecedorLookups();
+}
+
+/* ── Preencher produtor com usuário logado ── */
+function plnlSetProdutor() {
+  try {
     var nomeLogado = '';
-    if(window.parent && window.parent.me && window.parent.me.nome)
+    if (window.parent && window.parent.me && window.parent.me.nome)
       nomeLogado = window.parent.me.nome;
-    if(!nomeLogado){
-      var sess2 = JSON.parse(localStorage.getItem('gep_session_v1')||'null');
-      if(sess2) nomeLogado = sess2.nome||sess2.login||'';
+    if (!nomeLogado) {
+      var sess = JSON.parse(localStorage.getItem('gep_session_v1') || 'null');
+      if (sess) nomeLogado = sess.nome || sess.login || '';
     }
-    if(nomeLogado){
-      ['produtor','produtorFech'].forEach(function(id){
+    if (nomeLogado) {
+      ['produtor','produtorFech'].forEach(function(id) {
         var sel = document.getElementById(id);
-        if(sel && !sel.value) sel.value = nomeLogado;
+        if (sel && !sel.value) sel.value = nomeLogado;
       });
     }
-  }catch(e){}
-
-  /* Catálogo de serviços na aba Catálogo */
-  if(typeof renderCatalogoServicos==='function') renderCatalogoServicos();
+  } catch(e) {}
 }
 
-/* ── Carregar planilha salva ── */
-function plnlCarregarDados(){
-  var id = plnlGetId();
+/* ── SALVAR: usa salvarEstado do app.js + salva no registry ── */
+window.plnlSalvar = function() {
+  var nome = (document.getElementById('plnlNomeInput').value || '').trim() || 'Planilha sem nome';
+
+  /* Salvar estado via app.js */
+  if (typeof salvarEstado === 'function') salvarEstado();
+
+  /* Adicionar metadados ao estado salvo */
+  var dados = {};
+  try { dados = JSON.parse(localStorage.getItem('orcamento_evento_v1') || '{}'); } catch(e) {}
+  dados.planilhaNome = nome;
+  localStorage.setItem('orcamento_evento_v1', JSON.stringify(dados));
+
+  /* Salvar no registry */
+  var id = window.__plnlId;
   var list = [];
-  try{ list = JSON.parse(localStorage.getItem('vtp_planilhas_v1')||'[]'); }catch(e){}
-  var p = list.find(function(x){ return x.id===id; });
-  if(!p || _plnlIsNew) return; // nova planilha = em branco
-
-  /* Preencher nome */
-  var ni = document.getElementById('plnlNomeInput');
-  if(ni && p.nome) ni.value = p.nome;
-
-  /* Preencher dados das abas */
-  var d = p.dados || {};
-  function setVal(id, val){ var el=document.getElementById(id); if(el && val!==undefined) el.value=val||''; }
-  setVal('numEvento', d.numEvento);
-  setVal('nomeEvento', d.nomeEvento);
-  setVal('cliente', d.cliente);
-  setVal('dataInicio', d.dataInicio);
-  setVal('dataTermino', d.dataTermino);
-  setVal('horario', d.horario);
-  setVal('local', d.local);
-  setVal('publicoEstimado', d.publicoEstimado);
-  setVal('montagem', d.montagem);
-  setVal('produtor', d.produtor);
-  setVal('verbaEstDescritivo', d.verbaEstDescritivo);
-  setVal('verbaEstQtde', d.verbaEstQtde);
-  setVal('verbaEstUnitario', d.verbaEstUnitario);
-  setVal('nomeEmpresa', d.nomeEmpresa);
-  setVal('verbaEstObs', d.verbaEstObs);
-  setVal('margemLucro', d.margemLucro);
-
-  /* Itens */
-  // Filtrar itens corrompidos (salvos como {} em versões antigas)
-  function itemValido(it) {
-    if(!it || typeof it !== 'object') return false;
-    return (it.servico||it.nome||it.produtor||it.descricao||'').trim() !== '' ||
-           parseFloat(it.preco||it.valor||0) > 0;
-  }
-
-  if(d.itens) restoreItens('itensBody', d.itens.filter(itemValido), 'inicial');
-  if(d.clienteItens) restoreItens('clienteItensBody', d.clienteItens.filter(itemValido), 'cliente');
-  if(d.fechamentoItens) restoreItens('fechamentoItensBody', d.fechamentoItens.filter(itemValido), 'fechamento');
-  if(d.fornecedoresItens) restoreItens('fornecedoresBody', d.fornecedoresItens.filter(itemValido), 'forn');
-  if(d.verbaItens) restoreItens('verbaBody', d.verbaItens.filter(itemValido), 'verba');
-
-  /* Cadastro de fornecedores */
-  if(d.cadastroRows && typeof renderCadastro==='function'){
-    window._cadastroData = d.cadastroRows;
-    renderCadastro();
-  }
-
-  /* Recalcular totais */
-  if(typeof calcTotal==='function') calcTotal();
-  if(typeof calcTotalCliente==='function') calcTotalCliente();
-  if(typeof calcTotalFechamento==='function') calcTotalFechamento();
-  if(typeof calcTotalFornecedores==='function') calcTotalFornecedores();
-  if(typeof calcTotalVerba==='function') calcTotalVerba();
-  if(typeof atualizarHeadersLinkados==='function') atualizarHeadersLinkados();
-}
-
-function restoreItens(bodyId, itens, tipo){
-  if(!itens || !itens.length) return;
-  var tbody = document.getElementById(bodyId);
-  if(!tbody) return;
-  tbody.innerHTML = ''; // limpar linhas em branco antes de restaurar
-  itens.forEach(function(item){
-    if(tipo==='inicial')    inicialTable.addRow(item);
-    else if(tipo==='cliente')    addClienteRow(item);
-    else if(tipo==='fechamento') fechamentoTable.addRow(item);
-    else if(tipo==='forn')       addFornecedorRow(item);
-    else if(tipo==='verba')      addVerbaRow(item);
-  });
-}
-
-/* ── Coletar dados para salvar ── */
-function plnlColetarDados(){
-  function getVal(id){ var el=document.getElementById(id); return el?el.value:''; }
-  function getItens(bodyId){
-    var rows = document.querySelectorAll('#'+bodyId+' tr');
-    var result = [];
-    rows.forEach(function(tr){
-      var obj = {};
-      function gv(cls){ var el=tr.querySelector('.'+cls); return el?el.value:''; }
-      if(bodyId==='itensBody'||bodyId==='fechamentoItensBody'){
-        obj={servico:gv('f-servico'),desc:gv('f-desc'),
-             qtde:gv('f-qtde'),preco:gv('f-preco'),freq:gv('f-freq'),
-             unidade:gv('f-unidade'),fornecedor:gv('f-fornecedor'),
-             forma:gv('f-forma'),obs:gv('f-obs')};
-        if(!obj.servico&&!obj.desc&&!parseFloat(obj.preco)) return;
-      } else if(bodyId==='clienteItensBody'){
-        obj={servico:gv('cf-servico'),desc:gv('cf-desc'),
-             qtde:gv('cf-qtde'),preco:gv('cf-preco'),freq:gv('cf-freq')};
-        if(!obj.servico&&!obj.desc) return;
-      } else if(bodyId==='fornecedoresBody'){
-        var fc=tr.querySelector('.ff-forma-check:checked');
-        obj={nome:gv('ff-nome'),cnpj:gv('ff-cnpj'),contato:gv('ff-contato'),
-             telefone:gv('ff-telefone'),valor:gv('ff-valor'),
-             forma:fc?fc.value:'',dias:tr.dataset.dias||'',obs:gv('ff-obs')};
-        if(!obj.nome) return;
-      } else if(bodyId==='verbaBody'){
-        obj={produtor:gv('vb-produtor'),descricao:gv('vb-descricao'),valor:gv('vb-valor')};
-        if(!obj.produtor&&!obj.descricao) return;
-      } else { return; }
-      result.push(obj);
-    });
-    return result;
-  }
-  return {
-    numEvento: getVal('numEvento'),
-    nomeEvento: getVal('nomeEvento'),
-    cliente: getVal('cliente'),
-    dataInicio: getVal('dataInicio'),
-    dataTermino: getVal('dataTermino'),
-    horario: getVal('horario'),
-    local: getVal('local'),
-    publicoEstimado: getVal('publicoEstimado'),
-    montagem: getVal('montagem'),
-    produtor: getVal('produtor'),
-    verbaEstDescritivo: getVal('verbaEstDescritivo'),
-    verbaEstQtde: getVal('verbaEstQtde'),
-    verbaEstUnitario: getVal('verbaEstUnitario'),
-    nomeEmpresa: getVal('nomeEmpresa'),
-    verbaEstObs: getVal('verbaEstObs'),
-    margemLucro: getVal('margemLucro'),
-    itens: getItens('itensBody'),
-    clienteItens: getItens('clienteItensBody'),
-    fechamentoItens: getItens('fechamentoItensBody'),
-    fornecedoresItens: getItens('fornecedoresBody'),
-    verbaItens: getItens('verbaBody'),
-    cadastroRows: window._cadastroData || []
-  };
-}
-
-/* ── Salvar ── */
-function plnlSalvar(){
-  var id = plnlGetId();
-  var nome = (document.getElementById('plnlNomeInput').value||'').trim() || 'Planilha sem nome';
-  var list = [];
-  try{ list = JSON.parse(localStorage.getItem('vtp_planilhas_v1')||'[]'); }catch(e){}
-  var idx = list.findIndex(function(x){ return x.id===id; });
-  var agora = new Date().toLocaleDateString('pt-BR')+' '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
-  var entry = { id:id, nome:nome, criadoEm: agora, dados: plnlColetarDados() };
-  if(idx>=0) list[idx]=entry; else list.unshift(entry);
+  try { list = JSON.parse(localStorage.getItem('vtp_planilhas_v1') || '[]'); } catch(e) {}
+  var idx = list.findIndex(function(x) { return x.id === id; });
+  var agora = new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+  var entry = { id: id, nome: nome, criadoEm: agora, dados: dados };
+  if (idx >= 0) list[idx] = entry;
+  else list.unshift(entry);
   localStorage.setItem('vtp_planilhas_v1', JSON.stringify(list));
   localStorage.removeItem('plnl_is_new');
-  _plnlIsNew = false;
-  if(window.parent && window.parent !== window){
+  window.__plnlIsNew = false;
+
+  /* Notificar GEP */
+  if (window.parent && window.parent !== window) {
     window.parent.postMessage({type:'plnl_saved', id:id, nome:nome}, '*');
   }
+
   /* Feedback visual */
   var btn = document.querySelector('.plnl-btn-save');
-  if(btn){ var old=btn.textContent; btn.textContent='✓ Salvo!'; setTimeout(function(){ btn.textContent=old; }, 1500); }
-}
+  if (btn) { var old = btn.textContent; btn.textContent = '✓ Salvo!'; setTimeout(function(){ btn.textContent = old; }, 1500); }
+};
 
-function plnlAutoSave(){
-  clearTimeout(_autoSaveTimer);
-  _autoSaveTimer = setTimeout(plnlSalvar, 2000);
-}
-
-/* ── Fechar ── */
-function plnlClose(){
-  plnlSalvar();
-  if(window.parent && window.parent !== window){
+/* ── FECHAR ── */
+window.plnlClose = function() {
+  window.plnlSalvar();
+  if (window.parent && window.parent !== window) {
     window.parent.postMessage({type:'plnl_close'}, '*');
-  }
-}
-
-/* ── Vincular evento ── */
-function plnlAbrirVincular(){
-  var sel = document.getElementById('plnlVincularSel');
-  sel.innerHTML = '<option value="">-- selecione --</option>';
-  var vts = [];
-  try{ vts = JSON.parse(localStorage.getItem('vtp_visitas_v2')||'[]'); }catch(e){}
-  vts.forEach(function(v){
-    if(!v || !v.nome) return;
-    var o = document.createElement('option');
-    o.value = v.id;
-    o.textContent = (v.nome||'Sem nome') + (v.dataEvento?' — '+v.dataEvento:'');
-    sel.appendChild(o);
-  });
-  document.getElementById('plnlVincularModal').classList.add('open');
-}
-
-function plnlFecharVincular(){
-  document.getElementById('plnlVincularModal').classList.remove('open');
-}
-
-function plnlConfirmarVincular(){
-  var sel = document.getElementById('plnlVincularSel');
-  var vid = sel.value;
-  if(!vid){ alert('Selecione um evento'); return; }
-  var vts = [];
-  try{ vts = JSON.parse(localStorage.getItem('vtp_visitas_v2')||'[]'); }catch(e){}
-  var vt = vts.find(function(v){ return v.id===vid; });
-  if(!vt){ plnlFecharVincular(); return; }
-
-  /* Preencher campos com dados da VT */
-  function setVal(id,val){ var el=document.getElementById(id); if(el&&val) el.value=val; }
-  setVal('numEvento', vt.numEvento||vt.numero||'');
-  setVal('nomeEvento', vt.nome||vt.nomeEvento||'');
-  setVal('cliente', vt.secretaria||vt.cliente||'');
-  setVal('dataInicio', vt.dataEvento||vt.dataInicio||'');
-  setVal('dataTermino', vt.dataTermino||'');
-  setVal('horario', vt.horario||'');
-  setVal('local', vt.local||vt.endereco||'');
-  setVal('publicoEstimado', vt.publico||vt.publicoEstimado||'');
-  setVal('produtor', vt.produtor||'');
-  setVal('montagem', vt.montagem||'');
-  /* Também preencher nome da planilha */
-  var ni = document.getElementById('plnlNomeInput');
-  if(ni && !ni.value) ni.value = vt.nome||vt.nomeEvento||'';
-
-  /* Atualizar headers linkados no fechamento */
-  if(typeof atualizarHeadersLinkados==='function') atualizarHeadersLinkados();
-
-  plnlFecharVincular();
-  plnlSalvar();
-}
-
-/* ── Autocomplete catálogo GEP ── */
-window.gepAutoFillServico = function(input){
-  var val = (input.value||'').trim().toLowerCase();
-  if(!val || !window._gepCatalogo) return;
-  var item = window._gepCatalogo.find(function(s){
-    var nome = (s.nome||s.servico||s||'').toLowerCase();
-    return nome === val;
-  });
-  if(!item) return;
-  var tr = input.closest('tr');
-  if(!tr) return;
-  // Preencher preço se disponível
-  if(item.preco || item.valorUnitario){
-    var precoInput = tr.querySelector('.f-preco');
-    if(precoInput && !precoInput.value) precoInput.value = item.preco || item.valorUnitario || '';
-  }
-  // Preencher fornecedor se disponível
-  if(item.fornecedor){
-    var fornInput = tr.querySelector('.f-fornecedor');
-    if(fornInput && !fornInput.value) fornInput.value = item.fornecedor || '';
-  }
-  // Preencher descrição se disponível
-  if(item.descricao || item.desc){
-    var descInput = tr.querySelector('.f-desc');
-    if(descInput && !descInput.value) descInput.value = item.descricao || item.desc || '';
   }
 };
 
-/* ── Inicialização ── */
-document.addEventListener('DOMContentLoaded', function(){
+/* ── VINCULAR EVENTO ── */
+window.plnlAbrirVincular = function() {
+  var sel = document.getElementById('plnlVincularSel');
+  sel.innerHTML = '<option value="">-- selecione --</option>';
+  var vts = [];
+  try { vts = JSON.parse(localStorage.getItem('vtp_visitas_v2') || '[]'); } catch(e) {}
+  vts.forEach(function(v) {
+    if (!v || !v.nome) return;
+    var o = document.createElement('option');
+    o.value = v.id;
+    o.textContent = (v.nome || 'Sem nome') + (v.dataEvento ? ' — ' + v.dataEvento : '');
+    sel.appendChild(o);
+  });
+  document.getElementById('plnlVincularModal').classList.add('open');
+};
+
+window.plnlFecharVincular = function() {
+  document.getElementById('plnlVincularModal').classList.remove('open');
+};
+
+window.plnlConfirmarVincular = function() {
+  var sel = document.getElementById('plnlVincularSel');
+  var vid = sel.value;
+  if (!vid) { alert('Selecione um evento'); return; }
+  var vts = [];
+  try { vts = JSON.parse(localStorage.getItem('vtp_visitas_v2') || '[]'); } catch(e) {}
+  var vt = vts.find(function(v) { return v.id === vid; });
+  if (!vt) { window.plnlFecharVincular(); return; }
+
+  function setVal(id, val) { var el = document.getElementById(id); if (el && val) el.value = val; }
+  setVal('numEvento', vt.numEvento || vt.numero || '');
+  setVal('nomeEvento', vt.nome || vt.nomeEvento || '');
+  setVal('cliente', vt.secretaria || vt.cliente || '');
+  setVal('dataInicio', vt.dataEvento || vt.dataInicio || '');
+  setVal('dataTermino', vt.dataTermino || '');
+  setVal('horario', vt.horario || '');
+  setVal('local', vt.local || vt.endereco || '');
+  setVal('publicoEstimado', vt.publico || vt.publicoEstimado || '');
+  setVal('produtor', vt.produtor || '');
+  setVal('montagem', vt.montagem || '');
+  var ni = document.getElementById('plnlNomeInput');
+  if (ni && !ni.value) ni.value = vt.nome || vt.nomeEvento || '';
+  if (typeof atualizarTopbar === 'function') atualizarTopbar();
+  window.plnlFecharVincular();
+  window.plnlSalvar();
+};
+
+/* ── INICIALIZAÇÃO ── */
+document.addEventListener('DOMContentLoaded', function() {
+  /* 1. Carregar dados do GEP nos selects */
   plnlInitGEPData();
-  setTimeout(function(){ plnlCarregarDados(); }, 100);
+
+  /* 2. Após window.load (carregarEstado do app.js), ajustar campos do GEP */
+  window.addEventListener('load', function() {
+    /* Restaurar nome da planilha */
+    var dados = {};
+    try { dados = JSON.parse(localStorage.getItem('orcamento_evento_v1') || '{}'); } catch(e) {}
+    var ni = document.getElementById('plnlNomeInput');
+    if (ni && dados.planilhaNome) ni.value = dados.planilhaNome;
+
+    /* Re-aplicar selects do GEP (carregarEstado pode ter definido valores antes dos options) */
+    plnlInitGEPData();
+
+    /* Definir produtor logado se vazio */
+    plnlSetProdutor();
+
+    /* Auto-save ao alterar campos do cabeçalho */
+    ['numEvento','nomeEvento','cliente','dataInicio','dataTermino',
+     'horario','local','publicoEstimado','montagem','produtor'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.addEventListener('change', function() {
+        if (typeof salvarEstado === 'function') salvarEstado();
+      });
+    });
+  });
 });
 
-/* Salvar antes de fechar a aba/iframe */
-window.addEventListener('beforeunload', function(){ plnlSalvar(); });
+/* Salvar antes de fechar */
+window.addEventListener('beforeunload', function() {
+  window.plnlSalvar();
+});
+
 </script>
 </body>
 </html>
