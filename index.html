@@ -1103,9 +1103,10 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 .er-panel-hdr{padding:12px 16px;border-bottom:1px solid #E2E8F0;font-size:13px;font-weight:700;display:flex;justify-content:space-between;align-items:center}
 .er-table{width:100%;border-collapse:collapse;font-size:12px;min-width:680px}
 .er-table th{padding:10px 12px;text-align:left;font-size:10px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.05em;background:#F8FAFC;border-bottom:1px solid #E2E8F0;white-space:nowrap}
-.er-table td{padding:11px 12px;border-bottom:1px solid #F1F5F9;vertical-align:middle}
+.er-table td{padding:11px 12px;border-bottom:1px solid #E8EDF2;vertical-align:middle}
 .er-table tr:last-child td{border-bottom:none}
-.er-table tbody tr:hover td{background:#F8FAFC}
+.er-table tbody tr:nth-child(even) td{background:#FAFBFD}
+.er-table tbody tr:hover td{background:#EFF4FA}
 .er-nome{font-weight:700;font-size:13px;color:#0F172A}
 .er-num{font-size:11px;color:#64748B}
 .er-cache{font-weight:700;font-family:'JetBrains Mono',monospace;text-align:right;white-space:nowrap}
@@ -1351,7 +1352,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
           <div class="gep-foot-dev">Desenvolvido por</div>
           <div class="gep-foot-name">Alessandro Lima</div>
           <div class="gep-foot-copy">© 2026 · Todos os direitos reservados</div>
-          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-125</span></div>
+          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-126</span></div>
         </div>
       </div>
     </div>
@@ -1415,7 +1416,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div class="d">Desenvolvido por</div>
       <div class="n">Alessandro Lima</div>
       <div class="c">© 2026 · Todos os direitos reservados</div>
-      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-125</span></div>
+      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-126</span></div>
     </div>
   </div>
 
@@ -5092,7 +5093,7 @@ saveEmp = function(){
 // Expor tudo globalmente
 
 /* ═══════════════════════════════════════════════════════════
-   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-125
+   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-126
    ═══════════════════════════════════════════════════════════ */
 var SK_PLNL = 'vtp_planilhas_v1';
 
@@ -7646,16 +7647,15 @@ function erRender(){
   var elVR = document.getElementById('erVerbaRec');
   var elVS = document.getElementById('erVerbaSub');
   var elVBar = document.getElementById('erVerbaBar');
-  if(elVR) elVR.textContent = erFmtMoneyShort(verbaPendente);
+  if(elVR) elVR.textContent = erFmtMoney(verbaPendente);
   if(elVS){
     if(verbaPendente > 0){
-      // Proposta B: "3 pendentes · R$ 400 pago"
-      var verbaPagoTxt = verbaPaga>0 ? ' · <span style="color:#0F6E56">'+erFmtMoneyShort(verbaPaga)+' pago</span>' : '';
+      var verbaPagoTxt = verbaPaga>0 ? ' · <span style="color:#0F6E56">'+erFmtMoney(verbaPaga)+' pago</span>' : '';
       elVS.innerHTML = nVerbaPend+' pendente'+(nVerbaPend!==1?'s':'')+verbaPagoTxt;
       if(elVR) elVR.style.color = '#92400E';
       if(elVBar) elVBar.style.background = '#F59E0B';
     } else if(verbaPaga > 0){
-      elVS.textContent = 'tudo recebido · '+erFmtMoneyShort(verbaPaga);
+      elVS.textContent = 'tudo recebido · '+erFmtMoney(verbaPaga);
       if(elVR) elVR.style.color = '#0F6E56';
       if(elVBar) elVBar.style.background = '#10B981';
     } else {
