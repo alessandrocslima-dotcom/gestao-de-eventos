@@ -140,6 +140,24 @@ td input[list] { min-width: 120px; }
 .plnl-modal h3 { font-size:15px; font-weight:700; margin-bottom:14px; color:#0F172A; }
 .plnl-modal select { width:100%; padding:10px; border:1.5px solid #E2E8F0; border-radius:8px; font-size:13px; font-family:inherit; color:#0F172A; margin-bottom:14px; }
 .plnl-modal-btns { display:flex; gap:8px; justify-content:flex-end; }
+
+/* ── Fornecedores: radio horizontal ── */
+.checkbox-group { display:flex; flex-direction:row; gap:6px; align-items:center; flex-wrap:nowrap; }
+.checkbox-group label { font-size:11px; display:flex; align-items:center; gap:3px; white-space:nowrap; cursor:pointer; }
+.checkbox-group input[type=radio] { width:13px; height:13px; cursor:pointer; accent-color:#2563EB; }
+
+/* ── Fornecedores: colunas ── */
+.ff-nome { min-width:160px; }
+.ff-cnpj { width:130px; font-size:11px; }
+.ff-contato { width:110px; }
+.ff-telefone { width:120px; font-size:11px; }
+.ff-valor { width:90px; text-align:right; font-weight:600; color:#0F172A; }
+.ff-obs { min-width:100px; }
+.vencimento-cell { font-size:11px; font-weight:600; color:#1D4ED8; white-space:nowrap; min-width:80px; }
+
+/* ── Valor destaque ── */
+.valor-final { font-weight:700; color:#0F172A; white-space:nowrap; }
+
 </style>
 </head>
 <body>
@@ -469,15 +487,15 @@ td input[list] { min-width: 120px; }
             <table id="fornecedoresTable">
               <thead>
                 <tr>
-                  <th class="col-forn">Fornecedor</th>
-                  <th>CNPJ</th>
-                  <th>Contato</th>
-                  <th>Telefone</th>
-                  <th class="col-num">Valor Final</th>
-                  <th class="col-sm">Pagamento</th>
-                  <th>Vencimento</th>
-                  <th class="col-obs">Observações</th>
-                  <th class="col-del"></th>
+                  <th style="min-width:160px">Fornecedor</th>
+                  <th style="width:130px">CNPJ / CPF</th>
+                  <th style="width:110px">Contato</th>
+                  <th style="width:120px">Telefone</th>
+                  <th style="width:95px;text-align:right">Valor Final</th>
+                  <th style="width:220px">Pagamento</th>
+                  <th style="width:90px">Vencimento</th>
+                  <th style="min-width:100px">Observações</th>
+                  <th style="width:28px"></th>
                 </tr>
               </thead>
               <tbody id="fornecedoresBody"></tbody>
@@ -755,12 +773,15 @@ function plnlCarregarDados(){
 
 function restoreItens(bodyId, itens, tipo){
   if(!itens || !itens.length) return;
+  var tbody = document.getElementById(bodyId);
+  if(!tbody) return;
+  tbody.innerHTML = ''; // limpar linhas em branco antes de restaurar
   itens.forEach(function(item){
-    if(tipo==='inicial' && typeof addRowFn==='function') addRowFn(item);
-    else if(tipo==='cliente' && typeof addClienteRowFn==='function') addClienteRowFn(item);
-    else if(tipo==='fechamento' && typeof addFechamentoRowFn==='function') addFechamentoRowFn(item);
-    else if(tipo==='forn' && typeof addFornecedorRowFn==='function') addFornecedorRowFn(item);
-    else if(tipo==='verba' && typeof addVerbaRowFn==='function') addVerbaRowFn(item);
+    if(tipo==='inicial')    inicialTable.addRow(item);
+    else if(tipo==='cliente')    addClienteRow(item);
+    else if(tipo==='fechamento') fechamentoTable.addRow(item);
+    else if(tipo==='forn')       addFornecedorRow(item);
+    else if(tipo==='verba')      addVerbaRow(item);
   });
 }
 
@@ -771,10 +792,29 @@ function plnlColetarDados(){
     var rows = document.querySelectorAll('#'+bodyId+' tr');
     var result = [];
     rows.forEach(function(tr){
-      var inputs = tr.querySelectorAll('input,select');
       var obj = {};
-      inputs.forEach(function(inp){ if(inp.name) obj[inp.name]=inp.value; });
-      if(Object.keys(obj).length) result.push(obj);
+      function gv(cls){ var el=tr.querySelector('.'+cls); return el?el.value:''; }
+      if(bodyId==='itensBody'||bodyId==='fechamentoItensBody'){
+        obj={servico:gv('f-servico'),desc:gv('f-desc'),
+             qtde:gv('f-qtde'),preco:gv('f-preco'),freq:gv('f-freq'),
+             unidade:gv('f-unidade'),fornecedor:gv('f-fornecedor'),
+             forma:gv('f-forma'),obs:gv('f-obs')};
+        if(!obj.servico&&!obj.desc&&!parseFloat(obj.preco)) return;
+      } else if(bodyId==='clienteItensBody'){
+        obj={servico:gv('cf-servico'),desc:gv('cf-desc'),
+             qtde:gv('cf-qtde'),preco:gv('cf-preco'),freq:gv('cf-freq')};
+        if(!obj.servico&&!obj.desc) return;
+      } else if(bodyId==='fornecedoresBody'){
+        var fc=tr.querySelector('.ff-forma-check:checked');
+        obj={nome:gv('ff-nome'),cnpj:gv('ff-cnpj'),contato:gv('ff-contato'),
+             telefone:gv('ff-telefone'),valor:gv('ff-valor'),
+             forma:fc?fc.value:'',dias:tr.dataset.dias||'',obs:gv('ff-obs')};
+        if(!obj.nome) return;
+      } else if(bodyId==='verbaBody'){
+        obj={produtor:gv('vb-produtor'),descricao:gv('vb-descricao'),valor:gv('vb-valor')};
+        if(!obj.produtor&&!obj.descricao) return;
+      } else { return; }
+      result.push(obj);
     });
     return result;
   }
