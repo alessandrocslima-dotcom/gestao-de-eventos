@@ -636,6 +636,14 @@ function plnlTab(name) {
   var idx = tabs.indexOf(name);
   var allTabs = document.querySelectorAll('.plnl-tab');
   if (allTabs[idx]) allTabs[idx].classList.add('active');
+
+  /* Auto-sync: cabeçalho da Planilha Inicial reflete em todas as abas */
+  setTimeout(function() {
+    if (name === 'cliente'      && typeof syncResumoCliente     === 'function') syncResumoCliente();
+    if (name === 'fechamento'   && typeof syncHeaderFechamento  === 'function') syncHeaderFechamento();
+    if (name === 'fornecedores' && typeof syncResumoFornecedores=== 'function') syncResumoFornecedores();
+    if (name === 'verba'        && typeof syncResumoVerba       === 'function') syncResumoVerba();
+  }, 0);
 }
 window.showTab = function(name) { plnlTab(name); };
 
