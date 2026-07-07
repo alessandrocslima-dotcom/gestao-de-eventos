@@ -185,8 +185,13 @@ function applyPriceFormat(inp) {
   inp.addEventListener('input', function() {
     this.dataset.rawVal = parseFloat(this.value) || 0;
   });
-  // Inicializar
-  var v = parseFloat(inp.value) || 0;
+  // Inicializar — aceita número bruto OU string formatada ('R$ 1.160,00')
+  var rawStr = (inp.value || '').trim();
+  var v = parseFloat(rawStr);
+  if (isNaN(v)) {
+    // parsear string formatada ex: 'R$ 1.160,00' → 1160
+    v = parseFloat(rawStr.replace(/[^\d,.-]/g,'').replace(',','.')) || 0;
+  }
   inp.dataset.rawVal = v;
   inp.type = 'text';
   inp.value = toDisplay(v);
