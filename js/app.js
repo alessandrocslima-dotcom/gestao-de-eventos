@@ -233,6 +233,8 @@ function updateTotalFornecedores() {
   $('totalFornecedores').textContent = total.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
 }
 
+var fornecedorRowCount = 0;
+
 function getEventoDataInicioIso() {
   return $('dataInicioFech').value || $('dataInicio').value;
 }
@@ -516,8 +518,7 @@ $('avancarFechamentoBtn').addEventListener('click', function() {
   showTab('fechamento');
 });
 $('voltarClienteBtn').addEventListener('click',    function() { showTab('cliente'); });
-$('avancarVerbaBtn').addEventListener('click',     function() { syncResumoVerba(); showTab('verba'); });
-$('voltarFornecedoresBtn').addEventListener('click', function() { showTab('fornecedores'); });
+// avancarVerbaBtn e voltarFornecedoresBtn definidos abaixo com implementação completa
 
 function syncResumoFornecedores() {
   $('fCliente').value = $('clienteFech').value || $('cliente').value;
