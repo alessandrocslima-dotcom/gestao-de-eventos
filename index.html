@@ -1352,7 +1352,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
           <div class="gep-foot-dev">Desenvolvido por</div>
           <div class="gep-foot-name">Alessandro Lima</div>
           <div class="gep-foot-copy">© 2026 · Todos os direitos reservados</div>
-          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-129</span></div>
+          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-131</span></div>
         </div>
       </div>
     </div>
@@ -1416,7 +1416,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div class="d">Desenvolvido por</div>
       <div class="n">Alessandro Lima</div>
       <div class="c">© 2026 · Todos os direitos reservados</div>
-      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-129</span></div>
+      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-131</span></div>
     </div>
   </div>
 
@@ -5093,7 +5093,7 @@ saveEmp = function(){
 // Expor tudo globalmente
 
 /* ═══════════════════════════════════════════════════════════
-   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-129
+   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-131
    ═══════════════════════════════════════════════════════════ */
 var SK_PLNL = 'vtp_planilhas_v1';
 
@@ -5823,6 +5823,49 @@ adTab = function(t){
   var atBk = document.getElementById('at-backup');
   if(atBk) atBk.className='atab'+(t==='backup'?' on':'');
 };
+
+
+/* ═══════════════════════════════════════════════════════════════
+   MIGRAÇÃO DE DADOS v1 — Corrige preços salvos como string
+   Roda uma única vez e marca como concluída.
+   ═══════════════════════════════════════════════════════════════ */
+(function migrarPlanilhasPrecos() {
+  if (localStorage.getItem('plnl_preco_migrado_v1')) return;
+  try {
+    function normP(v) {
+      if (v == null || v === '') return 0;
+      if (typeof v === 'number') return v;
+      var s = String(v).replace(/R\$\s*/g,'').trim()
+                       .replace(/\./g,'').replace(',','.');
+      return parseFloat(s) || 0;
+    }
+    function fixItens(arr) {
+      if (!Array.isArray(arr)) return arr;
+      return arr.map(function(item) {
+        var r = Object.assign({}, item);
+        if (r.preco  != null) r.preco  = normP(r.preco);
+        if (r.valor  != null) r.valor  = normP(r.valor);
+        return r;
+      });
+    }
+    var list = JSON.parse(localStorage.getItem('vtp_planilhas_v1') || '[]');
+    list.forEach(function(p) {
+      if (!p.dados) return;
+      p.dados.itens         = fixItens(p.dados.itens);
+      p.dados.clienteItens  = fixItens(p.dados.clienteItens);
+      p.dados.fornecedores  = fixItens(p.dados.fornecedores);
+      p.dados.verba         = fixItens(p.dados.verba);
+      if (p.dados.fechamento) {
+        p.dados.fechamento.itens = fixItens(p.dados.fechamento.itens);
+      }
+    });
+    localStorage.setItem('vtp_planilhas_v1', JSON.stringify(list));
+    localStorage.setItem('plnl_preco_migrado_v1', '1');
+    console.log('[GEP] Migração de preços concluída:', list.length, 'planilhas corrigidas');
+  } catch(e) {
+    console.warn('[GEP] Erro na migração de preços:', e);
+  }
+})();
 
 /* ── Patch sbGo para carregar seletor ao abrir orçamento ── */
 /* ── sbGo consolidado ── */

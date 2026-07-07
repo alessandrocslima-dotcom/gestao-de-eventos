@@ -872,6 +872,20 @@ document.addEventListener('DOMContentLoaded', function() {
     /* Definir produtor logado se vazio */
     plnlSetProdutor();
 
+    /* Auto-sync: garantir que itens da Planilha Inicial estejam no Cliente */
+    setTimeout(function() {
+      if (!window.__plnlIsNew && typeof trazerItensDaInicial === 'function') {
+        // Só trazer se Planilha Inicial tiver itens com serviço preenchido
+        var inicialRows = document.querySelectorAll('#itensBody tr');
+        var temItens = false;
+        inicialRows.forEach(function(tr) {
+          var s = (tr.querySelector('.f-servico') || {}).value || '';
+          if (s.trim()) temItens = true;
+        });
+        if (temItens) trazerItensDaInicial();
+      }
+    }, 300);
+
     /* Auto-save ao alterar campos do cabeçalho */
     ['numEvento','nomeEvento','cliente','dataInicio','dataTermino',
      'horario','local','publicoEstimado','montagem','produtor'].forEach(function(id) {
