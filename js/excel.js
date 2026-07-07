@@ -170,7 +170,34 @@ function gepSetV(ws, ref, val) {
   if (val === undefined || val === null || val === '') return;
   ws.getCell(ref).value = val;
 }
+// Lê valor numérico de um elemento DOM ou string BRL
+function gepReadRaw(el) {
+  if (!el) return 0;
+  // dataset.rawVal é setado por applyPriceFormat (app.js)
+  if (el.dataset && el.dataset.rawVal !== undefined) {
+    return parseFloat(el.dataset.rawVal) || 0;
+  }
+  // Fallback: parsear string BRL 'R$ 1.160,00' → 1160
+  var s = (el.value || '').replace(/R\$\s*/g,'').trim()
+                          .replace(/\./g,'').replace(',','.');
+  return parseFloat(s) || 0;
+}
+
 function gepNum(v) {
+  if (v == null || v === '') return null;
+  // Elemento DOM — lê rawVal ou parseia BRL
+  if (v && typeof v === 'object' && v.tagName) {
+    var n = gepReadRaw(v);
+    // Retorna null só se campo estiver realmente vazio
+    if (n === 0 && !(v.value || '').trim()) return null;
+    return n;
+  }
+  // String — parsear formato BRL ou número simples
+  if (typeof v === 'string') {
+    var s = v.replace(/R\$\s*/g,'').trim().replace(/\./g,'').replace(',','.');
+    var n = parseFloat(s);
+    return isNaN(n) ? null : n;
+  }
   var n = parseFloat(v);
   return isNaN(n) ? null : n;
 }
@@ -206,7 +233,7 @@ function gepInjectItems(ws, trs, selPrefix, cadIndex, maxRow) {
     gepSetV(ws, 'B'+r, tr.querySelector('.'+selPrefix+'servico').value);
     gepSetV(ws, 'C'+r, tr.querySelector('.'+selPrefix+'desc').value);
     var q = gepNum(tr.querySelector('.'+selPrefix+'qtde').value);
-    var p = gepNum(tr.querySelector('.'+selPrefix+'preco').value);
+    var p = gepNum(tr.querySelector('.'+selPrefix+'preco'));
     if (q !== null) ws.getCell('D'+r).value = q;
     if (p !== null) ws.getCell('E'+r).value = p;
     var fq = gepNum(tr.querySelector('.'+selPrefix+'freq').value);
@@ -519,7 +546,7 @@ function gerarWorkbook() {
     gepSetV(wsC, 'B'+rc, tr.querySelector('.cf-servico').value);
     gepSetV(wsC, 'C'+rc, tr.querySelector('.cf-desc').value);
     var q = gepNum(tr.querySelector('.cf-qtde').value);
-    var p = gepNum(tr.querySelector('.cf-preco').value);
+    var p = gepNum(tr.querySelector('.cf-preco'));
     if (q !== null) cSet('D'+rc, q, fontVal, null, ctrAl, thinBd);
     if (p !== null) cSet('E'+rc, p, fontVal, null, ctrAl, thinBd, CUR_FMT);
     var fq = gepNum(tr.querySelector('.cf-freq').value);
@@ -585,7 +612,7 @@ function gerarWorkbook() {
     var nomeF = (fechTrs[fi].querySelector('.f-fornecedor').value || '').trim();
     if (!nomeF) continue;
     var qF = gepNum(fechTrs[fi].querySelector('.f-qtde').value) || 0;
-    var pF = gepNum(fechTrs[fi].querySelector('.f-preco').value) || 0;
+    var pF = gepNum(fechTrs[fi].querySelector('.f-preco')) || 0;
     var fqF = gepNum(fechTrs[fi].querySelector('.f-freq').value);
     var frF = (fqF !== null && fqF !== 0) ? fqF : 1;
     somaPorFornecedor[nomeF] = (somaPorFornecedor[nomeF] || 0) + qF * pF * frF;
