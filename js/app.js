@@ -330,6 +330,169 @@ function trazerFornecedores() {
 }
 $('trazerFornecedoresBtn').addEventListener('click', trazerFornecedores);
 
+
+// ─────────────────────────────────────────────────────────────────────
+// ABA 2: Cliente
+// ─────────────────────────────────────────────────────────────────────
+var clienteRowCount = 0;
+
+function addClienteRow(data) {
+  data = data || {};
+  var tbody = $('clienteItensBody');
+  var tr = document.createElement('tr');
+  tr.dataset.rid = 'crow' + (clienteRowCount++);
+  tr.innerHTML =
+    '<td><input type="text" class="cf-servico" value="' + (data.servico || '') + '"></td>' +
+    '<td><input type="text" class="cf-desc" value="' + (data.desc || '') + '"></td>' +
+    '<td><input type="number" class="cf-qtde" step="any" value="' + (data.qtde != null ? data.qtde : 1) + '"></td>' +
+    '<td><input type="number" class="cf-preco" step="any" value="' + (data.preco != null ? data.preco : 0) + '"></td>' +
+    '<td><input type="number" class="cf-freq" step="any" value="' + (data.freq != null ? data.freq : 1) + '"></td>' +
+    '<td class="valor-final">R$ 0,00</td>' +
+    '<td><button type="button" class="btn-del-row">\u00d7</button></td>';
+  tbody.appendChild(tr);
+  var recalc = function() { updateClienteRowTotal(tr); };
+  tr.querySelectorAll('.cf-qtde, .cf-preco, .cf-freq').forEach(function(el) { el.addEventListener('input', recalc); });
+  tr.querySelector('.btn-del-row').addEventListener('click', function() { tr.remove(); updateTotalCliente(); });
+  updateClienteRowTotal(tr);
+}
+
+function updateClienteRowTotal(tr) {
+  var q = parseFloat(tr.querySelector('.cf-qtde').value) || 0;
+  var p = parseFloat(tr.querySelector('.cf-preco').value) || 0;
+  var f = parseFloat(tr.querySelector('.cf-freq').value) || 0;
+  var total = q * p * f;
+  tr.querySelector('.valor-final').textContent = total.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+  tr.dataset.total = total;
+  updateTotalCliente();
+}
+
+function updateTotalCliente() {
+  var total = 0;
+  document.querySelectorAll('#clienteItensBody tr').forEach(function(tr) { total += parseFloat(tr.dataset.total) || 0; });
+  $('totalCliente').textContent = total.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+}
+$('addClienteRowBtn').addEventListener('click', function() { addClienteRow(); });
+
+// ─────────────────────────────────────────────────────────────────────
+// NAVEGAÇÃO E SINCRONIZAÇÃO ENTRE ABAS
+// ─────────────────────────────────────────────────────────────────────
+
+function formatDateBR(iso) {
+  if (!iso) return '';
+  var parts = iso.split('-');
+  return parts[2] + '/' + parts[1] + '/' + parts[0];
+}
+
+function isoToDate(iso) {
+  if (!iso) return null;
+  var p = iso.split('-');
+  return new Date(Date.UTC(parseInt(p[0],10), parseInt(p[1],10)-1, parseInt(p[2],10)));
+}
+
+function addDiasIso(iso, dias) {
+  if (!iso) return '';
+  var d = isoToDate(iso);
+  d.setUTCDate(d.getUTCDate() + dias);
+  return d.toISOString().slice(0,10);
+}
+
+function parseDiasPrazo(prazo) {
+  if (!prazo) return null;
+  var m = String(prazo).trim().match(/^(\d+)\s*d$/i);
+  return m ? parseInt(m[1], 10) : null;
+}
+
+function isAVistaPrazo(prazo) {
+  return /a\s*vista/i.test(String(prazo || ''));
+}
+
+// Trazer itens da Planilha Inicial para Cliente
+function trazerItensDaInicial() {
+  document.querySelectorAll('#itensBody tr').forEach(function(tr) {
+    if (tr.dataset.broughtCliente === 'true') return;
+    var servico = tr.querySelector('.f-servico').value;
+    var desc = tr.querySelector('.f-desc').value.trim();
+    var preco = parseFloat(tr.querySelector('.f-preco').value) || 0;
+    if ((!servico || servico === '--') && !desc && preco === 0) return;
+    addClienteRow({ servico:servico, desc:desc,
+      qtde: parseFloat(tr.querySelector('.f-qtde').value) || 0,
+      preco: preco, freq: parseFloat(tr.querySelector('.f-freq').value) || 0 });
+    tr.dataset.broughtCliente = 'true';
+  });
+}
+$('trazerItensBtn').addEventListener('click', trazerItensDaInicial);
+
+// Trazer itens da Planilha Inicial para Fechamento
+function trazerItensParaFechamento() {
+  document.querySelectorAll('#itensBody tr').forEach(function(tr) {
+    if (tr.dataset.broughtFechamento === 'true') return;
+    var servico = tr.querySelector('.f-servico').value;
+    var desc = tr.querySelector('.f-desc').value.trim();
+    var preco = parseFloat(tr.querySelector('.f-preco').value) || 0;
+    if ((!servico || servico === '--') && !desc && preco === 0) return;
+    fechamentoTable.addRow({ servico:servico, desc:desc,
+      qtde: parseFloat(tr.querySelector('.f-qtde').value) || 0,
+      preco: preco, freq: parseFloat(tr.querySelector('.f-freq').value) || 0,
+      unidade: tr.querySelector('.f-unidade').value,
+      fornecedor: tr.querySelector('.f-fornecedor').value,
+      forma: tr.querySelector('.f-forma').value,
+      obs: tr.querySelector('.f-obs').value });
+    tr.dataset.broughtFechamento = 'true';
+  });
+}
+$('trazerFechamentoBtn').addEventListener('click', trazerItensParaFechamento);
+
+// Sync cabeçalho — Planilha Inicial → Fechamento
+function syncHeaderFechamento() {
+  $('numEventoFech').value    = $('numEvento').value;
+  $('clienteFech').value      = $('cliente').value;
+  $('nomeEventoFech').value   = $('nomeEvento').value;
+  $('dataInicioFech').value   = $('dataInicio').value;
+  $('dataTerminoFech').value  = $('dataTermino').value;
+  $('horarioFech').value      = $('horario').value;
+  $('localFech').value        = $('local').value;
+  $('publicoEstimadoFech').value = $('publicoEstimado').value;
+  $('montagemFech').value     = $('montagem').value;
+  $('produtorFech').value     = $('produtor').value;
+}
+$('atualizarHeaderFechBtn').addEventListener('click', syncHeaderFechamento);
+
+// Sync cabeçalho — Planilha Inicial → Cliente
+function syncResumoCliente() {
+  $('cProjeto').value  = $('numEvento').value;
+  $('cEvento').value   = $('nomeEvento').value;
+  $('cData').value     = formatDateBR($('dataInicio').value);
+  $('cHorario').value  = $('horario').value;
+  $('cLocal').value    = $('local').value;
+  $('cPax').value      = $('publicoEstimado').value;
+}
+
+// Sync cabeçalho — Fechamento/Inicial → Verba
+function syncResumoVerba() {
+  $('vNumEvento').value = $('numEventoFech').value || $('numEvento').value;
+  $('vEvento').value    = $('nomeEventoFech').value || $('nomeEvento').value;
+  var ini = formatDateBR($('dataInicioFech').value || $('dataInicio').value);
+  var fim = formatDateBR($('dataTerminoFech').value || $('dataTermino').value);
+  $('vData').value      = (fim && fim !== ini) ? (ini + ' a ' + fim) : ini;
+  $('vProdutor').value  = $('produtorFech').value || $('produtor').value;
+}
+
+// Botões de navegação
+$('avancarClienteBtn').addEventListener('click', function() {
+  syncResumoCliente();
+  if (document.querySelectorAll('#clienteItensBody tr').length === 0) trazerItensDaInicial();
+  showTab('cliente');
+});
+$('voltarInicialBtn').addEventListener('click',    function() { showTab('inicial'); });
+$('avancarFechamentoBtn').addEventListener('click', function() {
+  if (!$('numEventoFech').value) syncHeaderFechamento();
+  if (document.querySelectorAll('#fechamentoItensBody tr').length === 0) trazerItensParaFechamento();
+  showTab('fechamento');
+});
+$('voltarClienteBtn').addEventListener('click',    function() { showTab('cliente'); });
+$('avancarVerbaBtn').addEventListener('click',     function() { syncResumoVerba(); showTab('verba'); });
+$('voltarFornecedoresBtn').addEventListener('click', function() { showTab('fornecedores'); });
+
 function syncResumoFornecedores() {
   $('fCliente').value = $('clienteFech').value || $('cliente').value;
   $('fNumEvento').value = $('numEventoFech').value || $('numEvento').value;
