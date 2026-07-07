@@ -649,17 +649,33 @@ function plnlInitGEPData(){
     secNames.forEach(function(s){ var o=document.createElement('option'); o.value=s; o.textContent=s; sel.appendChild(o); });
   });
 
-  /* Produtores */
+  /* Produtores — da lista de usuários do GEP */
   var prods = [];
-  try{ prods = JSON.parse(localStorage.getItem('vtp_produtores_v1')||'[]'); }catch(e){}
-  var prodNames = prods.map(function(p){ return p.nome||p||''; }).filter(Boolean);
-  if(!prodNames.length && window.LISTAS) prodNames = window.LISTAS.produtores||[];
+  try{
+    var users = JSON.parse(localStorage.getItem('vtp_users_v2')||'[]');
+    prods = users.filter(function(u){ return u.ativo!=0; })
+                 .map(function(u){ return u.nome||u.login||''; })
+                 .filter(Boolean);
+  }catch(e){}
+  if(!prods.length){
+    try{ prods = JSON.parse(localStorage.getItem('vtp_produtores_v1')||'[]').map(function(p){ return p.nome||p||''; }).filter(Boolean); }catch(e){}
+  }
   ['produtor','produtorFech'].forEach(function(id){
     var sel=document.getElementById(id);
     if(!sel) return;
     sel.innerHTML='<option value="">-- selecione --</option>';
-    prodNames.forEach(function(s){ var o=document.createElement('option'); o.value=s; o.textContent=s; sel.appendChild(o); });
+    prods.forEach(function(s){ var o=document.createElement('option'); o.value=s; o.textContent=s; sel.appendChild(o); });
   });
+  /* Preencher produtor com o usuário logado automaticamente */
+  try{
+    var sess = JSON.parse(localStorage.getItem('gep_session_v1')||'null');
+    if(sess && sess.nome){
+      var selP = document.getElementById('produtor');
+      if(selP && !selP.value) selP.value = sess.nome;
+      var selPF = document.getElementById('produtorFech');
+      if(selPF && !selPF.value) selPF.value = sess.nome;
+    }
+  }catch(e){}
 
   /* Catálogo de serviços na aba Catálogo */
   if(typeof renderCatalogoServicos==='function') renderCatalogoServicos();

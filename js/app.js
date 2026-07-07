@@ -134,6 +134,99 @@ function refreshFornecedorLookups() {
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────
+// TABELA GENÉRICA (Planilha Inicial + Fechamento)
+// ─────────────────────────────────────────────────────────────────────
+function updateValorComMargem() {
+  var totalServicos = parseFloat(($('totalGeral').dataset||{}).raw) || 0;
+  var q = parseFloat(($('verbaEstQtde')||{}).value) || 0;
+  var p = parseFloat(($('verbaEstUnitario')||{}).value) || 0;
+  var totalVerba = q * p;
+  var totalEvento = totalServicos + totalVerba;
+  var margem = parseFloat(($('margemLucro')||{}).value) || 0;
+  var valor = totalEvento * (1 + margem / 100);
+  $('totalDoEvento').textContent = totalEvento.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+  $('valorComMargem').textContent = valor.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+  $('custoBaseMargem').textContent = totalEvento.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+}
+$('margemLucro').addEventListener('input', function() { updateValorComMargem(); });
+
+;['verbaEstQtde','verbaEstUnitario'].forEach(function(id) {
+  var el = document.getElementById(id);
+  if (el) el.addEventListener('input', function(){
+    var q = parseFloat($('verbaEstQtde').value)||0;
+    var p = parseFloat($('verbaEstUnitario').value)||0;
+    var total = q*p;
+    $('totalVerbaEst').textContent = total.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+    updateValorComMargem();
+  });
+});
+
+function createInternalTable(tbodyId, totalSpanId, onTotalChange) {
+  var counter = 0;
+
+  function addRow(data) {
+    data = data || {};
+    var tbody = $(tbodyId);
+    var tr = document.createElement('tr');
+    tr.dataset.rid = tbodyId + counter++;
+    tr.innerHTML =
+      '<td><input type="text" list="dl-catalogo-gep" class="f-servico" autocomplete="off" oninput="gepAutoFillServico(this)" value="' + (data.servico || '') + '"></td>' +
+      '<td><input type="text" class="f-desc" value="' + (data.desc || '') + '"></td>' +
+      '<td><input type="number" class="f-qtde" step="any" value="' + (data.qtde != null ? data.qtde : 1) + '"></td>' +
+      '<td><input type="number" class="f-preco" step="any" value="' + (data.preco != null ? data.preco : 0) + '"></td>' +
+      '<td><input type="number" class="f-freq" step="any" value="' + (data.freq != null ? data.freq : 1) + '"></td>' +
+      '<td><select class="f-unidade"></select></td>' +
+      '<td class="valor-final">R$ 0,00</td>' +
+      '<td><input list="dl-fornecedores" class="f-fornecedor" value="' + (data.fornecedor || '') + '"></td>' +
+      '<td><select class="f-forma"></select></td>' +
+      '<td><input type="text" class="f-obs" value="' + (data.obs || '') + '"></td>' +
+      '<td><button type="button" class="btn-del-row">\u00d7</button></td>';
+    tbody.appendChild(tr);
+    fillSelect(tr.querySelector('.f-unidade'), LISTAS.unidades, '--');
+    fillSelect(tr.querySelector('.f-forma'), LISTAS.formas, '--');
+    if (data.unidade) tr.querySelector('.f-unidade').value = data.unidade;
+    if (data.forma)   tr.querySelector('.f-forma').value   = data.forma;
+    var recalc = function() { updateRowTotal(tr); };
+    tr.querySelectorAll('.f-qtde, .f-preco, .f-freq').forEach(function(el) { el.addEventListener('input', recalc); });
+    tr.querySelector('.f-fornecedor').addEventListener('change', function(e) {
+      var nome = e.target.value.trim();
+      if (fornecedorPrazo[nome]) tr.querySelector('.f-forma').value = fornecedorPrazo[nome];
+    });
+    tr.querySelector('.btn-del-row').addEventListener('click', function() { tr.remove(); updateTotal(); });
+    updateRowTotal(tr);
+    return tr;
+  }
+
+  function updateRowTotal(tr) {
+    var q = parseFloat(tr.querySelector('.f-qtde').value) || 0;
+    var p = parseFloat(tr.querySelector('.f-preco').value) || 0;
+    var f = parseFloat(tr.querySelector('.f-freq').value) || 0;
+    var total = q * p * f;
+    tr.querySelector('.valor-final').textContent = total.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+    tr.dataset.total = total;
+    updateTotal();
+  }
+
+  function updateTotal() {
+    var total = 0;
+    document.querySelectorAll('#' + tbodyId + ' tr').forEach(function(tr) { total += parseFloat(tr.dataset.total) || 0; });
+    $(totalSpanId).textContent = total.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+    $(totalSpanId).dataset.raw = total;
+    if (onTotalChange) onTotalChange(total);
+  }
+
+  return { addRow: addRow, updateTotal: updateTotal };
+}
+
+var inicialTable    = createInternalTable('itensBody',           'totalGeral',     updateValorComMargem);
+var fechamentoTable = createInternalTable('fechamentoItensBody', 'totalFechamento');
+
+$('addRowBtn').addEventListener('click',         function() { inicialTable.addRow(); });
+$('addFechamentoRowBtn').addEventListener('click',function() { fechamentoTable.addRow(); });
+inicialTable.addRow(); inicialTable.addRow(); inicialTable.addRow();
+
+
 function updateTotalFornecedores() {
   var total = 0;
   document.querySelectorAll('#fornecedoresBody tr').forEach(function(tr) { total += parseFloat(tr.querySelector('.ff-valor').value) || 0; });
