@@ -1259,6 +1259,14 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+
+/* ══ PERMISSÕES DE USUÁRIO ══ */
+.perm-panel{margin-top:12px;padding:12px 14px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px}
+.perm-panel-title{font-size:11px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.perm-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px 16px}
+.perm-item{display:flex;align-items:center;gap:7px;font-size:13px;color:#334155;cursor:pointer;padding:3px 0}
+.perm-item input[type=checkbox]{width:15px;height:15px;accent-color:#2563EB;cursor:pointer;flex-shrink:0}
+#permPanel.perm-admin-mode{opacity:.5;pointer-events:none}
 </style>
 </head>
 <body>
@@ -1352,7 +1360,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
           <div class="gep-foot-dev">Desenvolvido por</div>
           <div class="gep-foot-name">Alessandro Lima</div>
           <div class="gep-foot-copy">© 2026 · Todos os direitos reservados</div>
-          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-135</span></div>
+          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-136</span></div>
         </div>
       </div>
     </div>
@@ -1416,7 +1424,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div class="d">Desenvolvido por</div>
       <div class="n">Alessandro Lima</div>
       <div class="c">© 2026 · Todos os direitos reservados</div>
-      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-135</span></div>
+      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-136</span></div>
     </div>
   </div>
 
@@ -1461,44 +1469,44 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <!-- Dashboard -->
       <!-- Visitas Técnicas -->
       <div class="sb-grp">Operacional</div>
-      <div class="sb-item" data-tip="Visitas Técnicas" onclick="sbGo('dash',this)">
+      <div class="sb-item" data-perm="vt" data-tip="Visitas Técnicas" onclick="sbGo('dash',this)">
         <span class="sb-ico">📝</span><span class="sb-lbl">Visitas Técnicas</span>
         <span class="sb-bdg" id="sbBadgeVisitas">0</span>
       </div>
 
       <!-- Orçamentos -->
-      <div class="sb-item" data-tip="Orçamentos" onclick="sbGo('orcamentos',this)">
+      <div class="sb-item" data-perm="orcamentos" data-tip="Orçamentos" onclick="sbGo('orcamentos',this)">
         <span class="sb-ico">💰</span><span class="sb-lbl">Orçamentos</span>
       </div>
 
       <!-- Planilha Inicial -->
-      <div class="sb-item" data-tip="Planilha Inicial" onclick="sbGo('planilha',this)">
+      <div class="sb-item" data-perm="planilha" data-tip="Planilha Inicial" onclick="sbGo('planilha',this)">
         <span class="sb-ico">📊</span><span class="sb-lbl">Planilha Inicial</span>
       </div>
 
       <!-- Eventos -->
       <div class="sb-grp">Eventos</div>
-      <div class="sb-item" data-tip="Eventos" onclick="sbGo('eventos',this)">
+      <div class="sb-item" data-perm="agenda" data-tip="Eventos" onclick="sbGo('eventos',this)">
         <span class="sb-ico">📅</span><span class="sb-lbl">Agenda de Eventos</span>
       </div>
-      <div class="sb-item" data-tip="Eventos Realizados" onclick="sbGo('realizados',this)">
+      <div class="sb-item" data-perm="realizados" data-tip="Eventos Realizados" onclick="sbGo('realizados',this)">
         <span class="sb-ico">✅</span><span class="sb-lbl">Eventos Realizados</span>
       </div>
 
       <!-- Cadastros -->
       <div class="sb-grp">Cadastros & Relatórios</div>
-      <div class="sb-item" data-tip="Cadastros" onclick="sbToggleSub('sub-cad',this)">
+      <div class="sb-item" data-perm="cadastros" data-tip="Cadastros" onclick="sbToggleSub('sub-cad',this)">
         <span class="sb-ico">🏢</span><span class="sb-lbl">Cadastros</span><span class="sb-arr">›</span>
       </div>
-      <div class="sb-sub" id="sub-cad">
+      <div class="sb-sub" id="sub-cad" data-perm="cadastros">
         <div class="sb-si" onclick="sbGo('fornecedores',this)"><div class="sb-sdot"></div><span class="sb-slbl">Fornecedores</span></div>
       </div>
 
       <!-- Relatórios -->
-      <div class="sb-item" data-tip="Relatórios" onclick="sbToggleSub('sub-rel',this)">
+      <div class="sb-item" data-perm="relatorios" data-tip="Relatórios" onclick="sbToggleSub('sub-rel',this)">
         <span class="sb-ico">📊</span><span class="sb-lbl">Relatórios</span><span class="sb-arr">›</span>
       </div>
-      <div class="sb-sub" id="sub-rel">
+      <div class="sb-sub" id="sub-rel" data-perm="relatorios">
         <div class="sb-si" onclick="sbGo('rel-visitas',this)"><div class="sb-sdot"></div><span class="sb-slbl">Relatório de Visitas</span></div>
         <div class="sb-si" onclick="sbGo('rel-eventos',this)"><div class="sb-sdot"></div><span class="sb-slbl">Relatório de Eventos</span></div>
         <div class="sb-si" onclick="sbGo('exportacoes',this)"><div class="sb-sdot"></div><span class="sb-slbl">Exportações</span></div>
@@ -1526,7 +1534,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 
       <!-- Sincronizar / Enviar / Sair -->
       <div class="sb-grp">Conta</div>
-      <div class="sb-item" data-tip="Sincronizar com a nuvem" onclick="btnSincronizar()" id="btnSync">
+      <div class="sb-item" data-perm="sync" data-tip="Sincronizar com a nuvem" onclick="btnSincronizar()" id="btnSync">
         <span class="sb-ico">🔄</span><span class="sb-lbl">Sincronizar</span>
       </div>
       <div class="sb-item" data-tip="Enviar dados deste dispositivo para a nuvem" onclick="btnEnviarTudo()">
@@ -2399,6 +2407,22 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
     <div class="fld"><label>Nome completo</label><input type="text" id="mNome" placeholder="Nome exibido no sistema"></div>
     <div class="fld"><label>Perfil</label><select id="mRole"><option value="user">Usuário</option><option value="admin">Administrador</option></select></div>
     <div class="fld"><label>Situação</label><select id="mAtivo"><option value="1">Ativo</option><option value="0">Inativo</option></select></div>
+
+    <!-- Permissões de acesso -->
+    <div id="permPanel" class="perm-panel">
+      <div class="perm-panel-title">🔐 Acesso às seções <span style="font-weight:400;color:#94A3B8;font-size:11px;margin-left:4px">(admin vê tudo)</span></div>
+      <div class="perm-grid">
+        <label class="perm-item"><input type="checkbox" id="pVt">Visitas Técnicas</label>
+        <label class="perm-item"><input type="checkbox" id="pOrc">Orçamentos</label>
+        <label class="perm-item"><input type="checkbox" id="pPlanilha">Planilha Inicial</label>
+        <label class="perm-item"><input type="checkbox" id="pAgenda">Agenda de Eventos</label>
+        <label class="perm-item"><input type="checkbox" id="pRealizados">Eventos Realizados</label>
+        <label class="perm-item"><input type="checkbox" id="pCadastros">Cadastros</label>
+        <label class="perm-item"><input type="checkbox" id="pRelatorios">Relatórios</label>
+        <label class="perm-item"><input type="checkbox" id="pSync">Sincronizar</label>
+      </div>
+    </div>
+
     <button class="btn-primary" onclick="saveUser()">Salvar usuário</button>
   </div>
 </div>
@@ -4059,11 +4083,44 @@ function renderAdEv(){
 function delV(id){ if(!confirm('Excluir esta visita permanentemente?')) return; saveV(loadV().filter(function(v){return v.id!==id;})); renderAdmin(); renderDash(); toast('Visita excluída.','ok'); }
 
 var editUid=null;
+// Mapa: id do checkbox → seção(ões) da sidebar
+var PERM_MAP = {
+  pVt:        ['dash'],
+  pOrc:       ['orcamentos'],
+  pPlanilha:  ['planilha'],
+  pAgenda:    ['eventos'],
+  pRealizados:['realizados'],
+  pCadastros: ['fornecedores','produtores','secretarias','empresas'],
+  pRelatorios:['rel-visitas','rel-eventos','exportacoes'],
+  pSync:      ['_sync']
+};
+var PERM_IDS = Object.keys(PERM_MAP);
+
 function openModal(id){
   editUid=id||null;
   document.getElementById('modalTit').textContent=id?'Editar usuário':'Novo usuário';
-  if(id){ var u=loadU().find(function(x){return x.id===id;}); if(u){ sv('mLogin',u.login);sv('mNome',u.nome);document.getElementById('mSenha').value='';sv('mRole',u.role);sv('mAtivo',String(u.ativo!=null?u.ativo:1)); } }
-  else { ['mLogin','mSenha','mNome'].forEach(function(i){document.getElementById(i).value='';}); document.getElementById('mRole').value='user'; document.getElementById('mAtivo').value='1'; }
+  var isAdmin = false;
+  if(id){
+    var u=loadU().find(function(x){return x.id===id;});
+    if(u){
+      sv('mLogin',u.login);sv('mNome',u.nome);
+      document.getElementById('mSenha').value='';
+      sv('mRole',u.role);sv('mAtivo',String(u.ativo!=null?u.ativo:1));
+      isAdmin = u.role==='admin' || u.id==='root';
+      var perms = u.permissions || [];
+      PERM_IDS.forEach(function(pid){
+        var cb = document.getElementById(pid);
+        if(cb) cb.checked = isAdmin || perms.indexOf(pid) !== -1;
+      });
+    }
+  } else {
+    ['mLogin','mSenha','mNome'].forEach(function(i){document.getElementById(i).value='';});
+    document.getElementById('mRole').value='user';
+    document.getElementById('mAtivo').value='1';
+    PERM_IDS.forEach(function(pid){ var cb=document.getElementById(pid); if(cb) cb.checked=false; });
+  }
+  var panel = document.getElementById('permPanel');
+  if(panel) panel.classList.toggle('perm-admin-mode', isAdmin);
   document.getElementById('modalOv').classList.add('on');
 }
 function closeModal(){ document.getElementById('modalOv').classList.remove('on'); }
@@ -4076,10 +4133,21 @@ function saveUser(){
   if(!login){ toast('Informe o login','err'); return; }
   if(!editUid&&!pass){ toast('Informe a senha','err'); return; }
   if(pass&&pass.length<4){ toast('Senha mínima: 4 caracteres','err'); return; }
+  // Coletar permissões marcadas
+  var permissions = PERM_IDS.filter(function(pid){
+    var cb=document.getElementById(pid); return cb && cb.checked;
+  });
   var users=loadU();
-  if(editUid){ var u=users.find(function(x){return x.id===editUid;}); if(u){u.login=login;if(pass)u.pass=pass;u.nome=nome;u.role=role;u.ativo=ativo;} }
-  else{ if(users.find(function(u){return u.login===login;})){ toast('Login já existe','err'); return; } users.push({id:uid(),login:login,pass:pass,nome:nome,role:role,ativo:1}); }
+  if(editUid){
+    var u=users.find(function(x){return x.id===editUid;});
+    if(u){ u.login=login;if(pass)u.pass=pass;u.nome=nome;u.role=role;u.ativo=ativo;u.permissions=permissions; }
+  } else {
+    if(users.find(function(u){return u.login===login;})){ toast('Login já existe','err'); return; }
+    users.push({id:uid(),login:login,pass:pass,nome:nome,role:role,ativo:1,permissions:permissions});
+  }
   saveU(users); closeModal(); renderUList(); toast('Usuário salvo!','ok');
+  // Se o usuário editado for o logado, reaplicar permissões imediatamente
+  if(me && editUid && me.id===editUid){ me.permissions=permissions; aplicarPermissoes(me); }
 }
 function delU(id){ if(!confirm('Excluir este usuário?')) return; saveU(loadU().filter(function(u){return u.id!==id;})); renderUList(); toast('Usuário excluído.','ok'); }
 function toggleU(id){
@@ -4985,6 +5053,8 @@ var _origIrAdmin = irParaAdmin;
 irParaAdmin = function(){
   document.querySelectorAll('.vp').forEach(function(v){ v.classList.remove('on'); });
   document.getElementById('vpAdmin').classList.add('on');
+  // Aplicar permissões do usuário logado
+  aplicarPermissoes(me);
   document.getElementById('tbTitle').textContent = 'Administração';
   document.getElementById('tbBread').innerHTML = 'Sistema / <b>Administração</b>';
   document.getElementById('tbNovaBtn').style.display = 'none';
@@ -5093,7 +5163,7 @@ saveEmp = function(){
 // Expor tudo globalmente
 
 /* ═══════════════════════════════════════════════════════════
-   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-135
+   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-136
    ═══════════════════════════════════════════════════════════ */
 var SK_PLNL = 'vtp_planilhas_v1';
 
@@ -5868,6 +5938,51 @@ adTab = function(t){
 })();
 
 /* ── Patch sbGo para carregar seletor ao abrir orçamento ── */
+
+/* ══ PERMISSÕES: ocultar itens da sidebar ══ */
+function aplicarPermissoes(user) {
+  if (!user || user.role === 'admin' || user.id === 'root') {
+    // Admin vê tudo — garantir que está tudo visível
+    document.querySelectorAll('[data-perm]').forEach(function(el) { el.style.display = ''; });
+    return;
+  }
+  var perms = user.permissions || [];
+
+  // Mapa: data-perm → permissão exigida
+  var PERM_REQ = {
+    'vt':        'pVt',
+    'orcamentos':'pOrc',
+    'planilha':  'pPlanilha',
+    'agenda':    'pAgenda',
+    'realizados':'pRealizados',
+    'cadastros': 'pCadastros',
+    'relatorios':'pRelatorios',
+    'sync':      'pSync'
+  };
+
+  Object.keys(PERM_REQ).forEach(function(zone) {
+    var req = PERM_REQ[zone];
+    var allowed = perms.indexOf(req) !== -1;
+    document.querySelectorAll('[data-perm="'+zone+'"]').forEach(function(el) {
+      el.style.display = allowed ? '' : 'none';
+    });
+  });
+
+  // Ocultar grupos de seção se todos os itens dentro sumiram
+  document.querySelectorAll('.sb-grp').forEach(function(grp) {
+    var next = grp.nextElementSibling;
+    var allHidden = true;
+    while (next && !next.classList.contains('sb-grp')) {
+      if (next.style.display !== 'none' &&
+          !next.id?.includes('Adm') &&
+          next.tagName !== 'DIV' || (next.classList.contains('sb-item') && next.style.display !== 'none')) {
+        allHidden = false;
+      }
+      next = next.nextElementSibling;
+    }
+  });
+}
+
 /* ── sbGo consolidado ── */
 var _sbGoOrig = sbGo;
 window.sbGo = function(page, el){
