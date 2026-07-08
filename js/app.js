@@ -177,29 +177,41 @@ function normPrice(v) {
 function applyPriceFormat(inp) {
   function toDisplay(v) {
     if (!v && v !== 0) return '';
-    return v === 0 ? 'R$\u00a00,00' : v.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+    return v === 0 ? 'R 0,00' : v.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+  }
+  function parseInput(s) {
+    s = (s || '').trim().replace(/R\$\s*/g, '').trim();
+    if (!s) return 0;
+    var hasComma = s.indexOf(',') !== -1;
+    var hasDot   = s.indexOf('.') !== -1;
+    if (hasComma) {
+      // Formato BR: 131,30 ou 1.160,30 — vírgula é decimal
+      s = s.replace(/\./g, '').replace(',', '.');
+    }
+    // Sem vírgula: 131.30 ou 13130 — ponto é decimal ou ausente
+    return parseFloat(s) || 0;
   }
   inp.addEventListener('focus', function() {
-    var v = parseFloat(this.dataset.rawVal);
-    this.type = 'number';
-    this.value = (v && v !== 0) ? v : '';
-    this.placeholder = '0';
+    var v = parseFloat(this.dataset.rawVal) || 0;
+    this.type = 'text'; // mantém text para aceitar vírgula
+    this.value = v !== 0 ? (v % 1 === 0 ? String(v) : String(v).replace('.', ',')) : '';
+    this.placeholder = '0,00';
   });
   inp.addEventListener('blur', function() {
-    var v = parseFloat(this.value) || 0;
+    var v = parseInput(this.value);
     this.dataset.rawVal = v;
     this.type = 'text';
     this.value = toDisplay(v);
   });
   inp.addEventListener('input', function() {
-    this.dataset.rawVal = parseFloat(this.value) || 0;
+    this.dataset.rawVal = parseInput(this.value);
   });
-  // Inicializar — aceita número bruto OU string formatada ('R$ 1.160,00')
+  // Inicializar
   var rawStr = (inp.value || '').trim();
-  var v = parseFloat(rawStr);
-  if (isNaN(v)) {
-    // parsear string formatada ex: 'R$ 1.160,00' → 1160
-    v = parseFloat(rawStr.replace(/[^\d,.-]/g,'').replace(',','.')) || 0;
+  var v = parseInput(rawStr);
+  if (!v) {
+    // fallback: parsear número bruto
+    v = parseFloat(rawStr) || 0;
   }
   inp.dataset.rawVal = v;
   inp.type = 'text';
@@ -223,7 +235,7 @@ function createInternalTable(tbodyId, totalSpanId, onTotalChange) {
     var tr = document.createElement('tr');
     tr.dataset.rid = tbodyId + counter++;
     tr.innerHTML =
-      '<td><input type="text" list="dl-catalogo-gep" class="f-servico" autocomplete="off" oninput="gepAutoFillServico(this)" value="' + (data.servico || '') + '"></td>' +
+      '<td><input type="text" class="f-servico" autocomplete="off" value="' + (data.servico || '') + '"></td>' +
       '<td><input type="text" class="f-desc" value="' + (data.desc || '') + '"></td>' +
       '<td><input type="number" class="f-qtde" step="any" value="' + (data.qtde != null ? data.qtde : 1) + '"></td>' +
       '<td><input type="number" class="f-preco" step="any" value="' + normPrice(data.preco) + '"></td>' +
