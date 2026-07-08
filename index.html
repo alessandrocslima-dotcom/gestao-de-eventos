@@ -1360,7 +1360,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
           <div class="gep-foot-dev">Desenvolvido por</div>
           <div class="gep-foot-name">Alessandro Lima</div>
           <div class="gep-foot-copy">© 2026 · Todos os direitos reservados</div>
-          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-136</span></div>
+          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-137</span></div>
         </div>
       </div>
     </div>
@@ -1424,7 +1424,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div class="d">Desenvolvido por</div>
       <div class="n">Alessandro Lima</div>
       <div class="c">© 2026 · Todos os direitos reservados</div>
-      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-136</span></div>
+      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-137</span></div>
     </div>
   </div>
 
@@ -5163,7 +5163,7 @@ saveEmp = function(){
 // Expor tudo globalmente
 
 /* ═══════════════════════════════════════════════════════════
-   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-136
+   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-137
    ═══════════════════════════════════════════════════════════ */
 var SK_PLNL = 'vtp_planilhas_v1';
 
@@ -5941,6 +5941,11 @@ adTab = function(t){
 
 /* ══ PERMISSÕES: ocultar itens da sidebar ══ */
 function aplicarPermissoes(user) {
+  // Relê permissões frescas do localStorage (pega alterações em tempo real)
+  if (user && user.id && user.id !== 'root') {
+    var fresh = loadU().find(function(u){ return u.id === user.id; });
+    if (fresh) user = fresh;
+  }
   if (!user || user.role === 'admin' || user.id === 'root') {
     // Admin vê tudo — garantir que está tudo visível
     document.querySelectorAll('[data-perm]').forEach(function(el) { el.style.display = ''; });
@@ -5989,6 +5994,8 @@ window.sbGo = function(page, el){
   _sbGoOrig(page, el);
   if(page==='orcamentos')  { if(typeof orcPopulateSelector==='function') orcPopulateSelector(); }
   if(page==='planilha')    { if(typeof plnlRenderList==='function') plnlRenderList(); }
+  // Reaplicar permissões a cada navegação (pega mudanças sem precisar relogar)
+  if(me && typeof aplicarPermissoes==='function') aplicarPermissoes(me);
   if(page==='fornecedores'){ if(typeof renderFornList==='function') renderFornList(); }
   if(page==='agenda'){
     if(typeof agRenderAll==='function'){
