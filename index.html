@@ -1360,7 +1360,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
           <div class="gep-foot-dev">Desenvolvido por</div>
           <div class="gep-foot-name">Alessandro Lima</div>
           <div class="gep-foot-copy">© 2026 · Todos os direitos reservados</div>
-          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-141</span></div>
+          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-143</span></div>
         </div>
       </div>
     </div>
@@ -1424,7 +1424,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div class="d">Desenvolvido por</div>
       <div class="n">Alessandro Lima</div>
       <div class="c">© 2026 · Todos os direitos reservados</div>
-      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-141</span></div>
+      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-143</span></div>
     </div>
   </div>
 
@@ -3291,6 +3291,7 @@ function renderFStep(){
   var nx = document.getElementById('btnNx');
   var fn = document.getElementById('fNav');
 
+  if (!fn || !bk || !nx) return; // elementos ainda não existem no DOM
   fn.style.display = 'flex';
 
   // Botão VOLTAR — aparece em todos os steps exceto o primeiro
@@ -4219,7 +4220,7 @@ function irParaForm(){
   document.getElementById('ntAdmin').className='ntab';
   window.scrollTo(0,0);
   if(!window.isEditing){ resetForm(); }
-  buildProg(); renderFStep();
+  try { buildProg(); renderFStep(); } catch(e) { console.warn('renderFStep erro:', e.message); }
   window.isEditing=false;
 }
 function irParaAdmin(){
@@ -5028,7 +5029,18 @@ function sbSetUser(user){
 }
 function sbUpdateBadge(){
   var vs = loadV();
-  document.getElementById('sbBadgeVisitas').textContent = vs.length;
+  var count;
+  if (me && me.role !== 'admin') {
+    // Usuário comum: conta só as visitas dele
+    count = vs.filter(function(v) {
+      return v.produtorId === me.id || v.produtor === me.nome || v.produtor === me.login;
+    }).length;
+  } else {
+    // Admin: conta todas
+    count = vs.length;
+  }
+  var el = document.getElementById('sbBadgeVisitas');
+  if (el) el.textContent = count;
 }
 
 /* Patch irParaDash/irParaForm/irParaAdmin para atualizar sidebar */
@@ -5163,7 +5175,7 @@ saveEmp = function(){
 // Expor tudo globalmente
 
 /* ═══════════════════════════════════════════════════════════
-   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-141
+   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-143
    ═══════════════════════════════════════════════════════════ */
 var SK_PLNL = 'vtp_planilhas_v1';
 
@@ -5252,6 +5264,17 @@ window.addEventListener('message', function(ev){
 });
 
 window.sbGo=sbGo; window.sbOpen=sbOpen; window.sbClose=sbClose;
+
+/* Escape fecha qualquer modal aberto — evita app ficar travado */
+document.addEventListener('keydown', function(e) {
+  if (e.key !== 'Escape') return;
+  ['modalOv','eqModalOv','modalSecOv'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el && el.classList.contains('on')) el.classList.remove('on');
+  });
+  // Também resetar isEditing se estiver travado
+  if (window.isEditing) { window.isEditing = false; isEditing = false; }
+});
 window.sbToggleCollapse=sbToggleCollapse; window.sbToggleSub=sbToggleSub;
 window.sbSetUser=sbSetUser; window.sbUpdateBadge=sbUpdateBadge;
 window.renderEmpListCad=renderEmpListCad; window.delEmpCad=delEmpCad;
