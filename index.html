@@ -1267,6 +1267,30 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 .perm-item{display:flex;align-items:center;gap:7px;font-size:13px;color:#334155;cursor:pointer;padding:3px 0}
 .perm-item input[type=checkbox]{width:15px;height:15px;accent-color:#2563EB;cursor:pointer;flex-shrink:0}
 #permPanel.perm-admin-mode{opacity:.5;pointer-events:none}
+
+/* ══ LISTA DE ORÇAMENTOS ══ */
+.orc-list-card { background:#fff; border:0.5px solid #E2E8F0; border-radius:12px; padding:14px 18px; margin-bottom:10px; transition:box-shadow .15s; }
+.orc-list-card:hover { box-shadow:0 2px 8px rgba(0,0,0,.06); }
+.orc-list-card-top { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:12px; }
+.orc-list-card-info { flex:1; min-width:0; }
+.orc-list-card-meta { font-size:12px; color:#64748B; margin-bottom:4px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.orc-list-card-nome { font-size:15px; font-weight:600; color:#0F172A; margin-bottom:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.orc-list-card-sub { font-size:12px; color:#64748B; }
+.orc-list-card-valor { text-align:right; flex-shrink:0; }
+.orc-list-card-valor-num { font-size:16px; font-weight:600; color:#0F172A; }
+.orc-list-card-valor-lbl { font-size:11px; color:#94A3B8; margin-top:2px; }
+.orc-list-card-actions { display:flex; gap:8px; flex-wrap:wrap; padding-top:10px; border-top:0.5px solid #F1F5F9; align-items:center; }
+.orc-list-badge { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:600; padding:3px 10px; border-radius:6px; }
+.orc-list-badge.pendente { background:#FEFCE8; color:#854F0B; border:1px solid #FDE68A; }
+.orc-list-badge.aprovado { background:#F0FDF4; color:#166534; border:1px solid #BBF7D0; }
+.orc-list-badge.recusado { background:#FEF2F2; color:#991B1B; border:1px solid #FECACA; }
+.orc-list-borda.pendente { border-left:3px solid #EF9F27; }
+.orc-list-borda.aprovado { border-left:3px solid #16A34A; }
+.orc-list-borda.recusado { border-left:3px solid #DC2626; }
+.orc-filter-bar { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+.orc-filter-pill { padding:5px 14px; border-radius:20px; font-size:12px; font-weight:600; cursor:pointer; border:1.5px solid #E2E8F0; background:#fff; color:#475569; transition:all .15s; }
+.orc-filter-pill.ativo { background:#0F172A; color:#fff; border-color:#0F172A; }
+.orc-vazio { text-align:center; padding:48px 20px; color:#94A3B8; font-size:14px; }
 </style>
 </head>
 <body>
@@ -1360,7 +1384,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
           <div class="gep-foot-dev">Desenvolvido por</div>
           <div class="gep-foot-name">Alessandro Lima</div>
           <div class="gep-foot-copy">© 2026 · Todos os direitos reservados</div>
-          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-144</span></div>
+          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-145</span></div>
         </div>
       </div>
     </div>
@@ -1424,7 +1448,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div class="d">Desenvolvido por</div>
       <div class="n">Alessandro Lima</div>
       <div class="c">© 2026 · Todos os direitos reservados</div>
-      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-144</span></div>
+      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-145</span></div>
     </div>
   </div>
 
@@ -1899,6 +1923,24 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 
       <!-- ORÇAMENTO -->
       <div class="vp" id="vpOrcamentos">
+
+        <!-- ESTADO 1: Lista de orçamentos -->
+        <div id="orc-lista-state">
+          <div class="pg-hdr">
+            <h1>💰 Orçamentos</h1>
+            <p>Acompanhe todos os orçamentos criados</p>
+          </div>
+          <div class="orc-filter-bar">
+            <span class="orc-filter-pill ativo" data-filtro="todos" onclick="orcFiltrar('todos',this)">Todos</span>
+            <span class="orc-filter-pill" data-filtro="pendente" onclick="orcFiltrar('pendente',this)">🟡 Pendente</span>
+            <span class="orc-filter-pill" data-filtro="aprovado" onclick="orcFiltrar('aprovado',this)">🟢 Aprovado</span>
+            <span class="orc-filter-pill" data-filtro="recusado" onclick="orcFiltrar('recusado',this)">🔴 Recusado</span>
+          </div>
+          <div id="orc-lista-body"></div>
+        </div>
+
+        <!-- ESTADO 2: Formulário (conteúdo existente) -->
+        <div id="orc-form-state" style="display:none">
         <div class="pg-hdr">
           <button id="orcVoltarBtn" onclick="orcVoltar()" class="btn-voltar" style="display:none">
             <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;vertical-align:-2px"><polyline points="15 18 9 12 15 6"/></svg>
@@ -2074,6 +2116,9 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
             <span id="plnl-editor-nome" style="font-size:14px;font-weight:600;color:#0F172A;flex:1"></span>
           </div>
           <iframe id="plnl-iframe" src="" style="width:100%;border:none;border-radius:10px;height:calc(100vh - 180px)"></iframe>
+        </div>
+
+      
         </div>
 
       </div>
@@ -5175,7 +5220,7 @@ saveEmp = function(){
 // Expor tudo globalmente
 
 /* ═══════════════════════════════════════════════════════════
-   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-144
+   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-145
    ═══════════════════════════════════════════════════════════ */
 var SK_PLNL = 'vtp_planilhas_v1';
 
@@ -6016,7 +6061,7 @@ function aplicarPermissoes(user) {
 var _sbGoOrig = sbGo;
 window.sbGo = function(page, el){
   _sbGoOrig(page, el);
-  if(page==='orcamentos')  { if(typeof orcPopulateSelector==='function') orcPopulateSelector(); }
+  if(page==='orcamentos')  { if(typeof orcRenderLista==='function') orcRenderLista(); else if(typeof orcPopulateSelector==='function') orcPopulateSelector(); }
   if(page==='planilha')    { if(typeof plnlRenderList==='function') plnlRenderList(); }
   // Reaplicar permissões a cada navegação (pega mudanças sem precisar relogar)
   if(me && typeof aplicarPermissoes==='function') aplicarPermissoes(me);
@@ -6104,6 +6149,160 @@ window.orcSetStatus=orcSetStatus;
 window.orcSaveNum=orcSaveNum;
 window.orcSalvar=orcSalvar;
 window.orcExportXLSX=orcExportXLSX;
+
+/* ══════════════════════════════════════════════════════════
+   LISTA DE ORÇAMENTOS — v15-145
+   ══════════════════════════════════════════════════════════ */
+var _orcFiltroAtivo = 'todos';
+
+/* Status simplificado para a lista (independente do status detalhado do form) */
+var LISTA_STATUS_LABELS = { pendente:'🟡 Pendente', aprovado:'🟢 Aprovado', recusado:'🔴 Recusado' };
+
+function orcGetListaStatus(orc) {
+  // Se já tem listaStatus salvo, usa
+  if (orc.listaStatus) return orc.listaStatus;
+  // Derivar do status detalhado
+  var s = orc.status || 'elaboracao';
+  if (s === 'aprovado') return 'aprovado';
+  if (s === 'adiado' || s === 'cancelado') return 'recusado';
+  return 'pendente';
+}
+
+function orcCalcTotal(itens) {
+  return (itens || []).reduce(function(sum, it) {
+    return sum + (parseFloat(it.qty)||0) * parseMoney(it.price) * (parseFloat(it.freq)||1);
+  }, 0);
+}
+
+function orcRenderLista() {
+  var state = document.getElementById('orc-lista-state');
+  var formState = document.getElementById('orc-form-state');
+  if (state) state.style.display = '';
+  if (formState) formState.style.display = 'none';
+
+  var orcs = loadOrc();
+  var vs = loadV ? loadV() : [];
+  var body = document.getElementById('orc-lista-body');
+  if (!body) return;
+
+  var vtIds = Object.keys(orcs);
+  if (!vtIds.length) {
+    body.innerHTML = '<div class="orc-vazio"><div style="font-size:40px;margin-bottom:12px">💰</div>Nenhum orçamento criado ainda.<br>Selecione uma visita técnica na seção Orçamentos para começar.</div>';
+    return;
+  }
+
+  // Filtrar
+  var filtrados = vtIds.filter(function(vid) {
+    var orc = orcs[vid];
+    if (_orcFiltroAtivo === 'todos') return true;
+    return orcGetListaStatus(orc) === _orcFiltroAtivo;
+  });
+
+  if (!filtrados.length) {
+    body.innerHTML = '<div class="orc-vazio">Nenhum orçamento com status <b>' + LISTA_STATUS_LABELS[_orcFiltroAtivo] + '</b></div>';
+    return;
+  }
+
+  // Ordenar por data de salvamento (mais recente primeiro)
+  filtrados.sort(function(a, b) {
+    return (orcs[b].savedTs || 0) - (orcs[a].savedTs || 0);
+  });
+
+  body.innerHTML = filtrados.map(function(vid) {
+    var orc = orcs[vid];
+    var v = vs.find(function(x) { return x.id === vid; }) || {};
+    var lStatus = orcGetListaStatus(orc);
+    var total = orcCalcTotal(orc.itens);
+    var numEvt = orc.numOficial || v.numEvento || v.numero || '—';
+    var nome = v.nome || v.nomeEvento || 'Sem nome';
+    var empresa = v.empresa || '—';
+    var produtor = v.produtor || '—';
+    var data = v.dataEvento ? fmtDR(v.dataEvento, v.dataEventoFim) : '—';
+
+    return '<div class="orc-list-card orc-list-borda ' + lStatus + '" data-vid="' + vid + '">' +
+      '<div class="orc-list-card-top">' +
+        '<div class="orc-list-card-info">' +
+          '<div class="orc-list-card-meta">' +
+            '<span class="orc-list-badge ' + lStatus + '">' + LISTA_STATUS_LABELS[lStatus] + '</span>' +
+            '<span>Nº ' + escHtmlOrc(numEvt) + '</span>' +
+          '</div>' +
+          '<div class="orc-list-card-nome">' + escHtmlOrc(nome) + '</div>' +
+          '<div class="orc-list-card-sub">🏢 ' + escHtmlOrc(empresa) + ' &nbsp;·&nbsp; 👤 ' + escHtmlOrc(produtor) + ' &nbsp;·&nbsp; 📅 ' + escHtmlOrc(data) + '</div>' +
+        '</div>' +
+        '<div class="orc-list-card-valor">' +
+          '<div class="orc-list-card-valor-num">' + fmtM2(total) + '</div>' +
+          '<div class="orc-list-card-valor-lbl">valor total</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="orc-list-card-actions">' +
+        '<select onchange="orcSetListaStatus(' + JSON.stringify(vid) + ', this.value)" style="font-size:12px;padding:5px 10px;border-radius:7px;border:0.5px solid #E2E8F0;background:#F8FAFC;color:#334155;cursor:pointer">' +
+          '<option value="pendente"' + (lStatus==='pendente'?' selected':'') + '>🟡 Pendente</option>' +
+          '<option value="aprovado"' + (lStatus==='aprovado'?' selected':'') + '>🟢 Aprovado</option>' +
+          '<option value="recusado"' + (lStatus==='recusado'?' selected':'') + '>🔴 Recusado</option>' +
+        '</select>' +
+        '<button onclick="orcWACotacaoFromLista(' + JSON.stringify(vid) + ')" style="font-size:12px;padding:5px 12px;border-radius:7px;border:0.5px solid #E2E8F0;background:#fff;color:#334155;cursor:pointer">💬 WA Cotação</button>' +
+        '<button onclick="orcAbrirFormFromLista(' + JSON.stringify(vid) + ')" style="font-size:12px;padding:5px 12px;border-radius:7px;border:0.5px solid #E2E8F0;background:#fff;color:#334155;cursor:pointer">✏️ Editar itens</button>' +
+        '<button onclick="orcExcluirDaLista(' + JSON.stringify(vid) + ')" style="font-size:12px;padding:5px 12px;border-radius:7px;border:0.5px solid #FECACA;background:#FEF2F2;color:#991B1B;cursor:pointer">🗑 Excluir</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function escHtmlOrc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function orcWACotacaoFromLista(vid) {
+  // Carrega o orçamento na memória e dispara WA Cotação
+  orcCurrentVid = vid;
+  orcWACotacao();
+}
+
+function orcFiltrar(filtro, el) {
+  _orcFiltroAtivo = filtro;
+  document.querySelectorAll('.orc-filter-pill').forEach(function(p){ p.classList.remove('ativo'); });
+  if (el) el.classList.add('ativo');
+  orcRenderLista();
+}
+
+function orcSetListaStatus(vid, status) {
+  var orcs = loadOrc();
+  if (!orcs[vid]) return;
+  orcs[vid].listaStatus = status;
+  saveOrc(orcs);
+  orcRenderLista();
+  toast('Status atualizado!', 'ok');
+}
+
+function orcAbrirFormFromLista(vid) {
+  document.getElementById('orc-lista-state').style.display = 'none';
+  document.getElementById('orc-form-state').style.display = '';
+  // Mostrar botão voltar
+  var btn = document.getElementById('orcVoltarBtn');
+  if (btn) { btn.style.display = ''; btn.onclick = function(){ orcVoltarLista(); }; }
+  // Carregar orçamento
+  orcLoadVisita(vid);
+  // Sincronizar o select
+  var sel = document.getElementById('orc-visita-sel');
+  if (sel) sel.value = vid;
+}
+
+function orcVoltarLista() {
+  orcCurrentVid = null;
+  document.getElementById('orc-form-state').style.display = 'none';
+  orcRenderLista();
+}
+
+function orcExcluirDaLista(vid) {
+  var vs = loadV ? loadV() : [];
+  var v = vs.find(function(x){ return x.id === vid; }) || {};
+  var nome = v.nome || 'este orçamento';
+  if (!confirm('Excluir orçamento de "' + nome + '"?')) return;
+  var orcs = loadOrc();
+  delete orcs[vid];
+  saveOrc(orcs);
+  orcRenderLista();
+  toast('Orçamento excluído', 'ok');
+}
+
 window.orcWAOrcamento=orcWAOrcamento;
 window.orcWACotacao=orcWACotacao;
 window.orcNovaVisita=orcNovaVisita;
