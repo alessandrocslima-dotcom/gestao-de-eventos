@@ -1360,7 +1360,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
           <div class="gep-foot-dev">Desenvolvido por</div>
           <div class="gep-foot-name">Alessandro Lima</div>
           <div class="gep-foot-copy">© 2026 · Todos os direitos reservados</div>
-          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-143</span></div>
+          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-144</span></div>
         </div>
       </div>
     </div>
@@ -1424,7 +1424,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div class="d">Desenvolvido por</div>
       <div class="n">Alessandro Lima</div>
       <div class="c">© 2026 · Todos os direitos reservados</div>
-      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-143</span></div>
+      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-144</span></div>
     </div>
   </div>
 
@@ -5175,7 +5175,7 @@ saveEmp = function(){
 // Expor tudo globalmente
 
 /* ═══════════════════════════════════════════════════════════
-   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-143
+   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-144
    ═══════════════════════════════════════════════════════════ */
 var SK_PLNL = 'vtp_planilhas_v1';
 
@@ -5759,8 +5759,9 @@ function orcWAOrcamento(){
     sub+=vf;
     var linha = srvLabel||(it.desc||'');
     if(srvLabel && it.desc) linha = srvLabel+' — '+it.desc;
+    var _oqty = parseInt(it.qty||1);
     m+='• '+linha;
-    m+=' | Qtde: '+(it.qty||1)+' '+it.unidade;
+    if(_oqty > 1) m+=' - Qtd: '+_oqty;
     if((it.freq||1)>1) m+=' x '+it.freq+' dias';
     m+=' | Valor: '+fmtM2(vf);
     if(it.forn) m+=' | Forn: '+it.forn;
@@ -5836,9 +5837,9 @@ function orcWACotacao(){
     if(!srvLabel && !it.desc) return;
     var linha = srvLabel||(it.desc||'');
     if(srvLabel && it.desc) linha = srvLabel+' — '+it.desc;
-    var _qty = (it.qty !== undefined && it.qty !== '' && it.qty !== null) ? it.qty : 1;
-    m += '▪ ' + linha + ' - Qtd: ' + _qty;
-    if((it.freq||1) > 1) m += ' x ' + it.freq + ' dias';
+    var _qty = (it.qty !== undefined && it.qty !== '' && it.qty !== null) ? parseInt(it.qty) : 1;
+    m += '• ' + linha;
+    if(_qty > 1) m += ' - Qtd: ' + _qty;
     m += '\n';
   });
 
