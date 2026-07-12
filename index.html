@@ -1318,6 +1318,20 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 .orc-btn-del:hover{background:#FEE2E2}
 .orc-status-sel{font-size:12px;font-weight:500;padding:6px 10px;border-radius:8px;border:1px solid #E2E8F0;background:#F8FAFC;color:#334155;cursor:pointer}
 .orc-spacer{flex:1}
+
+/* ══ MODO MANUTENÇÃO ══ */
+#gepManutencaoOverlay{display:none;position:fixed;inset:0;z-index:99999;background:#0F172A;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2rem}
+#gepManutencaoOverlay.ativo{display:flex}
+.manut-icon{font-size:56px;margin-bottom:20px;animation:manut-spin 3s linear infinite}
+@keyframes manut-spin{0%,100%{transform:rotate(0deg)}25%{transform:rotate(-15deg)}75%{transform:rotate(15deg)}}
+.manut-title{font-size:24px;font-weight:700;color:#F1F5F9;margin:0 0 10px}
+.manut-sub{font-size:15px;color:#94A3B8;line-height:1.6;max-width:340px;margin:0 auto 24px}
+.manut-note{background:#1E293B;border:1px solid #334155;border-radius:10px;padding:12px 20px;font-size:13px;color:#64748B}
+.manut-toggle-btn{display:flex;align-items:center;gap:8px;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:600;border:none;cursor:pointer;transition:all .2s}
+.manut-toggle-btn.ativar{background:#DC2626;color:#fff}
+.manut-toggle-btn.ativar:hover{background:#B91C1C}
+.manut-toggle-btn.desativar{background:#16A34A;color:#fff}
+.manut-toggle-btn.desativar:hover{background:#15803D}
 </style>
 </head>
 <body>
@@ -1411,7 +1425,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
           <div class="gep-foot-dev">Desenvolvido por</div>
           <div class="gep-foot-name">Alessandro Lima</div>
           <div class="gep-foot-copy">© 2026 · Todos os direitos reservados</div>
-          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-158</span></div>
+          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-159</span></div>
         </div>
       </div>
     </div>
@@ -1475,7 +1489,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div class="d">Desenvolvido por</div>
       <div class="n">Alessandro Lima</div>
       <div class="c">© 2026 · Todos os direitos reservados</div>
-      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-158</span></div>
+      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-159</span></div>
     </div>
   </div>
 
@@ -1873,6 +1887,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
         <button class="atab" onclick="adTab('secretarias')" id="at-secretarias">🏛 Secretarias</button>
         <button class="atab" onclick="adTab('catalogo')" id="at-catalogo">📦 Catálogo</button>
         <button class="atab" onclick="adTab('backup')" id="at-backup">💾 Backup</button>
+        <button class="atab" onclick="adTab('manutencao')" id="at-manutencao">🔧 Manutenção</button>
       </div>
       <div id="adSecretariasP" style="display:none">
         <button class="btn-outline-blue" onclick="openSecModal()">
@@ -1904,7 +1919,18 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
         </div>
         <div id="catList"></div>
       </div>
-      <div id="adBackupP" style="display:none">
+      <div id="adManutencaoP" style="display:none;padding:20px 0">
+  <div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:12px;padding:20px 24px;margin-bottom:16px">
+    <h3 style="margin:0 0 8px;font-size:16px;font-weight:700;color:#991B1B">⚠️ Modo Manutenção</h3>
+    <p style="margin:0 0 16px;font-size:13px;color:#7F1D1D;line-height:1.5">Ao ativar, todos os usuários (exceto administradores) verão uma tela de manutenção e não poderão usar o sistema. Use antes de fazer atualizações.</p>
+    <div id="manutStatusBox" style="margin-bottom:16px;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600"></div>
+    <button id="manutToggleBtn" class="manut-toggle-btn ativar" onclick="toggleManutencao()">
+      🔧 Ativar modo manutenção
+    </button>
+  </div>
+</div>
+
+<div id="adBackupP" style="display:none">
         <div style="background:#EFF6FF;border:1.5px solid #BFDBFE;border-radius:12px;padding:16px;margin-bottom:16px">
           <div style="font-size:13px;font-weight:700;color:#1E40AF;margin-bottom:6px">💾 Backup de segurança</div>
           <div style="font-size:12px;color:#1E40AF;line-height:1.6">Seus dados ficam salvos neste dispositivo. Exporte um backup regularmente e guarde em local seguro (e-mail, Google Drive, pen drive). Se trocar de aparelho ou limpar o navegador, importe o backup para recuperar tudo.</div>
@@ -4104,7 +4130,8 @@ function adTab(t){
     'empresas':'adEmpresasP',
     'secretarias':'adSecretariasP',
     'catalogo':'adCatalogoP',
-    'backup':'adBackupP'
+    'backup':'adBackupP',
+    'manutencao':'adManutencaoP'
   };
   Object.keys(paineis).forEach(function(k){
     var el = document.getElementById(paineis[k]);
@@ -5138,6 +5165,8 @@ irParaAdmin = function(){
   document.getElementById('vpAdmin').classList.add('on');
   // Aplicar permissões do usuário logado
   aplicarPermissoes(me);
+  verificarManutencao();
+  sincronizarManutencao();
   document.getElementById('tbTitle').textContent = 'Administração';
   document.getElementById('tbBread').innerHTML = 'Sistema / <b>Administração</b>';
   document.getElementById('tbNovaBtn').style.display = 'none';
@@ -5246,7 +5275,7 @@ saveEmp = function(){
 // Expor tudo globalmente
 
 /* ═══════════════════════════════════════════════════════════
-   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-158
+   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-159
    ═══════════════════════════════════════════════════════════ */
 var SK_PLNL = 'vtp_planilhas_v1';
 
@@ -5368,6 +5397,71 @@ function vtVerOrcamento(vtId) {
       orcAbrirFormFromLista(vtId);
     }
   }, 100);
+}
+
+
+/* ══ MODO MANUTENÇÃO ══ */
+var SK_MANUT = 'gep_manutencao_v1';
+
+function isAdmin(){ return me && (me.role==='admin' || me.id==='root'); }
+
+function verificarManutencao(){
+  var ativo = localStorage.getItem(SK_MANUT) === '1';
+  var overlay = document.getElementById('gepManutencaoOverlay');
+  if(!overlay) return;
+  if(ativo && !isAdmin()){
+    overlay.classList.add('ativo');
+  } else {
+    overlay.classList.remove('ativo');
+  }
+  atualizarPainelManutencao();
+}
+
+function atualizarPainelManutencao(){
+  var ativo = localStorage.getItem(SK_MANUT) === '1';
+  var statusBox = document.getElementById('manutStatusBox');
+  var btn = document.getElementById('manutToggleBtn');
+  if(!statusBox || !btn) return;
+  if(ativo){
+    statusBox.style.background = '#FEF3C7';
+    statusBox.style.border = '1px solid #FDE68A';
+    statusBox.style.color = '#92400E';
+    statusBox.textContent = '🟡 Modo manutenção ATIVO — usuários comuns estão bloqueados';
+    btn.textContent = '✅ Desativar manutenção';
+    btn.className = 'manut-toggle-btn desativar';
+  } else {
+    statusBox.style.background = '#F0FDF4';
+    statusBox.style.border = '1px solid #BBF7D0';
+    statusBox.style.color = '#166534';
+    statusBox.textContent = '🟢 Sistema operando normalmente';
+    btn.textContent = '🔧 Ativar modo manutenção';
+    btn.className = 'manut-toggle-btn ativar';
+  }
+}
+
+function toggleManutencao(){
+  var ativo = localStorage.getItem(SK_MANUT) === '1';
+  var novoEstado = !ativo;
+  localStorage.setItem(SK_MANUT, novoEstado ? '1' : '0');
+  // Sincronizar com Firebase para atingir todos os dispositivos
+  if(typeof cloudSaveList === 'function'){
+    cloudSaveList('gep_config', { manutencao: novoEstado, ts: Date.now() });
+  }
+  atualizarPainelManutencao();
+  toast(novoEstado ? '🔧 Manutenção ativada!' : '✅ Manutenção desativada!', novoEstado ? 'warn' : 'ok');
+}
+
+// Verificar manutenção periodicamente (captura mudanças de outros dispositivos)
+function sincronizarManutencao(){
+  if(typeof db === 'undefined' || !db) return;
+  db.collection('gep_config').doc('_lista').onSnapshot(function(doc){
+    if(!doc.exists) return;
+    var d = doc.data();
+    if(d && d.items && typeof d.items.manutencao !== 'undefined'){
+      localStorage.setItem(SK_MANUT, d.items.manutencao ? '1' : '0');
+      verificarManutencao();
+    }
+  });
 }
 
 window.sbGo=sbGo; window.sbOpen=sbOpen; window.sbClose=sbClose;
@@ -6259,7 +6353,7 @@ window.orcSalvar=orcSalvar;
 window.orcExportXLSX=orcExportXLSX;
 
 /* ══════════════════════════════════════════════════════════
-   LISTA DE ORÇAMENTOS — v15-158
+   LISTA DE ORÇAMENTOS — v15-159
    ══════════════════════════════════════════════════════════ */
 var _orcFiltroAtivo = 'todos';
 
