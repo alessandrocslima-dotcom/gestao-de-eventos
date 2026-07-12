@@ -1384,7 +1384,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
           <div class="gep-foot-dev">Desenvolvido por</div>
           <div class="gep-foot-name">Alessandro Lima</div>
           <div class="gep-foot-copy">© 2026 · Todos os direitos reservados</div>
-          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-148</span></div>
+          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-149</span></div>
         </div>
       </div>
     </div>
@@ -1448,7 +1448,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div class="d">Desenvolvido por</div>
       <div class="n">Alessandro Lima</div>
       <div class="c">© 2026 · Todos os direitos reservados</div>
-      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-148</span></div>
+      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-149</span></div>
     </div>
   </div>
 
@@ -5228,7 +5228,7 @@ saveEmp = function(){
 // Expor tudo globalmente
 
 /* ═══════════════════════════════════════════════════════════
-   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-148
+   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-149
    ═══════════════════════════════════════════════════════════ */
 var SK_PLNL = 'vtp_planilhas_v1';
 
@@ -5752,9 +5752,11 @@ function orcAutoSave(){
   // Debounce: salva localmente sempre, mas só envia pra nuvem 800ms após parar de digitar
   if(!orcCurrentVid) return;
   var orcs = loadOrc();
+  var _existente = orcs[orcCurrentVid] || {};
   orcs[orcCurrentVid] = {
     itens: orcCollectItens(),
     status: orcGetCurrentStatus(),
+    listaStatus: _existente.listaStatus || 'pendente',
     numOficial: (document.getElementById('orc-num-field')||{}).value||'',
     aprovData: (document.getElementById('orc-aprov-data')||{}).value||'',
     verbaProd: 0,
@@ -5772,7 +5774,21 @@ function orcAutoSave(){
 }
 
 function orcSalvar(){
-  orcAutoSave();
+  if(!orcCurrentVid){ toast('Nenhum orçamento selecionado','err'); return; }
+  // Salvar diretamente no localStorage
+  var orcs = loadOrc();
+  var existente = orcs[orcCurrentVid] || {};
+  orcs[orcCurrentVid] = {
+    itens: orcCollectItens(),
+    status: orcGetCurrentStatus(),
+    listaStatus: existente.listaStatus || 'pendente',
+    numOficial: (document.getElementById('orc-num-field')||{}).value||'',
+    aprovData: (document.getElementById('orc-aprov-data')||{}).value||'',
+    verbaProd: 0,
+    savedTs: nowTs(),
+    owner: (typeof _meuId==='function') ? _meuId() : null
+  };
+  saveOrc(orcs);
   // Sincronizar evento vinculado se houver
   if(typeof orcSincronizarEvento==='function') orcSincronizarEvento();
   var el = document.getElementById('orc-saved-ts');
@@ -5781,7 +5797,7 @@ function orcSalvar(){
   // Voltar para a lista após salvar
   setTimeout(function(){
     if(typeof orcVoltarLista==='function') orcVoltarLista();
-  }, 800);
+  }, 600);
 }
 
 /* ── Exportar Excel (XLSX puro via CSV com BOM, compatível com Excel) ── */
@@ -6199,7 +6215,7 @@ window.orcSalvar=orcSalvar;
 window.orcExportXLSX=orcExportXLSX;
 
 /* ══════════════════════════════════════════════════════════
-   LISTA DE ORÇAMENTOS — v15-148
+   LISTA DE ORÇAMENTOS — v15-149
    ══════════════════════════════════════════════════════════ */
 var _orcFiltroAtivo = 'todos';
 
