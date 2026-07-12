@@ -1425,7 +1425,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
           <div class="gep-foot-dev">Desenvolvido por</div>
           <div class="gep-foot-name">Alessandro Lima</div>
           <div class="gep-foot-copy">© 2026 · Todos os direitos reservados</div>
-          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-159</span></div>
+          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-161</span></div>
         </div>
       </div>
     </div>
@@ -1489,7 +1489,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div class="d">Desenvolvido por</div>
       <div class="n">Alessandro Lima</div>
       <div class="c">© 2026 · Todos os direitos reservados</div>
-      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-159</span></div>
+      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-161</span></div>
     </div>
   </div>
 
@@ -1589,6 +1589,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
         <div class="sb-si" onclick="sbGo('admin-secretarias',this)"><div class="sb-sdot"></div><span class="sb-slbl">Secretarias</span></div>
         <div class="sb-si" onclick="sbGo('admin-catalogo',this)"><div class="sb-sdot"></div><span class="sb-slbl">Catálogo</span></div>
         <div class="sb-si" onclick="sbGo('admin-backup',this)"><div class="sb-sdot"></div><span class="sb-slbl">Backup</span></div>
+        <div class="sb-si" onclick="sbGo('admin-manutencao',this)"><div class="sb-sdot"></div><span class="sb-slbl">Manutenção</span></div>
       </div>
 
       <!-- Ajuda -->
@@ -3369,7 +3370,7 @@ function navF(d){
 }
 function validF(){
   if(fStep===0){
-    var empVal = gv('fEmp') || gv('fEmpSel');
+    var empVal = gv('fEmpSel');
     if(!empVal){ toast('Informe o nome da empresa','err'); return false; }
     if(!gv('fEmp') && gv('fEmpSel')) onEmpSelect(); // preencher fEmp se só select
     if(!gv('fProd')){ toast('Informe o produtor responsável','err'); return false; }
@@ -3583,7 +3584,7 @@ function renderFotos(){
   fotos.forEach(function(s,i){
     h+='<div class="fthumb"><img src="'+s+'" alt=""><button class="fdel" onclick="rmFoto('+i+')"><svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>';
   });
-  document.getElementById('fotosGr').innerHTML=h;
+  var fgEl=document.getElementById('fotosGr'); if(fgEl) fgEl.innerHTML=h;
 }
 
 /* ── ASSINATURA ── */
@@ -3685,7 +3686,7 @@ function buildSum(){
     orcF.forEach(function(i){ h+='<div class="sum-row"><span class="sl" style="flex:1">'+i.desc+'</span><span class="sv" style="flex-shrink:0;font-family:\'JetBrains Mono\',monospace">'+fmtM(i.val)+'</span></div>'; });
     h+='<div class="sum-row" style="background:#EFF6FF"><span class="sl" style="color:#1A56DB;font-weight:800">Total</span><span class="sv" style="font-size:16px;font-family:\'JetBrains Mono\',monospace;font-weight:900">'+fmtM(tot)+'</span></div></div>';
   }
-  if(gv('fObs')||fotos.length){
+  if(gv('fObs')){
     h+='<div class="sum-sec"><div class="sum-sec-hd"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/></svg>Observações</div>';
     if(gv('fObs')) h+='<div class="sum-row"><span class="sl">Recom.</span><span class="sv">'+gv('fObs')+'</span></div>';
   }
@@ -3718,7 +3719,7 @@ function collectData(){
     id: editId||uid(), criadoEm: editId?(_existente.criadoEm||new Date().toISOString()):new Date().toISOString(),
     atualizadoEm: new Date().toISOString(), usuario: me?me.login:'',
     responsavel: _resp, participantes: _parts, historico: _hist,
-    empresa:gv('fEmp'), doc:gv('fDoc'), 
+    empresa:gv('fEmpSel'), 
     produtor:gv('fProd'), 
     nome:gv('fNome'), tipo:gv('fTipo'), dataEvento:gv('fData'), dataEventoFim:gv('fDataFim'), horaEvento:gv('fHora'), horaFim:gv('fHoraFim'), pessoas:gv('fPessoas'),
     dataMont:gv('fDataM'), horaMont:gv('fHoraM'), obsMont:gv('fObsM'),
@@ -3726,7 +3727,7 @@ function collectData(){
     gpsMain:gps.main, risco:fRisco, riscoDesc:gv('fRDesc'),
     gpsR2:gps.r2,
     eqItens:eqItens, equipeItens:equipeItens, servicoItens:servicoItens, contatoItens:contatoItens, somTipo:gv('fSom'), somDet:gv('fSomDet'), obsEst:gv('fObsEst'),
-    orcItens:orcItens, obs:gv('fObs'), fotos:fotos
+    orcItens:orcItens, obs:gv('fObs')
   };
 }
 function saveVisita(){
@@ -3744,13 +3745,13 @@ function saveVisita(){
 /* ── WHATSAPP ── */
 function envWA(){
   var tot=orcItens.reduce(function(s,it){return s+(parseFloat(it.val)||0);},0);
-  var telProd=gv('fTelProd'), som=gv('fSom'), det=gv('fSomDet');
+  var telProd='', som=gv('fSom'), det=gv('fSomDet');
   var linha = '-----------------------------';
   var m='*VISITA TECNICA*\n';
   m+=linha+'\n';
 
   // Empresa e produtor
-  if(gv('fEmp')) m+='Empresa: '+gv('fEmp')+'\n';
+  if(gv('fEmpSel')) m+='Empresa: '+gv('fEmpSel')+'\n';
   m+='Produtor: '+(gv('fProd')||(me?me.nome:''))+'\n';
   if(telProd) m+='Contato: '+telProd+'\n';
   m+='Data da visita: '+new Date().toLocaleDateString('pt-BR')+'\n';
@@ -3859,7 +3860,7 @@ function envWA(){
     m+='*RECOMENDACOES*\n'+gv('fObs')+'\n\n';
   }
 
-  if(fotos.length) m+='Fotos: '+fotos.length+' registradas - enviar em seguida.';
+  
 
   window.open('https://wa.me/?text='+encodeURIComponent(m),'_blank');
 }
@@ -3882,8 +3883,8 @@ function genPDF(){
   doc.setFontSize(7);doc.setTextColor(100,116,139);doc.text('Desenvolvido por Alessandro Lima',W-M,30,{align:'right'});
   doc.setFont(undefined,'normal');doc.setTextColor(cD[0],cD[1],cD[2]);y=44;
   secHdr('Empresa e Responsável');
-  row('Empresa:',gv('fEmp'),true);row('CNPJ/CPF:',gv('fDoc'));row('Tel. empresa:',gv('fTelEmp'));
-  row('Produtor responsável:',gv('fProd')||(me?me.nome:''),true,cB);row('Contato produtor:',gv('fTelProd'));
+  row('Empresa:',gv('fEmpSel'),true);
+  row('Produtor responsável:',gv('fProd')||(me?me.nome:''),true,cB);
   row('Usuário (sistema):',me?me.login:'');row('Data da visita:',new Date().toLocaleDateString('pt-BR'),true);divLine();
   secHdr('Dados do Evento');
   row('Nome do evento:',gv('fNome'),true);row('Tipo:',gv('fTipo'));
@@ -5006,6 +5007,7 @@ var _pageMeta = {
   'admin-secretarias':{title:'Secretarias',       bread:'Administração',    btn:false},
   'admin-catalogo':{title:'Catálogo de Itens',    bread:'Administração',    btn:false},
   'admin-backup':  {title:'Backup',                bread:'Administração',    btn:false},
+  'admin-manutencao':{title:'Manutenção',            bread:'Administração',    btn:false},
   'orcamentos':    {title:'Orçamentos',           bread:'Operacional',      btn:true},
   'planilha':      {title:'Planilha Orçamentária', bread:'Operacional',     btn:false},
   'eventos':       {title:'Agenda de Eventos',    bread:'Eventos',          btn:false},
@@ -5027,6 +5029,7 @@ var _pageMap = {
   'admin-secretarias': 'vpAdmin',
   'admin-catalogo':    'vpAdmin',
   'admin-backup':      'vpAdmin',
+  'admin-manutencao':  'vpAdmin',
   'orcamentos':     'vpOrcamentos',
   'planilha':       'vpPlanilha',
   'eventos':        'vpEventos',
@@ -5077,6 +5080,7 @@ function sbGo(page, el) {
   if(page === 'admin-secretarias') { adTab('secretarias'); }
   if(page === 'admin-catalogo')    { adTab('catalogo'); }
   if(page === 'admin-backup')      { adTab('backup'); }
+  if(page === 'admin-manutencao')  { adTab('manutencao'); }
   if(page === 'empresas-cad')   { renderEmpListCad(); }
   if(page === 'rel-visitas')    { renderRelVisitas(); }
 
@@ -5275,7 +5279,7 @@ saveEmp = function(){
 // Expor tudo globalmente
 
 /* ═══════════════════════════════════════════════════════════
-   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-159
+   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-161
    ═══════════════════════════════════════════════════════════ */
 var SK_PLNL = 'vtp_planilhas_v1';
 
@@ -6353,7 +6357,7 @@ window.orcSalvar=orcSalvar;
 window.orcExportXLSX=orcExportXLSX;
 
 /* ══════════════════════════════════════════════════════════
-   LISTA DE ORÇAMENTOS — v15-159
+   LISTA DE ORÇAMENTOS — v15-161
    ══════════════════════════════════════════════════════════ */
 var _orcFiltroAtivo = 'todos';
 
