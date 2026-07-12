@@ -1384,7 +1384,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
           <div class="gep-foot-dev">Desenvolvido por</div>
           <div class="gep-foot-name">Alessandro Lima</div>
           <div class="gep-foot-copy">© 2026 · Todos os direitos reservados</div>
-          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-147</span></div>
+          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-148</span></div>
         </div>
       </div>
     </div>
@@ -1448,7 +1448,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div class="d">Desenvolvido por</div>
       <div class="n">Alessandro Lima</div>
       <div class="c">© 2026 · Todos os direitos reservados</div>
-      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-147</span></div>
+      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-148</span></div>
     </div>
   </div>
 
@@ -5228,7 +5228,7 @@ saveEmp = function(){
 // Expor tudo globalmente
 
 /* ═══════════════════════════════════════════════════════════
-   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-147
+   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-148
    ═══════════════════════════════════════════════════════════ */
 var SK_PLNL = 'vtp_planilhas_v1';
 
@@ -6199,7 +6199,7 @@ window.orcSalvar=orcSalvar;
 window.orcExportXLSX=orcExportXLSX;
 
 /* ══════════════════════════════════════════════════════════
-   LISTA DE ORÇAMENTOS — v15-147
+   LISTA DE ORÇAMENTOS — v15-148
    ══════════════════════════════════════════════════════════ */
 var _orcFiltroAtivo = 'todos';
 
@@ -6321,20 +6321,32 @@ function orcSetListaStatus(vid, status) {
 }
 
 function orcAbrirFormFromLista(vid) {
+  // Esconder lista, mostrar form
   document.getElementById('orc-lista-state').style.display = 'none';
   document.getElementById('orc-form-state').style.display = '';
-  // Mostrar botão voltar
-  var btn = document.getElementById('orcVoltarBtn');
-  if (btn) { btn.style.display = ''; btn.onclick = function(){ orcVoltarLista(); }; }
-  // Carregar orçamento
-  orcLoadVisita(vid);
-  // Sincronizar o select
+  // Esconder painel seletor — abre direto no formulário
+  var selPanel = document.getElementById('orc-selector-panel');
+  if (selPanel) selPanel.style.display = 'none';
+  // Sincronizar o select com a VT correta
   var sel = document.getElementById('orc-visita-sel');
   if (sel) sel.value = vid;
+  // Garantir orcCurrentVid antes de carregar
+  orcCurrentVid = vid;
+  // Mostrar botão voltar
+  var btn = document.getElementById('orcVoltarBtn');
+  if (btn) {
+    btn.style.display = '';
+    btn.onclick = function(){ orcVoltarLista(); };
+  }
+  // Carregar orçamento
+  orcLoadVisita(vid);
 }
 
 function orcVoltarLista() {
   orcCurrentVid = null;
+  // Restaurar painel seletor para próxima abertura
+  var selPanel = document.getElementById('orc-selector-panel');
+  if (selPanel) selPanel.style.display = '';
   document.getElementById('orc-form-state').style.display = 'none';
   orcRenderLista();
 }
