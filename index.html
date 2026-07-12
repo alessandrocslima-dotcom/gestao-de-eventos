@@ -1384,7 +1384,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
           <div class="gep-foot-dev">Desenvolvido por</div>
           <div class="gep-foot-name">Alessandro Lima</div>
           <div class="gep-foot-copy">© 2026 · Todos os direitos reservados</div>
-          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-149</span></div>
+          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-150</span></div>
         </div>
       </div>
     </div>
@@ -1448,7 +1448,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div class="d">Desenvolvido por</div>
       <div class="n">Alessandro Lima</div>
       <div class="c">© 2026 · Todos os direitos reservados</div>
-      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-149</span></div>
+      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-150</span></div>
     </div>
   </div>
 
@@ -2664,6 +2664,18 @@ function sincronizarTudo(onComplete){
             if(localTs > cloudTs){
               devoBaixar = false;
               console.warn('  ⏭ '+m.col+' PULADO - local mais recente ('+localTs+' > '+cloudTs+')');
+            }
+          }
+          if(devoBaixar){
+            // Não sobrescrever dados locais com nuvem vazia
+            if(cloudCount === 0){
+              var _localRaw = localStorage.getItem(m.sk);
+              var _localCount = 0;
+              try { var _lp=JSON.parse(_localRaw||'{}'); _localCount=Array.isArray(_lp)?_lp.length:Object.keys(_lp).length; } catch(e){}
+              if(_localCount > 0){
+                console.warn('  ⏭ '+m.col+' PULADO - nuvem vazia mas local tem '+_localCount+' itens');
+                devoBaixar = false;
+              }
             }
           }
           if(devoBaixar){
@@ -5228,7 +5240,7 @@ saveEmp = function(){
 // Expor tudo globalmente
 
 /* ═══════════════════════════════════════════════════════════
-   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-149
+   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-150
    ═══════════════════════════════════════════════════════════ */
 var SK_PLNL = 'vtp_planilhas_v1';
 
@@ -5381,7 +5393,13 @@ var orcCurrentVid = null;
 var orcEditSecId = null;
 
 function loadOrc(){ try{ return JSON.parse(localStorage.getItem(SK_ORC)||'{}'); }catch(e){ return {}; } }
-function saveOrc(o){ localStorage.setItem(SK_ORC, JSON.stringify(o)); if(typeof marcarMudanca==='function') marcarMudanca(); if(typeof cloudSaveList==='function') cloudSaveList('orcamentos', o); }
+function saveOrc(o){
+  localStorage.setItem(SK_ORC, JSON.stringify(o));
+  // Marcar timestamp local como agora — impede sync de sobrescrever com dados da nuvem mais antigos
+  try { localStorage.setItem('vtp_sync_ts_orcamentos', String(Date.now())); } catch(e){}
+  if(typeof marcarMudanca==='function') marcarMudanca();
+  if(typeof cloudSaveList==='function') cloudSaveList('orcamentos', o);
+}
 function loadSec(){ try{ return JSON.parse(localStorage.getItem(SK_SEC)||'[]'); }catch(e){ return []; } }
 function saveSec(a){ localStorage.setItem(SK_SEC, JSON.stringify(a)); if(typeof cloudSaveList==='function') cloudSaveList('secretarias', a); }
 
@@ -6215,7 +6233,7 @@ window.orcSalvar=orcSalvar;
 window.orcExportXLSX=orcExportXLSX;
 
 /* ══════════════════════════════════════════════════════════
-   LISTA DE ORÇAMENTOS — v15-149
+   LISTA DE ORÇAMENTOS — v15-150
    ══════════════════════════════════════════════════════════ */
 var _orcFiltroAtivo = 'todos';
 
