@@ -1384,7 +1384,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
           <div class="gep-foot-dev">Desenvolvido por</div>
           <div class="gep-foot-name">Alessandro Lima</div>
           <div class="gep-foot-copy">© 2026 · Todos os direitos reservados</div>
-          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-146</span></div>
+          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-147</span></div>
         </div>
       </div>
     </div>
@@ -1448,7 +1448,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div class="d">Desenvolvido por</div>
       <div class="n">Alessandro Lima</div>
       <div class="c">© 2026 · Todos os direitos reservados</div>
-      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-146</span></div>
+      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-147</span></div>
     </div>
   </div>
 
@@ -5228,7 +5228,7 @@ saveEmp = function(){
 // Expor tudo globalmente
 
 /* ═══════════════════════════════════════════════════════════
-   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-146
+   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-147
    ═══════════════════════════════════════════════════════════ */
 var SK_PLNL = 'vtp_planilhas_v1';
 
@@ -5778,6 +5778,10 @@ function orcSalvar(){
   var el = document.getElementById('orc-saved-ts');
   if(el) el.textContent = 'Salvo em '+nowTs();
   toast('Orçamento salvo!','ok');
+  // Voltar para a lista após salvar
+  setTimeout(function(){
+    if(typeof orcVoltarLista==='function') orcVoltarLista();
+  }, 800);
 }
 
 /* ── Exportar Excel (XLSX puro via CSV com BOM, compatível com Excel) ── */
@@ -6195,7 +6199,7 @@ window.orcSalvar=orcSalvar;
 window.orcExportXLSX=orcExportXLSX;
 
 /* ══════════════════════════════════════════════════════════
-   LISTA DE ORÇAMENTOS — v15-146
+   LISTA DE ORÇAMENTOS — v15-147
    ══════════════════════════════════════════════════════════ */
 var _orcFiltroAtivo = 'todos';
 
