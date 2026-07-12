@@ -1291,6 +1291,33 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 .orc-filter-pill { padding:5px 14px; border-radius:20px; font-size:12px; font-weight:600; cursor:pointer; border:1.5px solid #E2E8F0; background:#fff; color:#475569; transition:all .15s; }
 .orc-filter-pill.ativo { background:#0F172A; color:#fff; border-color:#0F172A; }
 .orc-vazio { text-align:center; padding:48px 20px; color:#94A3B8; font-size:14px; }
+
+/* ══ LISTA ORÇAMENTOS — layout melhorado ══ */
+.orc-list-card{background:#fff;border:1px solid #E8EDF2;border-radius:14px;padding:16px 20px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.04);transition:box-shadow .15s}
+.orc-list-card:hover{box-shadow:0 3px 10px rgba(0,0,0,.08)}
+.orc-list-borda.pendente{border-left:4px solid #F59E0B}
+.orc-list-borda.aprovado{border-left:4px solid #16A34A}
+.orc-list-borda.recusado{border-left:4px solid #DC2626}
+.orc-list-card-row1{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}
+.orc-list-card-badges{display:flex;align-items:center;gap:8px}
+.orc-list-badge{display:inline-flex;align-items:center;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:.3px}
+.orc-list-badge.pendente{background:#FEF3C7;color:#92400E;border:1px solid #FDE68A}
+.orc-list-badge.aprovado{background:#DCFCE7;color:#14532D;border:1px solid #BBF7D0}
+.orc-list-badge.recusado{background:#FEF2F2;color:#991B1B;border:1px solid #FECACA}
+.orc-list-num{font-size:12px;color:#94A3B8;font-weight:500}
+.orc-list-valor{font-size:17px;font-weight:700;color:#0F172A}
+.orc-list-card-nome{font-size:15px;font-weight:600;color:#0F172A;margin:0 0 4px;line-height:1.3}
+.orc-list-card-sub{font-size:12px;color:#64748B;margin:0 0 14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.orc-list-card-sub span.sep{color:#CBD5E1}
+.orc-list-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-top:12px;border-top:1px solid #F1F5F9}
+.orc-btn-wa{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;padding:7px 16px;border-radius:8px;border:1.5px solid #16A34A;background:#F0FDF4;color:#15803D;cursor:pointer}
+.orc-btn-wa:hover{background:#DCFCE7}
+.orc-btn-editar{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:500;padding:7px 14px;border-radius:8px;border:1.5px solid #BFDBFE;background:#EFF6FF;color:#1D4ED8;cursor:pointer}
+.orc-btn-editar:hover{background:#DBEAFE}
+.orc-btn-del{padding:6px 10px;border-radius:8px;border:1px solid #FECACA;background:#FEF2F2;color:#DC2626;cursor:pointer;font-size:14px;line-height:1}
+.orc-btn-del:hover{background:#FEE2E2}
+.orc-status-sel{font-size:12px;font-weight:500;padding:6px 10px;border-radius:8px;border:1px solid #E2E8F0;background:#F8FAFC;color:#334155;cursor:pointer}
+.orc-spacer{flex:1}
 </style>
 </head>
 <body>
@@ -1384,7 +1411,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
           <div class="gep-foot-dev">Desenvolvido por</div>
           <div class="gep-foot-name">Alessandro Lima</div>
           <div class="gep-foot-copy">© 2026 · Todos os direitos reservados</div>
-          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-154</span></div>
+          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-155</span></div>
         </div>
       </div>
     </div>
@@ -1448,7 +1475,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div class="d">Desenvolvido por</div>
       <div class="n">Alessandro Lima</div>
       <div class="c">© 2026 · Todos os direitos reservados</div>
-      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-154</span></div>
+      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-155</span></div>
     </div>
   </div>
 
@@ -5240,7 +5267,7 @@ saveEmp = function(){
 // Expor tudo globalmente
 
 /* ═══════════════════════════════════════════════════════════
-   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-154
+   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-155
    ═══════════════════════════════════════════════════════════ */
 var SK_PLNL = 'vtp_planilhas_v1';
 
@@ -6253,7 +6280,7 @@ window.orcSalvar=orcSalvar;
 window.orcExportXLSX=orcExportXLSX;
 
 /* ══════════════════════════════════════════════════════════
-   LISTA DE ORÇAMENTOS — v15-154
+   LISTA DE ORÇAMENTOS — v15-155
    ══════════════════════════════════════════════════════════ */
 var _orcFiltroAtivo = 'todos';
 
@@ -6321,30 +6348,31 @@ function orcRenderLista() {
     var produtor = v.produtor || '—';
     var data = v.dataEvento ? fmtDR(v.dataEvento, v.dataEventoFim) : '—';
 
+    var waSvg = '<svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:currentColor;flex-shrink:0"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.096.537 4.07 1.477 5.787L0 24l6.393-1.477A11.934 11.934 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.879 0-3.638-.494-5.159-1.355l-.36-.213-3.799.876.9-3.687-.234-.376A9.96 9.96 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>';
     return '<div class="orc-list-card orc-list-borda ' + lStatus + '" data-vid="' + vid + '">' +
-      '<div class="orc-list-card-top">' +
-        '<div class="orc-list-card-info">' +
-          '<div class="orc-list-card-meta">' +
-            '<span class="orc-list-badge ' + lStatus + '">' + LISTA_STATUS_LABELS[lStatus] + '</span>' +
-            '<span>Nº ' + escHtmlOrc(numEvt) + '</span>' +
-          '</div>' +
-          '<div class="orc-list-card-nome">' + escHtmlOrc(nome) + '</div>' +
-          '<div class="orc-list-card-sub">🏢 ' + escHtmlOrc(empresa) + ' &nbsp;·&nbsp; 👤 ' + escHtmlOrc(produtor) + ' &nbsp;·&nbsp; 📅 ' + escHtmlOrc(data) + '</div>' +
+      '<div class="orc-list-card-row1">' +
+        '<div class="orc-list-card-badges">' +
+          '<span class="orc-list-badge ' + lStatus + '">' + LISTA_STATUS_LABELS[lStatus] + '</span>' +
+          '<span class="orc-list-num">Nº ' + escHtmlOrc(numEvt) + '</span>' +
         '</div>' +
-        '<div class="orc-list-card-valor">' +
-          '<div class="orc-list-card-valor-num">' + fmtM2(total) + '</div>' +
-          '<div class="orc-list-card-valor-lbl">valor total</div>' +
-        '</div>' +
+        '<span class="orc-list-valor">' + fmtM2(total) + '</span>' +
       '</div>' +
-      '<div class="orc-list-card-actions">' +
-        '<select onchange="orcSetListaStatus(' + JSON.stringify(vid) + ', this.value)" style="font-size:12px;padding:5px 10px;border-radius:7px;border:0.5px solid #E2E8F0;background:#F8FAFC;color:#334155;cursor:pointer">' +
+      '<p class="orc-list-card-nome">' + escHtmlOrc(nome) + '</p>' +
+      '<p class="orc-list-card-sub">' +
+        '<span>🏢 ' + escHtmlOrc(empresa) + '</span><span class="sep">·</span>' +
+        '<span>👤 ' + escHtmlOrc(produtor) + '</span><span class="sep">·</span>' +
+        '<span>📅 ' + escHtmlOrc(data) + '</span>' +
+      '</p>' +
+      '<div class="orc-list-actions">' +
+        '<button class="orc-btn-wa" onclick="orcWACotacaoFromLista(' + JSON.stringify(vid) + ')">' + waSvg + ' WA Cotação</button>' +
+        '<button class="orc-btn-editar" onclick="orcAbrirFormFromLista(' + JSON.stringify(vid) + ')">✏️ Editar itens</button>' +
+        '<div class="orc-spacer"></div>' +
+        '<select class="orc-status-sel" onchange="orcSetListaStatus(' + JSON.stringify(vid) + ', this.value)">' +
           '<option value="pendente"' + (lStatus==='pendente'?' selected':'') + '>🟡 Pendente</option>' +
           '<option value="aprovado"' + (lStatus==='aprovado'?' selected':'') + '>🟢 Aprovado</option>' +
           '<option value="recusado"' + (lStatus==='recusado'?' selected':'') + '>🔴 Recusado</option>' +
         '</select>' +
-        '<button onclick="orcWACotacaoFromLista(' + JSON.stringify(vid) + ')" style="font-size:12px;padding:5px 12px;border-radius:7px;border:0.5px solid #E2E8F0;background:#fff;color:#334155;cursor:pointer">💬 WA Cotação</button>' +
-        '<button onclick="orcAbrirFormFromLista(' + JSON.stringify(vid) + ')" style="font-size:12px;padding:5px 12px;border-radius:7px;border:0.5px solid #E2E8F0;background:#fff;color:#334155;cursor:pointer">✏️ Editar itens</button>' +
-        '<button onclick="orcExcluirDaLista(' + JSON.stringify(vid) + ')" style="font-size:12px;padding:5px 12px;border-radius:7px;border:0.5px solid #FECACA;background:#FEF2F2;color:#991B1B;cursor:pointer">🗑 Excluir</button>' +
+        '<button class="orc-btn-del" title="Excluir" onclick="orcExcluirDaLista(' + JSON.stringify(vid) + ')">🗑</button>' +
       '</div>' +
     '</div>';
   }).join('');
