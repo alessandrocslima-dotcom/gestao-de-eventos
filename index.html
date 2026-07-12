@@ -1384,7 +1384,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
           <div class="gep-foot-dev">Desenvolvido por</div>
           <div class="gep-foot-name">Alessandro Lima</div>
           <div class="gep-foot-copy">© 2026 · Todos os direitos reservados</div>
-          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-145</span></div>
+          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-146</span></div>
         </div>
       </div>
     </div>
@@ -1448,7 +1448,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div class="d">Desenvolvido por</div>
       <div class="n">Alessandro Lima</div>
       <div class="c">© 2026 · Todos os direitos reservados</div>
-      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-145</span></div>
+      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-146</span></div>
     </div>
   </div>
 
@@ -3168,6 +3168,12 @@ function renderDash(){
     html += '<button style="font-size:11px;padding:5px 10px;border:1px solid #86EFAC;border-radius:7px;background:#F0FDF4;color:#15803D;cursor:pointer;display:flex;align-items:center;gap:4px" data-id="'+v.id+'" data-act="wa"><svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>WhatsApp</button>';
     html += '<button style="font-size:11px;padding:5px 10px;border:1px solid #C7D2FE;border-radius:7px;background:#EEF2FF;color:#4338CA;cursor:pointer;display:flex;align-items:center;gap:4px" data-id="'+v.id+'" data-act="equipe"><svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Transferir</button>';
     html += '<button style="font-size:11px;padding:5px 10px;border:1px solid #BFDBFE;border-radius:7px;background:#EFF6FF;color:#1A56DB;cursor:pointer;display:flex;align-items:center;gap:4px" data-id="'+v.id+'" data-act="edit"><svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Editar</button>';
+    var _temOrc = loadOrc ? !!loadOrc()[v.id] : false;
+    if(_temOrc){
+      html += '<button style="font-size:11px;padding:5px 10px;border:1px solid #BBF7D0;border-radius:7px;background:#F0FDF4;color:#166534;cursor:pointer;display:flex;align-items:center;gap:4px" data-id="'+v.id+'" data-act="ver-orc">✅ Ver orçamento</button>';
+    } else {
+      html += '<button style="font-size:11px;padding:5px 10px;border:1px solid #93C5FD;border-radius:7px;background:#DBEAFE;color:#1D4ED8;cursor:pointer;display:flex;align-items:center;gap:4px;font-weight:600" data-id="'+v.id+'" data-act="send-orc">💰 Enviar para orçamento</button>';
+    }
     // Botão Excluir: só aparece se for o dono ou se for admin e a visita for dele
     var isOwner = me && (v.produtorId === me.id || v.produtor === me.nome || v.produtor === me.login);
     var isAdmin = me && me.role === 'admin';
@@ -3194,6 +3200,8 @@ function renderDash(){
         if(act === 'ocultar'){ e.preventDefault(); ocultarVisita(id); }
         if(act === 'equipe'){ e.preventDefault(); eqOpenModal(id); }
         if(act === 'wa'){ e.preventDefault(); _dashEnviarWA(id); }
+        if(act === 'send-orc'){ e.preventDefault(); vtEnviarParaOrcamento(id); }
+        if(act === 'ver-orc'){ e.preventDefault(); vtVerOrcamento(id); }
         return;
       }
       t = t.parentNode;
@@ -5220,7 +5228,7 @@ saveEmp = function(){
 // Expor tudo globalmente
 
 /* ═══════════════════════════════════════════════════════════
-   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-145
+   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-146
    ═══════════════════════════════════════════════════════════ */
 var SK_PLNL = 'vtp_planilhas_v1';
 
@@ -5307,6 +5315,42 @@ window.addEventListener('message', function(ev){
     plnlVoltarLista();
   }
 });
+
+
+/* ══ VT → Orçamento ══ */
+function vtEnviarParaOrcamento(vtId) {
+  // Criar entrada vazia no orçamento se não existir
+  var orcs = loadOrc();
+  if (!orcs[vtId]) {
+    orcs[vtId] = {
+      itens: [],
+      status: 'elaboracao',
+      listaStatus: 'pendente',
+      numOficial: '',
+      aprovData: '',
+      verbaProd: 0,
+      savedTs: Date.now(),
+      owner: (typeof _meuId === 'function') ? _meuId() : null
+    };
+    saveOrc(orcs);
+  }
+  // Navegar para Orçamentos e abrir o formulário desta VT
+  sbGo('orcamentos', null);
+  setTimeout(function() {
+    if (typeof orcAbrirFormFromLista === 'function') {
+      orcAbrirFormFromLista(vtId);
+    }
+  }, 100);
+}
+
+function vtVerOrcamento(vtId) {
+  sbGo('orcamentos', null);
+  setTimeout(function() {
+    if (typeof orcAbrirFormFromLista === 'function') {
+      orcAbrirFormFromLista(vtId);
+    }
+  }, 100);
+}
 
 window.sbGo=sbGo; window.sbOpen=sbOpen; window.sbClose=sbClose;
 
@@ -6151,7 +6195,7 @@ window.orcSalvar=orcSalvar;
 window.orcExportXLSX=orcExportXLSX;
 
 /* ══════════════════════════════════════════════════════════
-   LISTA DE ORÇAMENTOS — v15-145
+   LISTA DE ORÇAMENTOS — v15-146
    ══════════════════════════════════════════════════════════ */
 var _orcFiltroAtivo = 'todos';
 
