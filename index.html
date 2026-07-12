@@ -1425,7 +1425,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
           <div class="gep-foot-dev">Desenvolvido por</div>
           <div class="gep-foot-name">Alessandro Lima</div>
           <div class="gep-foot-copy">© 2026 · Todos os direitos reservados</div>
-          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-161</span></div>
+          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-162</span></div>
         </div>
       </div>
     </div>
@@ -1489,7 +1489,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div class="d">Desenvolvido por</div>
       <div class="n">Alessandro Lima</div>
       <div class="c">© 2026 · Todos os direitos reservados</div>
-      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-161</span></div>
+      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-162</span></div>
     </div>
   </div>
 
@@ -3986,8 +3986,9 @@ function resetForm(){
 /* ── LOAD FORM (editar) ── */
 function loadForm(v){
   resetForm();
-  sv('fEmp',v.empresa);sv('fDoc',v.doc);sv('fTelEmp',v.telEmp);
-  sv('fProd',v.produtor);sv('fTelProd',v.telProd);
+  // fEmpSel: selecionar empresa no dropdown
+  var empSel=document.getElementById('fEmpSel'); if(empSel) empSel.value=v.empresa||'';
+  sv('fProd',v.produtor);
   sv('fNome',v.nome);sv('fTipo',v.tipo);sv('fData',v.dataEvento);sv('fDataFim',v.dataEventoFim||'');
   setTimeout(function(){if(typeof dtRangeInit==='function')dtRangeInit();},50);
   sv('fHora',v.horaEvento);sv('fHoraFim',v.horaFim);sv('fPessoas',v.pessoas);
@@ -4003,7 +4004,7 @@ function loadForm(v){
   servicoItens=v.servicoItens||[];renderServico();
   contatoItens=v.contatoItens||[];renderContato();
   orcItens=v.orcItens||[];
-  fotos=Array.isArray(v.fotos)?v.fotos:[];renderFotos();
+  fotos=[];
   editId=v.id;
 }
 
@@ -5279,7 +5280,7 @@ saveEmp = function(){
 // Expor tudo globalmente
 
 /* ═══════════════════════════════════════════════════════════
-   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-161
+   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-162
    ═══════════════════════════════════════════════════════════ */
 var SK_PLNL = 'vtp_planilhas_v1';
 
@@ -5410,6 +5411,23 @@ var SK_MANUT = 'gep_manutencao_v1';
 function isAdmin(){ return me && (me.role==='admin' || me.id==='root'); }
 
 function verificarManutencao(){
+  // Busca do Firebase para pegar estado atual (cross-device)
+  if(typeof db !== 'undefined' && db){
+    db.collection('gep_config').doc('_lista').get().then(function(doc){
+      if(doc.exists){
+        var d = doc.data();
+        if(d && d.items && typeof d.items.manutencao !== 'undefined'){
+          localStorage.setItem(SK_MANUT, d.items.manutencao ? '1' : '0');
+        }
+      }
+      _aplicarEstadoManutencao();
+    }).catch(function(){ _aplicarEstadoManutencao(); });
+  } else {
+    _aplicarEstadoManutencao();
+  }
+}
+
+function _aplicarEstadoManutencao(){
   var ativo = localStorage.getItem(SK_MANUT) === '1';
   var overlay = document.getElementById('gepManutencaoOverlay');
   if(!overlay) return;
@@ -6269,8 +6287,10 @@ window.sbGo = function(page, el){
   _sbGoOrig(page, el);
   if(page==='orcamentos')  { if(typeof orcRenderLista==='function') orcRenderLista(); else if(typeof orcPopulateSelector==='function') orcPopulateSelector(); }
   if(page==='planilha')    { if(typeof plnlRenderList==='function') plnlRenderList(); }
-  // Reaplicar permissões a cada navegação (pega mudanças sem precisar relogar)
+  // Reaplicar permissões a cada navegação
   if(me && typeof aplicarPermissoes==='function') aplicarPermissoes(me);
+  // Verificar manutenção (localStorage é síncrono — funciona sem Firebase)
+  if(typeof verificarManutencao==='function') verificarManutencao();
   if(page==='fornecedores'){ if(typeof renderFornList==='function') renderFornList(); }
   if(page==='agenda'){
     if(typeof agRenderAll==='function'){
@@ -6357,7 +6377,7 @@ window.orcSalvar=orcSalvar;
 window.orcExportXLSX=orcExportXLSX;
 
 /* ══════════════════════════════════════════════════════════
-   LISTA DE ORÇAMENTOS — v15-161
+   LISTA DE ORÇAMENTOS — v15-162
    ══════════════════════════════════════════════════════════ */
 var _orcFiltroAtivo = 'todos';
 
