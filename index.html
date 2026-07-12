@@ -1384,7 +1384,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
           <div class="gep-foot-dev">Desenvolvido por</div>
           <div class="gep-foot-name">Alessandro Lima</div>
           <div class="gep-foot-copy">© 2026 · Todos os direitos reservados</div>
-          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-150</span></div>
+          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-151</span></div>
         </div>
       </div>
     </div>
@@ -1448,7 +1448,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div class="d">Desenvolvido por</div>
       <div class="n">Alessandro Lima</div>
       <div class="c">© 2026 · Todos os direitos reservados</div>
-      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-150</span></div>
+      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-151</span></div>
     </div>
   </div>
 
@@ -2640,7 +2640,7 @@ function sincronizarTudo(onComplete){
     { col:'empresas',      sk:'vtp_empresas_v1' },
     { col:'secretarias',   sk:'vtp_secretarias_v1' },
     { col:'produtores',    sk:'vtp_produtores_v1' },
-    { col:'orcamentos',    sk:'vtp_orcamentos_v1' },
+    // orcamentos: gerenciado localmente (saveOrc/loadOrc) — removido do sync para evitar sobrescrita
     { col:'agenda',        sk:'vtp_agenda_v1' },
     { col:'realizados',    sk:'vtp_realizados_v1' },
     { col:'catalogo',      sk:'vtp_catalogo_v1' }
@@ -5240,7 +5240,7 @@ saveEmp = function(){
 // Expor tudo globalmente
 
 /* ═══════════════════════════════════════════════════════════
-   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-150
+   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-151
    ═══════════════════════════════════════════════════════════ */
 var SK_PLNL = 'vtp_planilhas_v1';
 
@@ -6233,7 +6233,7 @@ window.orcSalvar=orcSalvar;
 window.orcExportXLSX=orcExportXLSX;
 
 /* ══════════════════════════════════════════════════════════
-   LISTA DE ORÇAMENTOS — v15-150
+   LISTA DE ORÇAMENTOS — v15-151
    ══════════════════════════════════════════════════════════ */
 var _orcFiltroAtivo = 'todos';
 
@@ -9488,7 +9488,7 @@ function enviarTudoParaNuvem(onComplete){
     { col:'empresas',      sk:'vtp_empresas_v1' },
     { col:'secretarias',   sk:'vtp_secretarias_v1' },
     { col:'produtores',    sk:'vtp_produtores_v1' },
-    { col:'orcamentos',    sk:'vtp_orcamentos_v1' },
+    // orcamentos removido do sync
     { col:'agenda',        sk:'vtp_agenda_v1' },
     { col:'realizados',    sk:'vtp_realizados_v1' },
     { col:'catalogo',      sk:'vtp_catalogo_v1' }
