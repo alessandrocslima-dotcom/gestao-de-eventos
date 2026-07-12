@@ -1384,7 +1384,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
           <div class="gep-foot-dev">Desenvolvido por</div>
           <div class="gep-foot-name">Alessandro Lima</div>
           <div class="gep-foot-copy">© 2026 · Todos os direitos reservados</div>
-          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-152</span></div>
+          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-153</span></div>
         </div>
       </div>
     </div>
@@ -1448,7 +1448,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div class="d">Desenvolvido por</div>
       <div class="n">Alessandro Lima</div>
       <div class="c">© 2026 · Todos os direitos reservados</div>
-      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-152</span></div>
+      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-153</span></div>
     </div>
   </div>
 
@@ -5240,7 +5240,7 @@ saveEmp = function(){
 // Expor tudo globalmente
 
 /* ═══════════════════════════════════════════════════════════
-   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-152
+   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-153
    ═══════════════════════════════════════════════════════════ */
 var SK_PLNL = 'vtp_planilhas_v1';
 
@@ -5792,14 +5792,22 @@ function orcAutoSave(){
 }
 
 function orcSalvar(){
-  console.log('[ORC] orcSalvar chamado. orcCurrentVid=', orcCurrentVid);
-  if(!orcCurrentVid){ toast('Nenhum orçamento selecionado','err'); return; }
-  // Salvar diretamente no localStorage
+  console.log('[ORC] 1. chamado. vid=', orcCurrentVid);
+  if(!orcCurrentVid){ toast('Selecione uma visita primeiro','err'); return; }
+  console.log('[ORC] 2. loadOrc...');
   var orcs = loadOrc();
+  console.log('[ORC] 3. orcs keys=', Object.keys(orcs).length);
   var existente = orcs[orcCurrentVid] || {};
+  console.log('[ORC] 4. orcCollectItens...');
+  var itens;
+  try { itens = orcCollectItens(); } catch(e) { console.error('[ORC] ERRO collectItens:', e.message); itens = []; }
+  console.log('[ORC] 5. itens coletados=', itens.length);
+  var status;
+  try { status = orcGetCurrentStatus(); } catch(e) { console.error('[ORC] ERRO getStatus:', e.message); status='elaboracao'; }
+  console.log('[ORC] 6. status=', status);
   orcs[orcCurrentVid] = {
-    itens: orcCollectItens(),
-    status: orcGetCurrentStatus(),
+    itens: itens,
+    status: status,
     listaStatus: existente.listaStatus || 'pendente',
     numOficial: (document.getElementById('orc-num-field')||{}).value||'',
     aprovData: (document.getElementById('orc-aprov-data')||{}).value||'',
@@ -5807,16 +5815,17 @@ function orcSalvar(){
     savedTs: nowTs(),
     owner: (typeof _meuId==='function') ? _meuId() : null
   };
+  console.log('[ORC] 7. saveOrc com', Object.keys(orcs).length, 'chaves...');
   saveOrc(orcs);
-  // Sincronizar evento vinculado se houver
+  var chk = loadOrc();
+  console.log('[ORC] 8. pos-save localStorage tem', Object.keys(chk).length, 'chaves');
   if(typeof orcSincronizarEvento==='function') orcSincronizarEvento();
-  var el = document.getElementById('orc-saved-ts');
-  if(el) el.textContent = 'Salvo em '+nowTs();
   toast('Orçamento salvo!','ok');
-  // Voltar para a lista após salvar
   setTimeout(function(){
+    var chk2 = loadOrc();
+    console.log('[ORC] 9. antes orcVoltarLista:', Object.keys(chk2).length, 'chaves');
     if(typeof orcVoltarLista==='function') orcVoltarLista();
-  }, 600);
+  }, 800);
 }
 
 /* ── Exportar Excel (XLSX puro via CSV com BOM, compatível com Excel) ── */
@@ -6234,7 +6243,7 @@ window.orcSalvar=orcSalvar;
 window.orcExportXLSX=orcExportXLSX;
 
 /* ══════════════════════════════════════════════════════════
-   LISTA DE ORÇAMENTOS — v15-152
+   LISTA DE ORÇAMENTOS — v15-153
    ══════════════════════════════════════════════════════════ */
 var _orcFiltroAtivo = 'todos';
 
