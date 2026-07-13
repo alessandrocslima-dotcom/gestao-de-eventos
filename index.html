@@ -5429,6 +5429,27 @@ function verificarManutencao(){
   }
 }
 
+function manutVerificarSenha(){
+  var inp = document.getElementById('manutSenhaInput');
+  if(!inp) return;
+  var senha = inp.value;
+  var users = typeof loadU === 'function' ? loadU() : [];
+  var ok = users.find(function(u){ return (u.role==='admin'||u.id==='root') && u.pass===senha; });
+  if(ok){
+    localStorage.setItem('gep_manutencao_v1','0');
+    localStorage.setItem('gep_manutencao_v1_ts', String(Date.now()));
+    localStorage.setItem('vtp_gep_config_v1', JSON.stringify({manutencao:false,ts:Date.now()}));
+    var ov = document.getElementById('gepManutencaoOverlay');
+    if(ov) ov.style.display='none';
+    if(typeof toast==='function') toast('Manutenção desativada!','ok');
+    setTimeout(function(){ location.reload(); }, 800);
+  } else {
+    var err = document.getElementById('manutSenhaErro');
+    if(err){ err.style.display='block'; setTimeout(function(){ err.style.display='none'; },2000); }
+    if(inp){ inp.value=''; inp.focus(); }
+  }
+}
+
 function _aplicarEstadoManutencao(){
   // Sincronizar SK_MANUT com vtp_gep_config_v1 se este for mais recente
   try{
@@ -5449,12 +5470,29 @@ function _aplicarEstadoManutencao(){
     overlay = document.createElement('div');
     overlay.id = 'gepManutencaoOverlay';
     overlay.style.cssText = 'display:none;position:fixed;inset:0;z-index:99999;background:#0F172A;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2rem';
-    overlay.innerHTML = '<div style="font-size:52px;margin-bottom:20px">🔧</div>'
+    overlay.innerHTML = '<div id="manutIcone" style="font-size:52px;margin-bottom:20px;cursor:pointer">🔧</div>'
       + '<h2 style="color:#F1F5F9;font-size:22px;font-weight:700;margin:0 0 10px">Sistema em manutenção</h2>'
       + '<p style="color:#94A3B8;font-size:14px;max-width:340px;margin:0 auto 24px;line-height:1.6">Estamos realizando atualizações. Voltaremos em breve.</p>'
       + '<div style="background:#1E293B;border:1px solid #334155;border-radius:10px;padding:12px 20px;font-size:13px;color:#64748B;margin-bottom:20px">⏱ Aguarde a liberação pelo administrador</div>'
       + '<button onclick="location.reload()" style="background:#2563EB;color:#fff;border:none;border-radius:10px;padding:12px 28px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;margin:0 auto">🔄 Atualizar página</button>';
     document.body.appendChild(overlay);
+    (function(){
+      var mc=0, mt=null;
+      var icon=document.getElementById('manutIcone');
+      if(!icon) return;
+      icon.addEventListener('click',function(){
+        mc++; clearTimeout(mt);
+        if(mc>=5){
+          mc=0;
+          var box=document.getElementById('manutSenhaBox');
+          if(box){ box.style.display=(box.style.display==='none'?'block':'none'); }
+          var inp=document.getElementById('manutSenhaInput');
+          if(inp&&box&&box.style.display!=='none') setTimeout(function(){inp.focus();},50);
+        } else {
+          mt=setTimeout(function(){mc=0;},3000);
+        }
+      });
+    })();
   }
 
   if(ativo && me && !isAdmin()){
