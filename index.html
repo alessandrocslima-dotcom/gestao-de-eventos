@@ -1,3 +1,77 @@
+function manutVerificarSenha(){
+  var inp = document.getElementById('manutSenhaInput');
+  if(!inp) return;
+  var senha = inp.value;
+  var users = typeof loadU === 'function' ? loadU() : [];
+  var ok = users.find(function(u){ return (u.role==='admin'||u.id==='root') && u.pass===senha; });
+  if(ok){
+    localStorage.setItem('gep_manutencao_v1','0');
+    localStorage.setItem('gep_manutencao_v1_ts', String(Date.now()));
+    localStorage.setItem('vtp_gep_config_v1', JSON.stringify({manutencao:false,ts:Date.now()}));
+    var ov = document.getElementById('gepManutencaoOverlay');
+    if(ov) ov.style.display='none';
+    if(typeof toast==='function') toast('Manutenção desativada!','ok');
+    setTimeout(function(){ location.reload(); }, 800);
+  } else {
+    var err = document.getElementById('manutSenhaErro');
+    if(err){ err.style.display='block'; setTimeout(function(){ err.style.display='none'; },2000); }
+    if(inp){ inp.value=''; inp.focus(); }
+  }
+}
+function _aplicarEstadoManutencao(){
+  // Sincronizar SK_MANUT com vtp_gep_config_v1 se este for mais recente
+  try{
+    var cfg = JSON.parse(localStorage.getItem('vtp_gep_config_v1')||'{}');
+    if(cfg && typeof cfg.manutencao !== 'undefined'){
+      var skTs = parseInt(localStorage.getItem(SK_MANUT + '_ts')||'0');
+      if((cfg.ts||0) > skTs){
+        localStorage.setItem(SK_MANUT, cfg.manutencao ? '1' : '0');
+        localStorage.setItem(SK_MANUT + '_ts', String(cfg.ts||0));
+      }
+    }
+  }catch(e){}
+  var ativo = localStorage.getItem(SK_MANUT) === '1';
+
+  // Criar overlay dinamicamente se não existir no DOM (versão antiga em cache)
+  var overlay = document.getElementById('gepManutencaoOverlay');
+  if(!overlay){
+    overlay = document.createElement('div');
+    overlay.id = 'gepManutencaoOverlay';
+    overlay.style.cssText = 'display:none;position:fixed;inset:0;z-index:99999;background:#0F172A;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2rem';
+    overlay.innerHTML = '<div id="manutIcone" style="font-size:52px;margin-bottom:20px;cursor:pointer">🔧</div>'
+      + '<h2 style="color:#F1F5F9;font-size:22px;font-weight:700;margin:0 0 10px">Sistema em manutenção</h2>'
+      + '<p style="color:#94A3B8;font-size:14px;max-width:340px;margin:0 auto 24px;line-height:1.6">Estamos realizando atualizações. Voltaremos em breve.</p>'
+      + '<div style="background:#1E293B;border:1px solid #334155;border-radius:10px;padding:12px 20px;font-size:13px;color:#64748B;margin-bottom:20px">⏱ Aguarde a liberação pelo administrador</div>'
+      + '<button onclick="location.reload()" style="background:#2563EB;color:#fff;border:none;border-radius:10px;padding:12px 28px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;margin:0 auto">🔄 Atualizar página</button>'
+      + '<div id="manutSenhaBox" style="display:none;margin-top:20px;background:#1E293B;border:1px solid #334155;border-radius:12px;padding:16px 20px;min-width:280px"><p style="color:#94A3B8;font-size:12px;margin:0 0 10px;text-align:center">🔐 Senha de administrador</p><div style="display:flex;gap:8px"><input id="manutSenhaInput" type="password" placeholder="Sua senha..." style="flex:1;padding:9px 12px;border-radius:8px;border:1px solid #475569;background:#0F172A;color:#F1F5F9;font-size:13px;outline:none"><button onclick="manutVerificarSenha()" style="padding:9px 14px;border-radius:8px;border:none;background:#2563EB;color:#fff;font-size:13px;font-weight:600;cursor:pointer">OK</button></div><p id="manutSenhaErro" style="color:#F87171;font-size:11px;margin:6px 0 0;display:none;text-align:center">Senha incorreta</p></div>';
+    document.body.appendChild(overlay);
+    (function(){
+      var mc=0, mt=null;
+      var icon=document.getElementById('manutIcone');
+      if(!icon) return;
+      icon.addEventListener('click',function(){
+        mc++; clearTimeout(mt);
+        if(mc>=5){
+          mc=0;
+          var box=document.getElementById('manutSenhaBox');
+          if(box){ box.style.display=(box.style.display==='none'?'block':'none'); }
+          var inp=document.getElementById('manutSenhaInput');
+          if(inp&&box&&box.style.display!=='none') setTimeout(function(){inp.focus();},50);
+        } else {
+          mt=setTimeout(function(){mc=0;},3000);
+        }
+      });
+    })();
+  }
+
+  if(ativo && me && !isAdmin()){
+    // Só bloqueia usuários comuns já logados — nunca bloqueia a tela de login
+    overlay.style.display = 'flex';
+  } else {
+    overlay.style.display = 'none';
+  }
+  atualizarPainelManutencao();
+}
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -1291,7 +1365,6 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 .orc-filter-pill { padding:5px 14px; border-radius:20px; font-size:12px; font-weight:600; cursor:pointer; border:1.5px solid #E2E8F0; background:#fff; color:#475569; transition:all .15s; }
 .orc-filter-pill.ativo { background:#0F172A; color:#fff; border-color:#0F172A; }
 .orc-vazio { text-align:center; padding:48px 20px; color:#94A3B8; font-size:14px; }
-
 /* ══ LISTA ORÇAMENTOS — layout melhorado ══ */
 .orc-list-card{background:#fff;border:1px solid #E8EDF2;border-radius:14px;padding:16px 20px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.04);transition:box-shadow .15s}
 .orc-list-card:hover{box-shadow:0 3px 10px rgba(0,0,0,.08)}
@@ -1318,6 +1391,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 .orc-btn-del:hover{background:#FEE2E2}
 .orc-status-sel{font-size:12px;font-weight:500;padding:6px 10px;border-radius:8px;border:1px solid #E2E8F0;background:#F8FAFC;color:#334155;cursor:pointer}
 .orc-spacer{flex:1}
+
 
 /* ══ MODO MANUTENÇÃO ══ */
 #gepManutencaoOverlay{display:none;position:fixed;inset:0;z-index:99999;background:#0F172A;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2rem}
@@ -1425,7 +1499,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
           <div class="gep-foot-dev">Desenvolvido por</div>
           <div class="gep-foot-name">Alessandro Lima</div>
           <div class="gep-foot-copy">© 2026 · Todos os direitos reservados</div>
-          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-180</span></div>
+          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-181</span></div>
         </div>
       </div>
     </div>
@@ -1489,7 +1563,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div class="d">Desenvolvido por</div>
       <div class="n">Alessandro Lima</div>
       <div class="c">© 2026 · Todos os direitos reservados</div>
-      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-180</span></div>
+      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-181</span></div>
     </div>
   </div>
 
@@ -1888,7 +1962,6 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
         <button class="atab" onclick="adTab('secretarias')" id="at-secretarias">🏛 Secretarias</button>
         <button class="atab" onclick="adTab('catalogo')" id="at-catalogo">📦 Catálogo</button>
         <button class="atab" onclick="adTab('backup')" id="at-backup">💾 Backup</button>
-        <button class="atab" onclick="adTab('manutencao')" id="at-manutencao">🔧 Manutenção</button>
       </div>
       <div id="adSecretariasP" style="display:none">
         <button class="btn-outline-blue" onclick="openSecModal()">
@@ -2134,7 +2207,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div class="vp" id="vpPlanilha">
 
         <!-- ESTADO: LISTA -->
-        <div id="plnl-list-state" style="display:block">
+        <div id="plnl-list-state">
           <div class="pg-hdr">
             <h1>📊 Planilha Orçamentária</h1>
             <p>Crie e gerencie planilhas de orçamento com exportação Excel profissional</p>
@@ -2155,6 +2228,9 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
             <span id="plnl-editor-nome" style="font-size:14px;font-weight:600;color:#0F172A;flex:1"></span>
           </div>
           <iframe id="plnl-iframe" src="" style="width:100%;border:none;border-radius:10px;height:calc(100vh - 180px)"></iframe>
+        </div>
+
+      
         </div>
 
       </div>
@@ -2545,9 +2621,7 @@ window.addEventListener('load', function(){
         setTimeout(function(){
           sincronizarTudo(function(ok){
             if(ok){
-              // Verificar manutenção após sync (agora temos gep_config atualizado)
               if(typeof verificarManutencao==='function') verificarManutencao();
-              // Re-renderizar telas atuais (sem deslogar)
               if(typeof renderDash==='function' && me) try{ renderDash(); }catch(e){}
               if(typeof agRenderAll==='function') try{ agRenderAll(); }catch(e){}
               if(typeof renderForns==='function') try{ renderForns(); }catch(e){}
@@ -2678,9 +2752,8 @@ function sincronizarTudo(onComplete){
     { col:'empresas',      sk:'vtp_empresas_v1' },
     { col:'secretarias',   sk:'vtp_secretarias_v1' },
     { col:'produtores',    sk:'vtp_produtores_v1' },
-    // orcamentos: gerenciado localmente (saveOrc/loadOrc) — removido do sync para evitar sobrescrita
+    { col:'orcamentos',    sk:'vtp_orcamentos_v1' },
     { col:'agenda',        sk:'vtp_agenda_v1' },
-    { col:'gep_config',     sk:'vtp_gep_config_v1' },
     { col:'realizados',    sk:'vtp_realizados_v1' },
     { col:'catalogo',      sk:'vtp_catalogo_v1' }
   ];
@@ -2703,16 +2776,6 @@ function sincronizarTudo(onComplete){
             if(localTs > cloudTs){
               devoBaixar = false;
               console.warn('  ⏭ '+m.col+' PULADO - local mais recente ('+localTs+' > '+cloudTs+')');
-            }
-          }
-          if(devoBaixar){
-            // Proteção: não sobrescrever se local tem mais itens que a nuvem
-            var _localRaw2 = localStorage.getItem(m.sk);
-            var _localCount2 = 0;
-            try { var _lp2=JSON.parse(_localRaw2||'[]'); _localCount2=Array.isArray(_lp2)?_lp2.length:Object.keys(_lp2).length; } catch(e){}
-            if(cloudCount < _localCount2){
-              console.warn('  ⏭ '+m.col+' PULADO - nuvem tem '+cloudCount+' mas local tem '+_localCount2+' itens');
-              devoBaixar = false;
             }
           }
           if(devoBaixar){
@@ -3371,7 +3434,7 @@ function navF(d){
 }
 function validF(){
   if(fStep===0){
-    var empVal = gv('fEmpSel');
+    var empVal = gv('fEmp') || gv('fEmpSel');
     if(!empVal){ toast('Informe o nome da empresa','err'); return false; }
     if(!gv('fEmp') && gv('fEmpSel')) onEmpSelect(); // preencher fEmp se só select
     if(!gv('fProd')){ toast('Informe o produtor responsável','err'); return false; }
@@ -3617,6 +3680,8 @@ function buildSum(){
   var h='';
   h+='<div class="sum-sec"><div class="sum-sec-hd"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Empresa &amp; Responsável</div>';
   if(gv('fEmp')) h+='<div class="sum-row"><span class="sl">Empresa</span><span class="sv">'+gv('fEmp')+'</span></div>';
+  if(gv('fDoc')) h+='<div class="sum-row"><span class="sl">CNPJ/CPF</span><span class="sv">'+gv('fDoc')+'</span></div>';
+  if(gv('fTelEmp')) h+='<div class="sum-row"><span class="sl">Tel. empresa</span><span class="sv">'+gv('fTelEmp')+'</span></div>';
   h+='<div class="sum-row"><span class="sl">Produtor</span><span class="sv" style="font-weight:700;color:#1A56DB">'+(gv('fProd')||(me?me.nome:''))+'</span></div>';
   if(gv('fTelProd')) h+='<div class="sum-row"><span class="sl">Contato</span><span class="sv">'+gv('fTelProd')+'</span></div>';
   h+='<div class="sum-row"><span class="sl">Data visita</span><span class="sv">'+new Date().toLocaleDateString('pt-BR')+'</span></div></div>';
@@ -3687,9 +3752,10 @@ function buildSum(){
     orcF.forEach(function(i){ h+='<div class="sum-row"><span class="sl" style="flex:1">'+i.desc+'</span><span class="sv" style="flex-shrink:0;font-family:\'JetBrains Mono\',monospace">'+fmtM(i.val)+'</span></div>'; });
     h+='<div class="sum-row" style="background:#EFF6FF"><span class="sl" style="color:#1A56DB;font-weight:800">Total</span><span class="sv" style="font-size:16px;font-family:\'JetBrains Mono\',monospace;font-weight:900">'+fmtM(tot)+'</span></div></div>';
   }
-  if(gv('fObs')){
+  if(gv('fObs')||fotos.length){
     h+='<div class="sum-sec"><div class="sum-sec-hd"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/></svg>Observações</div>';
     if(gv('fObs')) h+='<div class="sum-row"><span class="sl">Recom.</span><span class="sv">'+gv('fObs')+'</span></div>';
+    h+='<div class="sum-row"><span class="sl">Fotos</span><span class="sv">'+fotos.length+' foto(s)</span></div></div>';
   }
   document.getElementById('sumContent').innerHTML=h;
 }
@@ -3720,15 +3786,15 @@ function collectData(){
     id: editId||uid(), criadoEm: editId?(_existente.criadoEm||new Date().toISOString()):new Date().toISOString(),
     atualizadoEm: new Date().toISOString(), usuario: me?me.login:'',
     responsavel: _resp, participantes: _parts, historico: _hist,
-    empresa:gv('fEmpSel'), 
-    produtor:gv('fProd'), 
+    empresa:gv('fEmp'), doc:gv('fDoc'), telEmp:gv('fTelEmp'),
+    produtor:gv('fProd'), telProd:gv('fTelProd'),
     nome:gv('fNome'), tipo:gv('fTipo'), dataEvento:gv('fData'), dataEventoFim:gv('fDataFim'), horaEvento:gv('fHora'), horaFim:gv('fHoraFim'), pessoas:gv('fPessoas'),
     dataMont:gv('fDataM'), horaMont:gv('fHoraM'), obsMont:gv('fObsM'),
     local:gv('fLoc'), end:gv('fEnd'), ref:gv('fRef'), linkLoc:gv('fLinkLoc'),
     gpsMain:gps.main, risco:fRisco, riscoDesc:gv('fRDesc'),
     gpsR2:gps.r2,
     eqItens:eqItens, equipeItens:equipeItens, servicoItens:servicoItens, contatoItens:contatoItens, somTipo:gv('fSom'), somDet:gv('fSomDet'), obsEst:gv('fObsEst'),
-    orcItens:orcItens, obs:gv('fObs')
+    orcItens:orcItens, obs:gv('fObs'), fotos:fotos
   };
 }
 function saveVisita(){
@@ -3746,13 +3812,13 @@ function saveVisita(){
 /* ── WHATSAPP ── */
 function envWA(){
   var tot=orcItens.reduce(function(s,it){return s+(parseFloat(it.val)||0);},0);
-  var telProd='', som=gv('fSom'), det=gv('fSomDet');
+  var telProd=gv('fTelProd'), som=gv('fSom'), det=gv('fSomDet');
   var linha = '-----------------------------';
   var m='*VISITA TECNICA*\n';
   m+=linha+'\n';
 
   // Empresa e produtor
-  if(gv('fEmpSel')) m+='Empresa: '+gv('fEmpSel')+'\n';
+  if(gv('fEmp')) m+='Empresa: '+gv('fEmp')+'\n';
   m+='Produtor: '+(gv('fProd')||(me?me.nome:''))+'\n';
   if(telProd) m+='Contato: '+telProd+'\n';
   m+='Data da visita: '+new Date().toLocaleDateString('pt-BR')+'\n';
@@ -3861,7 +3927,7 @@ function envWA(){
     m+='*RECOMENDACOES*\n'+gv('fObs')+'\n\n';
   }
 
-  
+  if(fotos.length) m+='Fotos: '+fotos.length+' registradas - enviar em seguida.';
 
   window.open('https://wa.me/?text='+encodeURIComponent(m),'_blank');
 }
@@ -3884,8 +3950,8 @@ function genPDF(){
   doc.setFontSize(7);doc.setTextColor(100,116,139);doc.text('Desenvolvido por Alessandro Lima',W-M,30,{align:'right'});
   doc.setFont(undefined,'normal');doc.setTextColor(cD[0],cD[1],cD[2]);y=44;
   secHdr('Empresa e Responsável');
-  row('Empresa:',gv('fEmpSel'),true);
-  row('Produtor responsável:',gv('fProd')||(me?me.nome:''),true,cB);
+  row('Empresa:',gv('fEmp'),true);row('CNPJ/CPF:',gv('fDoc'));row('Tel. empresa:',gv('fTelEmp'));
+  row('Produtor responsável:',gv('fProd')||(me?me.nome:''),true,cB);row('Contato produtor:',gv('fTelProd'));
   row('Usuário (sistema):',me?me.login:'');row('Data da visita:',new Date().toLocaleDateString('pt-BR'),true);divLine();
   secHdr('Dados do Evento');
   row('Nome do evento:',gv('fNome'),true);row('Tipo:',gv('fTipo'));
@@ -3977,16 +4043,15 @@ function resetForm(){
   gb.innerHTML='<svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>Capturar localização atual';
   ['gpsBtnR1','gpsBtnR2'].forEach(function(id){ var b=document.getElementById(id); if(b) b.className='gps-btn-sm'; });
   eqItens=[]; renderEq(); equipeItens=[]; renderEquipe(); servicoItens=[]; renderServico(); orcItens=[];
-  fotos=[]; var fgEl2=document.getElementById('fotosGr'); if(fgEl2) fgEl2.innerHTML='';
+  fotos=[]; var fgEl=document.getElementById('fotosGr'); if(fgEl) fgEl.innerHTML='';
   fStep=0; editId=null;
-  var fNavEl=document.getElementById('fNav'); if(fNavEl) fNavEl.style.display='flex';
+  document.getElementById('fNav').style.display='flex';
   if(typeof dtRangeInit==='function') dtRangeInit();
 }
 
 /* ── LOAD FORM (editar) ── */
 function loadForm(v){
   resetForm();
-  // fEmpSel: selecionar empresa no dropdown
   var empSel=document.getElementById('fEmpSel'); if(empSel) empSel.value=v.empresa||'';
   sv('fProd',v.produtor);
   sv('fNome',v.nome);sv('fTipo',v.tipo);sv('fData',v.dataEvento);sv('fDataFim',v.dataEventoFim||'');
@@ -4004,7 +4069,7 @@ function loadForm(v){
   servicoItens=v.servicoItens||[];renderServico();
   contatoItens=v.contatoItens||[];renderContato();
   orcItens=v.orcItens||[];
-  fotos=[];
+  fotos=Array.isArray(v.fotos)?v.fotos:[];renderFotos();
   editId=v.id;
 }
 
@@ -4303,7 +4368,6 @@ function onEmpSelect(){
   if(!sel || !sel.value){ return; }
   var emp = loadE().find(function(e){ return e.id===sel.value; });
   if(!emp) return;
-  // fEmp foi removido — apenas preenche campos que existem
   var fDoc = document.getElementById('fDoc');
   var fTel = document.getElementById('fTelEmp');
   if(fDoc && emp.cnpj) fDoc.value = emp.cnpj;
@@ -5007,7 +5071,6 @@ var _pageMeta = {
   'admin-secretarias':{title:'Secretarias',       bread:'Administração',    btn:false},
   'admin-catalogo':{title:'Catálogo de Itens',    bread:'Administração',    btn:false},
   'admin-backup':  {title:'Backup',                bread:'Administração',    btn:false},
-  'admin-manutencao':{title:'Manutenção',            bread:'Administração',    btn:false},
   'orcamentos':    {title:'Orçamentos',           bread:'Operacional',      btn:true},
   'planilha':      {title:'Planilha Orçamentária', bread:'Operacional',     btn:false},
   'eventos':       {title:'Agenda de Eventos',    bread:'Eventos',          btn:false},
@@ -5029,7 +5092,6 @@ var _pageMap = {
   'admin-secretarias': 'vpAdmin',
   'admin-catalogo':    'vpAdmin',
   'admin-backup':      'vpAdmin',
-  'admin-manutencao':  'vpAdmin',
   'orcamentos':     'vpOrcamentos',
   'planilha':       'vpPlanilha',
   'eventos':        'vpEventos',
@@ -5080,7 +5142,6 @@ function sbGo(page, el) {
   if(page === 'admin-secretarias') { adTab('secretarias'); }
   if(page === 'admin-catalogo')    { adTab('catalogo'); }
   if(page === 'admin-backup')      { adTab('backup'); }
-  if(page === 'admin-manutencao')  { adTab('manutencao'); }
   if(page === 'empresas-cad')   { renderEmpListCad(); }
   if(page === 'rel-visitas')    { renderRelVisitas(); }
 
@@ -5169,9 +5230,8 @@ irParaAdmin = function(){
   document.getElementById('vpAdmin').classList.add('on');
   // Aplicar permissões do usuário logado
   aplicarPermissoes(me);
-  // Aplicar estado de manutenção imediatamente após login (síncrono)
   if(typeof _aplicarEstadoManutencao === 'function') _aplicarEstadoManutencao();
-  sincronizarManutencao();
+  if(typeof sincronizarManutencao === 'function') sincronizarManutencao();
   document.getElementById('tbTitle').textContent = 'Administração';
   document.getElementById('tbBread').innerHTML = 'Sistema / <b>Administração</b>';
   document.getElementById('tbNovaBtn').style.display = 'none';
@@ -5280,7 +5340,7 @@ saveEmp = function(){
 // Expor tudo globalmente
 
 /* ═══════════════════════════════════════════════════════════
-   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-180
+   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-181
    ═══════════════════════════════════════════════════════════ */
 var SK_PLNL = 'vtp_planilhas_v1';
 
@@ -5288,16 +5348,6 @@ function plnlLoad(){ try{ return JSON.parse(localStorage.getItem(SK_PLNL)||'[]')
 function plnlSave(a){ localStorage.setItem(SK_PLNL, JSON.stringify(a)); if(typeof marcarMudanca==='function') marcarMudanca(); }
 
 function plnlRenderList(){
-  console.log('[PLNL] plnlRenderList chamada - listState:', document.getElementById('plnl-list-state') ? document.getElementById('plnl-list-state').style.display : 'NÃO ENCONTRADO');
-  // Garantir que o estado correto está visível
-  var listState = document.getElementById('plnl-list-state');
-  var editorState = document.getElementById('plnl-editor-state');
-  if(listState) listState.style.display = 'block';
-  if(editorState) editorState.style.display = 'none';
-  // Limpar iframe para não ficar carregando em background
-  var ifr = document.getElementById('plnl-iframe');
-  if(ifr) ifr.src = '';
-
   var list = plnlLoad();
   var body = document.getElementById('plnl-list-body');
   if(!body) return;
@@ -5412,196 +5462,6 @@ function vtVerOrcamento(vtId) {
       orcAbrirFormFromLista(vtId);
     }
   }, 100);
-}
-
-
-/* ══ MODO MANUTENÇÃO ══ */
-var SK_MANUT = 'gep_manutencao_v1';
-
-function isAdmin(){ return me && (me.role==='admin' || me.id==='root'); }
-
-function verificarManutencao(){
-  // Busca do Firebase para pegar estado atual (cross-device)
-  if(typeof db !== 'undefined' && db){
-    db.collection('gep_config').doc('_lista').get().then(function(doc){
-      if(doc.exists){
-        var d = doc.data();
-        if(d && d.items && typeof d.items.manutencao !== 'undefined'){
-          localStorage.setItem(SK_MANUT, d.items.manutencao ? '1' : '0');
-        }
-      }
-      _aplicarEstadoManutencao();
-    }).catch(function(){ _aplicarEstadoManutencao(); });
-  } else {
-    _aplicarEstadoManutencao();
-  }
-}
-
-function manutVerificarSenha(){
-  var inp = document.getElementById('manutSenhaInput');
-  if(!inp) return;
-  var senha = inp.value;
-  var users = typeof loadU === 'function' ? loadU() : [];
-  var ok = users.find(function(u){ return (u.role==='admin'||u.id==='root') && u.pass===senha; });
-  if(ok){
-    localStorage.setItem('gep_manutencao_v1','0');
-    localStorage.setItem('gep_manutencao_v1_ts', String(Date.now()));
-    localStorage.setItem('vtp_gep_config_v1', JSON.stringify({manutencao:false,ts:Date.now()}));
-    var ov = document.getElementById('gepManutencaoOverlay');
-    if(ov) ov.style.display='none';
-    if(typeof toast==='function') toast('Manutenção desativada!','ok');
-    setTimeout(function(){ location.reload(); }, 800);
-  } else {
-    var err = document.getElementById('manutSenhaErro');
-    if(err){ err.style.display='block'; setTimeout(function(){ err.style.display='none'; },2000); }
-    if(inp){ inp.value=''; inp.focus(); }
-  }
-}
-
-function _aplicarEstadoManutencao(){
-  // Sincronizar SK_MANUT com vtp_gep_config_v1 se este for mais recente
-  try{
-    var cfg = JSON.parse(localStorage.getItem('vtp_gep_config_v1')||'{}');
-    if(cfg && typeof cfg.manutencao !== 'undefined'){
-      var skTs = parseInt(localStorage.getItem(SK_MANUT + '_ts')||'0');
-      if((cfg.ts||0) > skTs){
-        localStorage.setItem(SK_MANUT, cfg.manutencao ? '1' : '0');
-        localStorage.setItem(SK_MANUT + '_ts', String(cfg.ts||0));
-      }
-    }
-  }catch(e){}
-  var ativo = localStorage.getItem(SK_MANUT) === '1';
-
-  // Criar overlay dinamicamente se não existir no DOM (versão antiga em cache)
-  var overlay = document.getElementById('gepManutencaoOverlay');
-  if(!overlay){
-    overlay = document.createElement('div');
-    overlay.id = 'gepManutencaoOverlay';
-    overlay.style.cssText = 'display:none;position:fixed;inset:0;z-index:99999;background:#0F172A;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2rem';
-    overlay.innerHTML = '<div id="manutIcone" style="font-size:52px;margin-bottom:20px;cursor:pointer">🔧</div>'
-      + '<h2 style="color:#F1F5F9;font-size:22px;font-weight:700;margin:0 0 10px">Sistema em manutenção</h2>'
-      + '<p style="color:#94A3B8;font-size:14px;max-width:340px;margin:0 auto 24px;line-height:1.6">Estamos realizando atualizações. Voltaremos em breve.</p>'
-      + '<div style="background:#1E293B;border:1px solid #334155;border-radius:10px;padding:12px 20px;font-size:13px;color:#64748B;margin-bottom:20px">⏱ Aguarde a liberação pelo administrador</div>'
-      + '<button onclick="location.reload()" style="background:#2563EB;color:#fff;border:none;border-radius:10px;padding:12px 28px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;margin:0 auto">🔄 Atualizar página</button>'
-      + '<div id="manutSenhaBox" style="display:none;margin-top:20px;background:#1E293B;border:1px solid #334155;border-radius:12px;padding:16px 20px;min-width:280px"><p style="color:#94A3B8;font-size:12px;margin:0 0 10px;text-align:center">🔐 Senha de administrador</p><div style="display:flex;gap:8px"><input id="manutSenhaInput" type="password" placeholder="Sua senha..." style="flex:1;padding:9px 12px;border-radius:8px;border:1px solid #475569;background:#0F172A;color:#F1F5F9;font-size:13px;outline:none"><button onclick="manutVerificarSenha()" style="padding:9px 14px;border-radius:8px;border:none;background:#2563EB;color:#fff;font-size:13px;font-weight:600;cursor:pointer">OK</button></div><p id="manutSenhaErro" style="color:#F87171;font-size:11px;margin:6px 0 0;display:none;text-align:center">Senha incorreta</p></div>';
-    document.body.appendChild(overlay);
-    (function(){
-      var mc=0, mt=null;
-      var icon=document.getElementById('manutIcone');
-      if(!icon) return;
-      icon.addEventListener('click',function(){
-        mc++; clearTimeout(mt);
-        if(mc>=5){
-          mc=0;
-          var box=document.getElementById('manutSenhaBox');
-          if(box){ box.style.display=(box.style.display==='none'?'block':'none'); }
-          var inp=document.getElementById('manutSenhaInput');
-          if(inp&&box&&box.style.display!=='none') setTimeout(function(){inp.focus();},50);
-        } else {
-          mt=setTimeout(function(){mc=0;},3000);
-        }
-      });
-    })();
-  }
-
-  if(ativo && me && !isAdmin()){
-    // Só bloqueia usuários comuns já logados — nunca bloqueia a tela de login
-    overlay.style.display = 'flex';
-  } else {
-    overlay.style.display = 'none';
-  }
-  atualizarPainelManutencao();
-}
-
-function atualizarPainelManutencao(){
-  var ativo = localStorage.getItem(SK_MANUT) === '1';
-  var statusBox = document.getElementById('manutStatusBox');
-  var btn = document.getElementById('manutToggleBtn');
-  if(!statusBox || !btn) return;
-  if(ativo){
-    statusBox.style.background = '#FEF3C7';
-    statusBox.style.border = '1px solid #FDE68A';
-    statusBox.style.color = '#92400E';
-    statusBox.textContent = '🟡 Modo manutenção ATIVO — usuários comuns estão bloqueados';
-    btn.textContent = '✅ Desativar manutenção';
-    btn.className = 'manut-toggle-btn desativar';
-  } else {
-    statusBox.style.background = '#F0FDF4';
-    statusBox.style.border = '1px solid #BBF7D0';
-    statusBox.style.color = '#166534';
-    statusBox.textContent = '🟢 Sistema operando normalmente';
-    btn.textContent = '🔧 Ativar modo manutenção';
-    btn.className = 'manut-toggle-btn ativar';
-  }
-}
-
-function toggleManutencao(){
-  var ativo = localStorage.getItem(SK_MANUT) === '1';
-  var novoEstado = !ativo;
-  localStorage.setItem(SK_MANUT, novoEstado ? '1' : '0');
-  localStorage.setItem(SK_MANUT + '_ts', String(Date.now())); // timestamp da última mudança
-  // Salvar no Firebase via coleção gep_config
-  // Salvar em localStorage local
-  localStorage.setItem('vtp_gep_config_v1', JSON.stringify({ manutencao: novoEstado, ts: Date.now() }));
-  // Tentar enviar para Firebase via cloudSaveList
-  if(typeof cloudSaveList === 'function'){
-    cloudSaveList('gep_config', { manutencao: novoEstado, ts: Date.now() });
-    // Também salvar via users_lista como fallback (coleção com permissões garantidas)
-    try{
-      if(typeof db !== 'undefined' && db){
-        db.collection('gep_meta').doc('_manutencao').set({ manutencao: novoEstado, ts: Date.now() });
-      }
-    }catch(e){}
-  }
-  atualizarPainelManutencao();
-  toast(novoEstado ? '🔧 Manutenção ativada!' : '✅ Manutenção desativada!', novoEstado ? 'warn' : 'ok');
-}
-
-// Verificar manutenção periodicamente (captura mudanças de outros dispositivos)
-function sincronizarManutencao(){
-  // Polling a cada 30 segundos — verifica estado de manutenção em tempo real
-  setInterval(function(){
-    if(!me) return; // Só verificar se estiver logado
-    if(typeof db !== 'undefined' && db){
-      // Tentar via Firebase direto
-      db.collection('gep_config').doc('_lista').get().then(function(doc){
-        if(doc.exists){
-          var d = doc.data();
-          if(d && d.items && typeof d.items.manutencao !== 'undefined'){
-            var novoEstado = d.items.manutencao ? '1' : '0';
-            var estadoAtual = localStorage.getItem(SK_MANUT);
-            if(novoEstado !== estadoAtual){
-              localStorage.setItem(SK_MANUT, novoEstado);
-              localStorage.setItem('vtp_gep_config_v1', JSON.stringify(d.items));
-              _aplicarEstadoManutencao();
-            }
-          }
-        }
-      }).catch(function(){
-        // Fallback: verificar via localStorage (atualizado pelo sync)
-        _aplicarEstadoManutencao();
-      });
-    } else {
-      _aplicarEstadoManutencao();
-    }
-  }, 30000); // Verifica a cada 30 segundos
-
-  // Também usar onSnapshot para atualizações imediatas
-  if(typeof db !== 'undefined' && db){
-    db.collection('gep_config').doc('_lista').onSnapshot(function(doc){
-      if(!doc.exists || !me) return;
-      var d = doc.data();
-      if(d && d.items && typeof d.items.manutencao !== 'undefined'){
-        var cfgL = {};
-        try{ cfgL = JSON.parse(localStorage.getItem('vtp_gep_config_v1')||'{}'); }catch(e){}
-        if((d.items.ts||0) >= (cfgL.ts||0)){
-          localStorage.setItem(SK_MANUT, d.items.manutencao ? '1' : '0');
-          localStorage.setItem('vtp_gep_config_v1', JSON.stringify(d.items));
-          _aplicarEstadoManutencao();
-        }
-      }
-    });
-  }
 }
 
 window.sbGo=sbGo; window.sbOpen=sbOpen; window.sbClose=sbClose;
@@ -6042,11 +5902,8 @@ function orcAutoSave(){
 }
 
 function orcSalvar(){
-  console.log('[ORC] 1. chamado. vid=', orcCurrentVid);
   if(!orcCurrentVid){ toast('Selecione uma visita primeiro','err'); return; }
-  console.log('[ORC] 2. loadOrc...');
   var orcs = loadOrc();
-  console.log('[ORC] 3. orcs keys=', Object.keys(orcs).length);
   var existente = orcs[orcCurrentVid] || {};
   // Coletar dados do cabeçalho avulso (se campos existirem no DOM)
   var avNomeEl = document.getElementById('avNome');
@@ -6060,13 +5917,10 @@ function orcSalvar(){
     montagem: (document.getElementById('avMontagem')||{}).value||'',
     produtor: (document.getElementById('avProdutor')||{}).value||''
   } : (existente.avulsoData || null);
-  console.log('[ORC] 4. orcCollectItens...');
   var itens;
   try { itens = orcCollectItens(); } catch(e) { console.error('[ORC] ERRO collectItens:', e.message); itens = []; }
-  console.log('[ORC] 5. itens coletados=', itens.length);
   var status;
   try { status = orcGetCurrentStatus(); } catch(e) { console.error('[ORC] ERRO getStatus:', e.message); status='elaboracao'; }
-  console.log('[ORC] 6. status=', status);
   orcs[orcCurrentVid] = {
     itens: itens,
     status: status,
@@ -6078,16 +5932,13 @@ function orcSalvar(){
     savedTs: nowTs(),
     owner: (typeof _meuId==='function') ? _meuId() : null
   };
-  console.log('[ORC] 7. saveOrc com', Object.keys(orcs).length, 'chaves...');
   saveOrc(orcs);
   var chk = loadOrc();
-  console.log('[ORC] 8. pos-save localStorage tem', Object.keys(chk).length, 'chaves');
   if(typeof orcSincronizarEvento==='function') orcSincronizarEvento();
   toast('Orçamento salvo!','ok');
   setTimeout(function(){
     var chk2 = loadOrc();
-    console.log('[ORC] 9. antes orcVoltarLista:', Object.keys(chk2).length, 'chaves');
-    if(typeof orcVoltarLista==='function') orcVoltarLista();
+      if(typeof orcVoltarLista==='function') orcVoltarLista();
   }, 800);
 }
 
