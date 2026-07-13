@@ -1425,7 +1425,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
           <div class="gep-foot-dev">Desenvolvido por</div>
           <div class="gep-foot-name">Alessandro Lima</div>
           <div class="gep-foot-copy">© 2026 · Todos os direitos reservados</div>
-          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-162</span></div>
+          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-163</span></div>
         </div>
       </div>
     </div>
@@ -1489,7 +1489,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div class="d">Desenvolvido por</div>
       <div class="n">Alessandro Lima</div>
       <div class="c">© 2026 · Todos os direitos reservados</div>
-      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-162</span></div>
+      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-163</span></div>
     </div>
   </div>
 
@@ -2678,6 +2678,7 @@ function sincronizarTudo(onComplete){
     { col:'produtores',    sk:'vtp_produtores_v1' },
     // orcamentos: gerenciado localmente (saveOrc/loadOrc) — removido do sync para evitar sobrescrita
     { col:'agenda',        sk:'vtp_agenda_v1' },
+    { col:'gep_config',     sk:'vtp_gep_config_v1' },
     { col:'realizados',    sk:'vtp_realizados_v1' },
     { col:'catalogo',      sk:'vtp_catalogo_v1' }
   ];
@@ -3976,10 +3977,9 @@ function resetForm(){
   gb.innerHTML='<svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>Capturar localização atual';
   ['gpsBtnR1','gpsBtnR2'].forEach(function(id){ var b=document.getElementById(id); if(b) b.className='gps-btn-sm'; });
   eqItens=[]; renderEq(); equipeItens=[]; renderEquipe(); servicoItens=[]; renderServico(); orcItens=[];
-  fotos=[]; document.getElementById('fotosGr').innerHTML='';
-  if(sigCtx) sigCtx.clearRect(0,0,sigCv?sigCv.width:0,sigCv?sigCv.height:0);
+  fotos=[]; var fgEl2=document.getElementById('fotosGr'); if(fgEl2) fgEl2.innerHTML='';
   fStep=0; editId=null;
-  document.getElementById('fNav').style.display='flex';
+  var fNavEl=document.getElementById('fNav'); if(fNavEl) fNavEl.style.display='flex';
   if(typeof dtRangeInit==='function') dtRangeInit();
 }
 
@@ -5280,7 +5280,7 @@ saveEmp = function(){
 // Expor tudo globalmente
 
 /* ═══════════════════════════════════════════════════════════
-   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-162
+   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-163
    ═══════════════════════════════════════════════════════════ */
 var SK_PLNL = 'vtp_planilhas_v1';
 
@@ -5428,6 +5428,13 @@ function verificarManutencao(){
 }
 
 function _aplicarEstadoManutencao(){
+  // Ler do config sincronizado (mais confiável que SK_MANUT)
+  try{
+    var cfg = JSON.parse(localStorage.getItem('vtp_gep_config_v1')||'{}');
+    if(typeof cfg.manutencao !== 'undefined'){
+      localStorage.setItem(SK_MANUT, cfg.manutencao ? '1' : '0');
+    }
+  }catch(e){}
   var ativo = localStorage.getItem(SK_MANUT) === '1';
   var overlay = document.getElementById('gepManutencaoOverlay');
   if(!overlay) return;
@@ -5465,10 +5472,12 @@ function toggleManutencao(){
   var ativo = localStorage.getItem(SK_MANUT) === '1';
   var novoEstado = !ativo;
   localStorage.setItem(SK_MANUT, novoEstado ? '1' : '0');
-  // Sincronizar com Firebase para atingir todos os dispositivos
+  // Salvar no Firebase via coleção gep_config
   if(typeof cloudSaveList === 'function'){
     cloudSaveList('gep_config', { manutencao: novoEstado, ts: Date.now() });
   }
+  // Também salvar em vtp_gep_config_v1 (sincronizado pelo sistema de download)
+  localStorage.setItem('vtp_gep_config_v1', JSON.stringify({ manutencao: novoEstado, ts: Date.now() }));
   atualizarPainelManutencao();
   toast(novoEstado ? '🔧 Manutenção ativada!' : '✅ Manutenção desativada!', novoEstado ? 'warn' : 'ok');
 }
@@ -6377,7 +6386,7 @@ window.orcSalvar=orcSalvar;
 window.orcExportXLSX=orcExportXLSX;
 
 /* ══════════════════════════════════════════════════════════
-   LISTA DE ORÇAMENTOS — v15-162
+   LISTA DE ORÇAMENTOS — v15-163
    ══════════════════════════════════════════════════════════ */
 var _orcFiltroAtivo = 'todos';
 
@@ -9684,6 +9693,7 @@ function enviarTudoParaNuvem(onComplete){
     { col:'produtores',    sk:'vtp_produtores_v1' },
     // orcamentos removido do sync
     { col:'agenda',        sk:'vtp_agenda_v1' },
+    { col:'gep_config',     sk:'vtp_gep_config_v1' },
     { col:'realizados',    sk:'vtp_realizados_v1' },
     { col:'catalogo',      sk:'vtp_catalogo_v1' }
   ];
