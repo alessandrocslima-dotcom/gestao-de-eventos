@@ -1,77 +1,3 @@
-function manutVerificarSenha(){
-  var inp = document.getElementById('manutSenhaInput');
-  if(!inp) return;
-  var senha = inp.value;
-  var users = typeof loadU === 'function' ? loadU() : [];
-  var ok = users.find(function(u){ return (u.role==='admin'||u.id==='root') && u.pass===senha; });
-  if(ok){
-    localStorage.setItem('gep_manutencao_v1','0');
-    localStorage.setItem('gep_manutencao_v1_ts', String(Date.now()));
-    localStorage.setItem('vtp_gep_config_v1', JSON.stringify({manutencao:false,ts:Date.now()}));
-    var ov = document.getElementById('gepManutencaoOverlay');
-    if(ov) ov.style.display='none';
-    if(typeof toast==='function') toast('Manutenção desativada!','ok');
-    setTimeout(function(){ location.reload(); }, 800);
-  } else {
-    var err = document.getElementById('manutSenhaErro');
-    if(err){ err.style.display='block'; setTimeout(function(){ err.style.display='none'; },2000); }
-    if(inp){ inp.value=''; inp.focus(); }
-  }
-}
-function _aplicarEstadoManutencao(){
-  // Sincronizar SK_MANUT com vtp_gep_config_v1 se este for mais recente
-  try{
-    var cfg = JSON.parse(localStorage.getItem('vtp_gep_config_v1')||'{}');
-    if(cfg && typeof cfg.manutencao !== 'undefined'){
-      var skTs = parseInt(localStorage.getItem(SK_MANUT + '_ts')||'0');
-      if((cfg.ts||0) > skTs){
-        localStorage.setItem(SK_MANUT, cfg.manutencao ? '1' : '0');
-        localStorage.setItem(SK_MANUT + '_ts', String(cfg.ts||0));
-      }
-    }
-  }catch(e){}
-  var ativo = localStorage.getItem(SK_MANUT) === '1';
-
-  // Criar overlay dinamicamente se não existir no DOM (versão antiga em cache)
-  var overlay = document.getElementById('gepManutencaoOverlay');
-  if(!overlay){
-    overlay = document.createElement('div');
-    overlay.id = 'gepManutencaoOverlay';
-    overlay.style.cssText = 'display:none;position:fixed;inset:0;z-index:99999;background:#0F172A;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2rem';
-    overlay.innerHTML = '<div id="manutIcone" style="font-size:52px;margin-bottom:20px;cursor:pointer">🔧</div>'
-      + '<h2 style="color:#F1F5F9;font-size:22px;font-weight:700;margin:0 0 10px">Sistema em manutenção</h2>'
-      + '<p style="color:#94A3B8;font-size:14px;max-width:340px;margin:0 auto 24px;line-height:1.6">Estamos realizando atualizações. Voltaremos em breve.</p>'
-      + '<div style="background:#1E293B;border:1px solid #334155;border-radius:10px;padding:12px 20px;font-size:13px;color:#64748B;margin-bottom:20px">⏱ Aguarde a liberação pelo administrador</div>'
-      + '<button onclick="location.reload()" style="background:#2563EB;color:#fff;border:none;border-radius:10px;padding:12px 28px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;margin:0 auto">🔄 Atualizar página</button>'
-      + '<div id="manutSenhaBox" style="display:none;margin-top:20px;background:#1E293B;border:1px solid #334155;border-radius:12px;padding:16px 20px;min-width:280px"><p style="color:#94A3B8;font-size:12px;margin:0 0 10px;text-align:center">🔐 Senha de administrador</p><div style="display:flex;gap:8px"><input id="manutSenhaInput" type="password" placeholder="Sua senha..." style="flex:1;padding:9px 12px;border-radius:8px;border:1px solid #475569;background:#0F172A;color:#F1F5F9;font-size:13px;outline:none"><button onclick="manutVerificarSenha()" style="padding:9px 14px;border-radius:8px;border:none;background:#2563EB;color:#fff;font-size:13px;font-weight:600;cursor:pointer">OK</button></div><p id="manutSenhaErro" style="color:#F87171;font-size:11px;margin:6px 0 0;display:none;text-align:center">Senha incorreta</p></div>';
-    document.body.appendChild(overlay);
-    (function(){
-      var mc=0, mt=null;
-      var icon=document.getElementById('manutIcone');
-      if(!icon) return;
-      icon.addEventListener('click',function(){
-        mc++; clearTimeout(mt);
-        if(mc>=5){
-          mc=0;
-          var box=document.getElementById('manutSenhaBox');
-          if(box){ box.style.display=(box.style.display==='none'?'block':'none'); }
-          var inp=document.getElementById('manutSenhaInput');
-          if(inp&&box&&box.style.display!=='none') setTimeout(function(){inp.focus();},50);
-        } else {
-          mt=setTimeout(function(){mc=0;},3000);
-        }
-      });
-    })();
-  }
-
-  if(ativo && me && !isAdmin()){
-    // Só bloqueia usuários comuns já logados — nunca bloqueia a tela de login
-    overlay.style.display = 'flex';
-  } else {
-    overlay.style.display = 'none';
-  }
-  atualizarPainelManutencao();
-}
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -1499,7 +1425,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
           <div class="gep-foot-dev">Desenvolvido por</div>
           <div class="gep-foot-name">Alessandro Lima</div>
           <div class="gep-foot-copy">© 2026 · Todos os direitos reservados</div>
-          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-181</span></div>
+          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-182</span></div>
         </div>
       </div>
     </div>
@@ -1563,7 +1489,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div class="d">Desenvolvido por</div>
       <div class="n">Alessandro Lima</div>
       <div class="c">© 2026 · Todos os direitos reservados</div>
-      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-181</span></div>
+      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-182</span></div>
     </div>
   </div>
 
@@ -5340,7 +5266,7 @@ saveEmp = function(){
 // Expor tudo globalmente
 
 /* ═══════════════════════════════════════════════════════════
-   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-181
+   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-182
    ═══════════════════════════════════════════════════════════ */
 var SK_PLNL = 'vtp_planilhas_v1';
 
@@ -6262,6 +6188,1004 @@ function aplicarPermissoes(user) {
     }
   });
 }
+
+/* ══ MODO MANUTENÇÃO ══ */
+var SK_MANUT = 'gep_manutencao_v1';
+
+function isAdmin(){ return me && (me.role==='admin' || me.id==='root'); }
+
+function verificarManutencao(){
+  // Busca do Firebase para pegar estado atual (cross-device)
+  if(typeof db !== 'undefined' && db){
+    db.collection('gep_config').doc('_lista').get().then(function(doc){
+      if(doc.exists){
+        var d = doc.data();
+        if(d && d.items && typeof d.items.manutencao !== 'undefined'){
+          localStorage.setItem(SK_MANUT, d.items.manutencao ? '1' : '0');
+        }
+      }
+      _aplicarEstadoManutencao();
+    }).catch(function(){ _aplicarEstadoManutencao(); });
+  } else {
+    _aplicarEstadoManutencao();
+  }
+}
+
+function manutVerificarSenha(){
+  var inp = document.getElementById('manutSenhaInput');
+  if(!inp) return;
+  var senha = inp.value;
+  var users = typeof loadU === 'function' ? loadU() : [];
+  var ok = users.find(function(u){ return (u.role==='admin'||u.id==='root') && u.pass===senha; });
+  if(ok){
+    localStorage.setItem('gep_manutencao_v1','0');
+    localStorage.setItem('gep_manutencao_v1_ts', String(Date.now()));
+    localStorage.setItem('vtp_gep_config_v1', JSON.stringify({manutencao:false,ts:Date.now()}));
+    var ov = document.getElementById('gepManutencaoOverlay');
+    if(ov) ov.style.display='none';
+    if(typeof toast==='function') toast('Manutenção desativada!','ok');
+    setTimeout(function(){ location.reload(); }, 800);
+  } else {
+    var err = document.getElementById('manutSenhaErro');
+    if(err){ err.style.display='block'; setTimeout(function(){ err.style.display='none'; },2000); }
+    if(inp){ inp.value=''; inp.focus(); }
+  }
+}
+
+function _aplicarEstadoManutencao(){
+  // Sincronizar SK_MANUT com vtp_gep_config_v1 se este for mais recente
+  try{
+    var cfg = JSON.parse(localStorage.getItem('vtp_gep_config_v1')||'{}');
+    if(cfg && typeof cfg.manutencao !== 'undefined'){
+      var skTs = parseInt(localStorage.getItem(SK_MANUT + '_ts')||'0');
+      if((cfg.ts||0) > skTs){
+        localStorage.setItem(SK_MANUT, cfg.manutencao ? '1' : '0');
+        localStorage.setItem(SK_MANUT + '_ts', String(cfg.ts||0));
+      }
+    }
+  }catch(e){}
+  var ativo = localStorage.getItem(SK_MANUT) === '1';
+
+  // Criar overlay dinamicamente se não existir no DOM (versão antiga em cache)
+  var overlay = document.getElementById('gepManutencaoOverlay');
+  if(!overlay){
+    overlay = document.createElement('div');
+    overlay.id = 'gepManutencaoOverlay';
+    overlay.style.cssText = 'display:none;position:fixed;inset:0;z-index:99999;background:#0F172A;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2rem';
+    overlay.innerHTML = '<div id="manutIcone" style="font-size:52px;margin-bottom:20px;cursor:pointer">🔧</div>'
+      + '<h2 style="color:#F1F5F9;font-size:22px;font-weight:700;margin:0 0 10px">Sistema em manutenção</h2>'
+      + '<p style="color:#94A3B8;font-size:14px;max-width:340px;margin:0 auto 24px;line-height:1.6">Estamos realizando atualizações. Voltaremos em breve.</p>'
+      + '<div style="background:#1E293B;border:1px solid #334155;border-radius:10px;padding:12px 20px;font-size:13px;color:#64748B;margin-bottom:20px">⏱ Aguarde a liberação pelo administrador</div>'
+      + '<button onclick="location.reload()" style="background:#2563EB;color:#fff;border:none;border-radius:10px;padding:12px 28px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;margin:0 auto">🔄 Atualizar página</button>'
+      + '<div id="manutSenhaBox" style="display:none;margin-top:20px;background:#1E293B;border:1px solid #334155;border-radius:12px;padding:16px 20px;min-width:280px"><p style="color:#94A3B8;font-size:12px;margin:0 0 10px;text-align:center">🔐 Senha de administrador</p><div style="display:flex;gap:8px"><input id="manutSenhaInput" type="password" placeholder="Sua senha..." style="flex:1;padding:9px 12px;border-radius:8px;border:1px solid #475569;background:#0F172A;color:#F1F5F9;font-size:13px;outline:none"><button onclick="manutVerificarSenha()" style="padding:9px 14px;border-radius:8px;border:none;background:#2563EB;color:#fff;font-size:13px;font-weight:600;cursor:pointer">OK</button></div><p id="manutSenhaErro" style="color:#F87171;font-size:11px;margin:6px 0 0;display:none;text-align:center">Senha incorreta</p></div>';
+    document.body.appendChild(overlay);
+    (function(){
+      var mc=0, mt=null;
+      var icon=document.getElementById('manutIcone');
+      if(!icon) return;
+      icon.addEventListener('click',function(){
+        mc++; clearTimeout(mt);
+        if(mc>=5){
+          mc=0;
+          var box=document.getElementById('manutSenhaBox');
+          if(box){ box.style.display=(box.style.display==='none'?'block':'none'); }
+          var inp=document.getElementById('manutSenhaInput');
+          if(inp&&box&&box.style.display!=='none') setTimeout(function(){inp.focus();},50);
+        } else {
+          mt=setTimeout(function(){mc=0;},3000);
+        }
+      });
+    })();
+  }
+
+  if(ativo && me && !isAdmin()){
+    // Só bloqueia usuários comuns já logados — nunca bloqueia a tela de login
+    overlay.style.display = 'flex';
+  } else {
+    overlay.style.display = 'none';
+  }
+  atualizarPainelManutencao();
+}
+
+function atualizarPainelManutencao(){
+  var ativo = localStorage.getItem(SK_MANUT) === '1';
+  var statusBox = document.getElementById('manutStatusBox');
+  var btn = document.getElementById('manutToggleBtn');
+  if(!statusBox || !btn) return;
+  if(ativo){
+    statusBox.style.background = '#FEF3C7';
+    statusBox.style.border = '1px solid #FDE68A';
+    statusBox.style.color = '#92400E';
+    statusBox.textContent = '🟡 Modo manutenção ATIVO — usuários comuns estão bloqueados';
+    btn.textContent = '✅ Desativar manutenção';
+    btn.className = 'manut-toggle-btn desativar';
+  } else {
+    statusBox.style.background = '#F0FDF4';
+    statusBox.style.border = '1px solid #BBF7D0';
+    statusBox.style.color = '#166534';
+    statusBox.textContent = '🟢 Sistema operando normalmente';
+    btn.textContent = '🔧 Ativar modo manutenção';
+    btn.className = 'manut-toggle-btn ativar';
+  }
+}
+
+function toggleManutencao(){
+  var ativo = localStorage.getItem(SK_MANUT) === '1';
+  var novoEstado = !ativo;
+  localStorage.setItem(SK_MANUT, novoEstado ? '1' : '0');
+  localStorage.setItem(SK_MANUT + '_ts', String(Date.now())); // timestamp da última mudança
+  // Salvar no Firebase via coleção gep_config
+  // Salvar em localStorage local
+  localStorage.setItem('vtp_gep_config_v1', JSON.stringify({ manutencao: novoEstado, ts: Date.now() }));
+  // Tentar enviar para Firebase via cloudSaveList
+  if(typeof cloudSaveList === 'function'){
+    cloudSaveList('gep_config', { manutencao: novoEstado, ts: Date.now() });
+    // Também salvar via users_lista como fallback (coleção com permissões garantidas)
+    try{
+      if(typeof db !== 'undefined' && db){
+        db.collection('gep_meta').doc('_manutencao').set({ manutencao: novoEstado, ts: Date.now() });
+      }
+    }catch(e){}
+  }
+  atualizarPainelManutencao();
+  toast(novoEstado ? '🔧 Manutenção ativada!' : '✅ Manutenção desativada!', novoEstado ? 'warn' : 'ok');
+}
+
+// Verificar manutenção periodicamente (captura mudanças de outros dispositivos)
+function sincronizarManutencao(){
+  // Polling a cada 30 segundos — verifica estado de manutenção em tempo real
+  setInterval(function(){
+    if(!me) return; // Só verificar se estiver logado
+    if(typeof db !== 'undefined' && db){
+      // Tentar via Firebase direto
+      db.collection('gep_config').doc('_lista').get().then(function(doc){
+        if(doc.exists){
+          var d = doc.data();
+          if(d && d.items && typeof d.items.manutencao !== 'undefined'){
+            var novoEstado = d.items.manutencao ? '1' : '0';
+            var estadoAtual = localStorage.getItem(SK_MANUT);
+            if(novoEstado !== estadoAtual){
+              localStorage.setItem(SK_MANUT, novoEstado);
+              localStorage.setItem('vtp_gep_config_v1', JSON.stringify(d.items));
+              _aplicarEstadoManutencao();
+            }
+          }
+        }
+      }).catch(function(){
+        // Fallback: verificar via localStorage (atualizado pelo sync)
+        _aplicarEstadoManutencao();
+      });
+    } else {
+      _aplicarEstadoManutencao();
+    }
+  }, 30000); // Verifica a cada 30 segundos
+
+  // Também usar onSnapshot para atualizações imediatas
+  if(typeof db !== 'undefined' && db){
+    db.collection('gep_config').doc('_lista').onSnapshot(function(doc){
+      if(!doc.exists || !me) return;
+      var d = doc.data();
+      if(d && d.items && typeof d.items.manutencao !== 'undefined'){
+        var cfgL = {};
+        try{ cfgL = JSON.parse(localStorage.getItem('vtp_gep_config_v1')||'{}'); }catch(e){}
+        if((d.items.ts||0) >= (cfgL.ts||0)){
+          localStorage.setItem(SK_MANUT, d.items.manutencao ? '1' : '0');
+          localStorage.setItem('vtp_gep_config_v1', JSON.stringify(d.items));
+          _aplicarEstadoManutencao();
+        }
+      }
+    });
+  }
+}
+
+window.sbGo=sbGo; window.sbOpen=sbOpen; window.sbClose=sbClose;
+
+/* Escape fecha qualquer modal aberto — evita app ficar travado */
+document.addEventListener('keydown', function(e) {
+  if (e.key !== 'Escape') return;
+  ['modalOv','eqModalOv','modalSecOv'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el && el.classList.contains('on')) el.classList.remove('on');
+  });
+  // Também resetar isEditing se estiver travado
+  if (window.isEditing) { window.isEditing = false; isEditing = false; }
+});
+window.sbToggleCollapse=sbToggleCollapse; window.sbToggleSub=sbToggleSub;
+window.sbSetUser=sbSetUser; window.sbUpdateBadge=sbUpdateBadge;
+window.renderEmpListCad=renderEmpListCad; window.delEmpCad=delEmpCad;
+window.renderRelVisitas=renderRelVisitas;
+window.exportCSV=exportCSV; window.exportJSON=exportJSON;
+window.irParaDash=irParaDash; window.irParaForm=irParaForm; window.irParaAdmin=irParaAdmin;
+window.doLogin=doLogin; window.saveEmp=saveEmp;
+
+/* ══════════════════════════════════════
+   ORÇAMENTO — VTP Pro
+══════════════════════════════════════ */
+var SK_ORC = 'vtp_orcamentos_v1';
+var SK_SEC = 'vtp_secretarias_v1';
+var orcCurrentVid = null;
+var orcEditSecId = null;
+
+function loadOrc(){
+  try{
+    var result = JSON.parse(localStorage.getItem(SK_ORC)||'{}');
+    if(Array.isArray(result) || typeof result !== 'object' || result === null){
+      // Dado corrompido (array ou inválido) — corrigir para objeto vazio
+      localStorage.setItem(SK_ORC, '{}');
+      return {};
+    }
+    return result;
+  }catch(e){ return {}; }
+}
+function saveOrc(o){
+  localStorage.setItem(SK_ORC, JSON.stringify(o));
+  // Marcar timestamp local como agora — impede sync de sobrescrever com dados da nuvem mais antigos
+  try { localStorage.setItem('vtp_sync_ts_orcamentos', String(Date.now())); } catch(e){}
+  if(typeof marcarMudanca==='function') marcarMudanca();
+  if(typeof cloudSaveList==='function') cloudSaveList('orcamentos', o);
+}
+function loadSec(){ try{ return JSON.parse(localStorage.getItem(SK_SEC)||'[]'); }catch(e){ return []; } }
+function saveSec(a){ localStorage.setItem(SK_SEC, JSON.stringify(a)); if(typeof cloudSaveList==='function') cloudSaveList('secretarias', a); }
+
+/* ── Helpers ── */
+function fmtM2(v){ return 'R$ '+(parseFloat(v)||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function parseMoney(s){ return parseFloat(String(s).replace(/[R$\s.]/g,'').replace(',','.'))||0; }
+function nowTs(){ var n=new Date(); return n.toLocaleDateString('pt-BR')+' às '+n.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); }
+
+/* ── Carregar seletor de visitas ── */
+function orcPopulateSelector(){
+  var sel = document.getElementById('orc-visita-sel');
+  if(!sel) return;
+  var vs = loadV();
+  // Filtro de privacidade: cada um vê só suas visitas (admin vê todas)
+  if(typeof filtrarVisitasVisiveis==='function') vs = filtrarVisitasVisiveis(vs);
+  var cur = sel.value;
+  sel.innerHTML = '<option value="">Selecionar visita técnica...</option>'
+    + '<option value="__NOVO_AVULSO__">+ Novo orçamento (sem VT)</option>';
+  // Separar avulsos (sem VT) das VTs normais
+  var avulsos = vs.filter(function(v){ return v.tipo==='avulso'; });
+  var visitas = vs.filter(function(v){ return v.tipo!=='avulso'; });
+  // Avulsos primeiro (em grupo)
+  if(avulsos.length){
+    var ogA = document.createElement('optgroup');
+    ogA.label = '📋 Orçamentos sem VT';
+    avulsos.forEach(function(v){
+      var opt = document.createElement('option');
+      opt.value = v.id;
+      opt.textContent = (v.nome||'Sem nome') + ' — ' + (v.dataEvento ? fmtD(v.dataEvento) : 'sem data');
+      ogA.appendChild(opt);
+    });
+    sel.appendChild(ogA);
+  }
+  // Depois visitas técnicas
+  if(visitas.length){
+    var ogV = document.createElement('optgroup');
+    ogV.label = '📍 Visitas Técnicas';
+    visitas.forEach(function(v){
+      var opt = document.createElement('option');
+      opt.value = v.id;
+      opt.textContent = (v.nome||'Sem nome') + ' — ' + fmtD(v.dataEvento);
+      ogV.appendChild(opt);
+    });
+    sel.appendChild(ogV);
+  }
+  if(cur) sel.value = cur;
+}
+
+/* ── Carregar visita no orçamento ── */
+function orcLoadVisita(vid){
+  if(!vid){ document.getElementById('orc-body-panel').style.display='none'; document.getElementById('orc-visita-preview').style.display='none'; var bv=document.getElementById('orcVoltarBtn'); if(bv) bv.style.display='none'; return; }
+  // Caso especial: criar novo orçamento sem VT
+  if(vid === '__NOVO_AVULSO__'){
+    document.getElementById('orc-visita-sel').value = '';
+    orcAvulsoAbrirModal();
+    return;
+  }
+  orcCurrentVid = vid;
+  // Mostrar botão Voltar
+  var bv=document.getElementById('orcVoltarBtn'); if(bv) bv.style.display='inline-flex';
+  var vs = loadV();
+  var v = vs.find(function(x){ return x.id===vid; });
+  if(!v) return;
+  // Preview
+  var prev = document.getElementById('orc-visita-preview');
+  prev.style.display='block';
+  // Construir preview de forma inteligente (não mostrar separadores vazios)
+  var partes = ['<strong>'+(v.nome||'Sem nome')+'</strong>'];
+  if(v.tipo==='avulso') partes.push('<span style="font-size:11px;background:#FEF3C7;color:#92400E;padding:2px 8px;border-radius:6px;font-weight:600">SEM VT</span>');
+  if(v.empresa) partes.push(v.empresa);
+  if(v.local) partes.push(v.local);
+  if(v.dataEvento) partes.push(fmtDR(v.dataEvento, v.dataEventoFim));
+  prev.innerHTML = partes.join(' · ');
+  // Cabeçalho
+  orcRenderCabecalho(v);
+  // Carregar itens salvos ou vazio
+  var orcs = loadOrc();
+  var orc = orcs[vid] || { itens:[], status:'elaboracao', numOficial:'', aprovData:'', verbaProd:0 };
+  orcRenderStatus(orc.status);
+  var numFld = document.getElementById('orc-num-field');
+  if(numFld) numFld.value = orc.numOficial || '';
+  if(orc.aprovData) document.getElementById('orc-aprov-data').value = orc.aprovData;
+  orcRenderNumOficial(orc.numOficial);
+  orcRenderItens(orc.itens);
+  orcUpdateTotal();
+  // Produtor
+  var pNome = (me&&(me.nome||me.login)) || 'Alessandro Lima';
+  document.getElementById('orc-produtor-nome').textContent = pNome;
+  document.getElementById('orc-saved-ts').textContent = orc.savedTs ? 'Salvo em '+orc.savedTs : '';
+  document.getElementById('orc-subtitle').textContent = (v.nome||'Sem nome') + ' · ID: VTP-'+new Date(parseInt(vid,36)||Date.now()).getFullYear()+'-'+(String(loadV().findIndex(function(x){return x.id===vid;})+1).padStart(4,'0'));
+  document.getElementById('orc-body-panel').style.display='block';
+  // Atualizar botão Agendar
+  if(typeof orcAtualizarBotaoAgendar==='function') orcAtualizarBotaoAgendar();
+}
+
+function orcRenderCabecalho(v){
+  var el = document.getElementById('orc-cabecalho');
+  if(!el) return;
+  var orcs = loadOrc();
+  var orc = (orcCurrentVid && orcs[orcCurrentVid]) || {};
+  // Pegar nº do campo ao vivo se estiver preenchido
+  var fieldVal = (document.getElementById('orc-num-field')||{}).value||'';
+  var numOf = fieldVal || orc.numOficial || '';
+  // grid 4 colunas — cada campo é uma célula
+  var cells = [
+    {lbl:'Nº do evento',   val: numOf || null,          span:1, empty:'— aguardando aprovação'},
+    {lbl:'Cliente',        val: v.empresa||null,         span:1},
+    {lbl:'Data',           val: fmtDR(v.dataEvento, v.dataEventoFim),      span:1},
+    {lbl:'Horário',        val: v.horaEvento||(v.horaFim?'até '+v.horaFim:null), span:1},
+    {lbl:'Nome do evento', val: v.nome||null,            span:4},
+    {lbl:'Local',          val: v.local||v.end||null,    span:4},
+    {lbl:'Público estimado', val: v.pessoas?v.pessoas+' pessoas':null, span:1},
+    {lbl:'Montagem',       val: v.dataMont?fmtD(v.dataMont)+(v.horaMont?' às '+v.horaMont:''):(v.horaMont||null), span:1},
+    {lbl:'Produtor',       val: (me&&(me.nome||me.login))||'Alessandro Lima', span:2},
+  ];
+  el.style.cssText = 'display:grid;grid-template-columns:repeat(4,1fr);';
+  el.innerHTML = cells.map(function(c){
+    var spanStyle = c.span>1 ? 'grid-column:span '+c.span+';' : '';
+    var borderRight = c.span===4 ? 'border-right:none;' : '';
+    var cellStyle = 'display:flex;flex-direction:column;gap:2px;padding:9px 14px;border-right:1px solid #E2E8F0;border-bottom:1px solid #E2E8F0;'+spanStyle+borderRight;
+    var valHtml = c.val
+      ? '<div style="font-size:13px;font-weight:600;color:#0F172A;line-height:1.35">'+c.val+'</div>'
+      : '<div style="font-size:12px;color:#CBD5E1;font-style:italic">'+(c.empty||'—')+'</div>';
+    return '<div style="'+cellStyle+'">'
+      +'<div style="font-size:9px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px">'+c.lbl+'</div>'
+      +valHtml
+      +'</div>';
+  }).join('');
+  // container styling
+  var box = el.closest('.orc-hdr-box');
+  if(box){
+    box.style.cssText='background:#fff;border:1.5px solid #E2E8F0;border-radius:12px;overflow:hidden;margin-bottom:16px;';
+  }
+}
+
+/* ── Status ── */
+function orcRenderStatus(status){
+  document.querySelectorAll('.orc-s-pill').forEach(function(p){
+    p.classList.remove('on');
+    ['elaboracao','enviado','aprovado','adiado','cancelado'].forEach(function(s){ p.classList.remove(s); });
+  });
+  var active = document.querySelector('.orc-s-pill[data-status="'+status+'"]');
+  if(active){ active.classList.add('on'); active.classList.add(status); }
+  // Mostrar campo nº oficial só se aprovado
+  // campo nº sempre visível
+}
+
+function orcSetStatus(status, el){
+  document.querySelectorAll('.orc-s-pill').forEach(function(p){
+    p.classList.remove('on');
+    ['elaboracao','enviado','aprovado','adiado','cancelado'].forEach(function(s){ p.classList.remove(s); });
+  });
+  el.classList.add('on'); el.classList.add(status);
+  orcAutoSave();
+  // Atualizar botão Agendar (com delay pra garantir que o save terminou)
+  setTimeout(function(){
+    if(typeof orcAtualizarBotaoAgendar==='function') orcAtualizarBotaoAgendar();
+  }, 100);
+}
+
+function orcSaveNum(){
+  var num = document.getElementById('orc-num-field').value.trim();
+  orcRenderNumOficial(num);
+  // Atualizar cabeçalho em tempo real
+  var vs = loadV();
+  var v = vs.find(function(x){ return x.id===orcCurrentVid; });
+  if(v) orcRenderCabecalho(v);
+  orcAutoSave();
+}
+
+function orcRenderNumOficial(num){
+  var box = document.getElementById('orc-num-display');
+  var lbl = document.getElementById('orc-num-label');
+  if(num){ box.style.display='block'; lbl.textContent='Nº '+num; }
+  else { box.style.display='none'; }
+}
+
+/* ── Itens ── */
+function orcRenderItens(itens){
+  var tbody = document.getElementById('orc-itens-tbody');
+  if(!tbody) return;
+  tbody.innerHTML = '';
+  if(!itens||!itens.length){ orcAddItemRow(tbody, null); return; }
+  itens.forEach(function(it){ orcAddItemRow(tbody, it); });
+}
+
+function orcAddItem(){
+  var tbody = document.getElementById('orc-itens-tbody');
+  if(!tbody) return;
+  orcAddItemRow(tbody, null, true);
+}
+
+function orcBuildCatOpts(selVal){
+  var items = loadCat();
+  var porCat = {};
+  items.forEach(function(it){
+    var c = it.categoria||'Outros';
+    if(!porCat[c]) porCat[c] = [];
+    porCat[c].push(it);
+  });
+  var html = '<option value="">— selecione —</option>';
+  if(!items.length){
+    html += '<option disabled>Cadastre itens no Catálogo</option>';
+  } else {
+    Object.keys(porCat).sort().forEach(function(cat){
+      html += '<optgroup label="'+cat+'">';
+      porCat[cat].forEach(function(it){
+        var nome = it.nome+(it.medida?' ('+it.medida+')':'');
+        var sel = (selVal===nome)?' selected':'';
+        html += '<option value="'+nome.replace(/"/g,'&quot;')+'"'+sel+'>'+nome+'</option>';
+      });
+      html += '</optgroup>';
+    });
+  }
+  html += '<option value="__CUSTOM__"'+(selVal==='__CUSTOM__'?' selected':'')+'>+ Digitar item personalizado</option>';
+  return html;
+}
+
+function orcAddItemRow(tbody, it, prepend){
+  it = it||{srv:'',desc:'',qty:1,price:'',freq:1,unidade:'Dia',forn:'',pgto:'45D',obs:''};
+  var uns = ['Dia','Unid','Hora','Evento','Serviço','Diária'];
+  var pgtos = ['30D','45D','60D','À Vista','15D','28D'];
+  var vf = (it.qty||0)*parseMoney(it.price)*(it.freq||1);
+
+  var tr = tbody.insertRow(prepend ? 0 : -1);
+
+  // TD Serviço
+  var tdSrv = tr.insertCell();
+  tdSrv.style.position = 'relative';
+  var srvVal = it.srv||'';
+  var isCustom = srvVal && srvVal.startsWith('__CUSTOM__');
+  if(isCustom){
+    var customVal = srvVal.replace('__CUSTOM__','');
+    tdSrv.innerHTML = '<input type="text" value="'+esc(customVal)+'" placeholder="Descreva o serviço" class="orc-srv orc-srv-custom" oninput="orcAutoSave()" autocomplete="off" style="border-color:#F59E0B;width:100%">'
+      +'<div style="font-size:10px;color:#92400e;margin-top:2px;padding-left:2px">item personalizado <span onclick="orcSrvVoltarSelect(this)" style="cursor:pointer;text-decoration:underline;color:#1D4ED8">usar catálogo</span></div>';
+  } else {
+    var selSrv = document.createElement('select');
+    selSrv.className = 'orc-srv';
+    selSrv.style.cssText = 'font-size:12px;min-width:0;width:100%';
+    selSrv.innerHTML = orcBuildCatOpts(srvVal);
+    selSrv.onchange = function(){ orcSrvSelChange(this); };
+    tdSrv.appendChild(selSrv);
+  }
+
+  // TD Descrição
+  var tdDesc = tr.insertCell();
+  tdDesc.style.position = 'relative';
+  tdDesc.innerHTML = '<input type="text" value="'+esc(it.desc)+'" placeholder="Descrição" class="orc-desc-cat" oninput="catAcInput(this);orcAutoSave()" onfocus="catAcOpen(this)" onblur="setTimeout(function(){catAcClose();},150)" autocomplete="off">';
+
+  // TD Qtde
+  var tdQty = tr.insertCell();
+  tdQty.innerHTML = '<input type="number" value="'+(it.qty||1)+'" min="0" step="1" class="orc-qty" oninput="orcRecalcRow(this)" style="text-align:center">';
+
+  // TD Preço
+  var tdPrice = tr.insertCell();
+  tdPrice.innerHTML = '<input type="text" value="'+esc(it.price)+'" placeholder="0,00" class="orc-price" oninput="orcRecalcRow(this)">';
+
+  // TD Freq
+  var tdFreq = tr.insertCell();
+  tdFreq.innerHTML = '<input type="number" value="'+(it.freq||1)+'" min="1" step="1" class="orc-freq" oninput="orcRecalcRow(this)" style="text-align:center">';
+
+  // TD Unidade
+  var tdUn = tr.insertCell();
+  var selUn = document.createElement('select');
+  selUn.className = 'orc-un';
+  selUn.onchange = function(){ orcAutoSave(); };
+  uns.forEach(function(u){ var o=document.createElement('option'); o.textContent=u; if(u===it.unidade) o.selected=true; selUn.appendChild(o); });
+  tdUn.appendChild(selUn);
+
+  // TD Valor Final
+  var tdVf = tr.insertCell();
+  tdVf.className = 'orc-vf'+(vf===0?' orc-vf-zero':'');
+  tdVf.textContent = fmtM2(vf);
+
+  // TD Fornecedor
+  var tdForn = tr.insertCell();
+  var w = document.createElement('div'); w.style.width='100%';
+  var b = document.createElement('button'); b.type='button';
+  b.className = 'pk-btn'+(it.forn?' pk-filled':'');
+  b.setAttribute('data-forn-nome', it.forn||'');
+  b.innerHTML = '<span class="pk-btn-lbl">'+(it.forn?esc(it.forn):'Selecionar...')+'</span><svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:none;stroke:#94A3B8;stroke-width:2;stroke-linecap:round"><path d="m6 9 6 6 6-6"/></svg>';
+  b.addEventListener('click', function(){ pkOpen(this); });
+  w.appendChild(b);
+  tdForn.appendChild(w);
+
+  // TD Pgto
+  var tdPgto = tr.insertCell();
+  var selPgto = document.createElement('select');
+  selPgto.className = 'orc-pgto';
+  selPgto.onchange = function(){ orcAutoSave(); };
+  pgtos.forEach(function(p){ var o=document.createElement('option'); o.textContent=p; if(p===it.pgto) o.selected=true; selPgto.appendChild(o); });
+  tdPgto.appendChild(selPgto);
+
+  // TD Obs
+  var tdObs = tr.insertCell();
+  tdObs.innerHTML = '<input type="text" value="'+esc(it.obs)+'" placeholder="Obs" oninput="orcAutoSave()">';
+
+  // TD Remover
+  var tdRm = tr.insertCell();
+  tdRm.innerHTML = '<button class="btn-rm" onclick="orcDelRow(this)" title="Remover"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></button>';
+}
+
+function esc(s){ return String(s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+function orcRecalcRow(inp){
+  var row = inp.closest('tr');
+  var q = parseFloat(row.querySelector('.orc-qty').value)||0;
+  var p = parseMoney(row.querySelector('.orc-price').value);
+  var f = parseFloat(row.querySelector('.orc-freq').value)||1;
+  var vf = q*p*f;
+  var cell = row.querySelector('.orc-vf');
+  cell.textContent = fmtM2(vf);
+  cell.classList.toggle('orc-vf-zero', vf===0);
+  orcUpdateTotal();
+  orcAutoSave();
+}
+
+function orcDelRow(btn){ btn.closest('tr').remove(); orcUpdateTotal(); orcAutoSave(); }
+
+function orcUpdateTotal(){
+  var tot = 0;
+  document.querySelectorAll('#orc-itens-tbody .orc-vf').forEach(function(c){
+    tot += parseMoney(c.textContent);
+  });
+  document.getElementById('orc-grand-total').textContent = fmtM2(tot);
+}
+
+/* ── Coleta dados da tabela ── */
+function orcCollectItens(){
+  var itens = [];
+  document.querySelectorAll('#orc-itens-tbody tr').forEach(function(tr){
+    var inps = tr.querySelectorAll('input[type=text],input[type=number]');
+    if(!inps.length) return;
+    var pkBtn = tr.querySelector('.pk-btn');
+    var fornNome = pkBtn ? (pkBtn.getAttribute('data-forn-nome')||'') : '';
+    var srvEl = tr.querySelector('.orc-srv');
+    var srvVal = '';
+    if(srvEl){
+      if(srvEl.tagName==='SELECT'){
+        srvVal = srvEl.value==='__CUSTOM__' ? '' : srvEl.value;
+      } else {
+        srvVal = '__CUSTOM__'+srvEl.value.trim();
+      }
+    }
+    itens.push({
+      srv:  srvVal,
+      desc: inps[0]?inps[0].value.trim():'',
+      qty:  parseFloat(inps[1]?inps[1].value:1)||0,
+      price:inps[2]?inps[2].value.trim():'',
+      freq: parseFloat(inps[3]?inps[3].value:1)||1,
+      unidade: tr.querySelector('.orc-un')?tr.querySelector('.orc-un').value:'Dia',
+      forn: fornNome,
+      pgto: tr.querySelector('.orc-pgto')?tr.querySelector('.orc-pgto').value:'45D',
+      obs:  inps[4]?inps[4].value.trim():'',
+    });
+  });
+  return itens;
+}
+
+function orcGetCurrentStatus(){
+  var active = document.querySelector('.orc-s-pill.on');
+  return active ? active.getAttribute('data-status') : 'elaboracao';
+}
+
+/* ── Salvar ── */
+var _orcAutoSaveTimer = null;
+function orcAutoSave(){
+  // Debounce: salva localmente sempre, mas só envia pra nuvem 800ms após parar de digitar
+  if(!orcCurrentVid) return;
+  var orcs = loadOrc();
+  var _existente = orcs[orcCurrentVid] || {};
+  orcs[orcCurrentVid] = {
+    itens: orcCollectItens(),
+    status: orcGetCurrentStatus(),
+    listaStatus: _existente.listaStatus || 'pendente',
+    numOficial: (document.getElementById('orc-num-field')||{}).value||'',
+    aprovData: (document.getElementById('orc-aprov-data')||{}).value||'',
+    verbaProd: 0,
+    savedTs: nowTs(),
+    owner: (typeof _meuId==='function') ? _meuId() : null
+  };
+  // Salva local imediatamente (rápido, sem custo de rede)
+  localStorage.setItem(SK_ORC, JSON.stringify(orcs));
+  if(typeof marcarMudanca==='function') marcarMudanca();
+  // Envia pra nuvem só após uma pausa na digitação — evita 1 escrita por tecla
+  if(_orcAutoSaveTimer) clearTimeout(_orcAutoSaveTimer);
+  _orcAutoSaveTimer = setTimeout(function(){
+    if(typeof cloudSaveList==='function') cloudSaveList('orcamentos', orcs);
+  }, 800);
+}
+
+function orcSalvar(){
+  console.log('[ORC] 1. chamado. vid=', orcCurrentVid);
+  if(!orcCurrentVid){ toast('Selecione uma visita primeiro','err'); return; }
+  console.log('[ORC] 2. loadOrc...');
+  var orcs = loadOrc();
+  console.log('[ORC] 3. orcs keys=', Object.keys(orcs).length);
+  var existente = orcs[orcCurrentVid] || {};
+  // Coletar dados do cabeçalho avulso (se campos existirem no DOM)
+  var avNomeEl = document.getElementById('avNome');
+  var avulsoData = avNomeEl ? {
+    avulso: true,
+    nomeEvento: avNomeEl.value||'',
+    empresa: (document.getElementById('avEmpresa')||{}).value||'',
+    dataEvento: (document.getElementById('avData')||{}).value||'',
+    horaEvento: (document.getElementById('avHorario')||{}).value||'',
+    local: (document.getElementById('avLocal')||{}).value||'',
+    montagem: (document.getElementById('avMontagem')||{}).value||'',
+    produtor: (document.getElementById('avProdutor')||{}).value||''
+  } : (existente.avulsoData || null);
+  console.log('[ORC] 4. orcCollectItens...');
+  var itens;
+  try { itens = orcCollectItens(); } catch(e) { console.error('[ORC] ERRO collectItens:', e.message); itens = []; }
+  console.log('[ORC] 5. itens coletados=', itens.length);
+  var status;
+  try { status = orcGetCurrentStatus(); } catch(e) { console.error('[ORC] ERRO getStatus:', e.message); status='elaboracao'; }
+  console.log('[ORC] 6. status=', status);
+  orcs[orcCurrentVid] = {
+    itens: itens,
+    status: status,
+    listaStatus: existente.listaStatus || 'pendente',
+    avulsoData: avulsoData || existente.avulsoData || null,
+    numOficial: (document.getElementById('orc-num-field')||{}).value||'',
+    aprovData: (document.getElementById('orc-aprov-data')||{}).value||'',
+    verbaProd: 0,
+    savedTs: nowTs(),
+    owner: (typeof _meuId==='function') ? _meuId() : null
+  };
+  console.log('[ORC] 7. saveOrc com', Object.keys(orcs).length, 'chaves...');
+  saveOrc(orcs);
+  var chk = loadOrc();
+  console.log('[ORC] 8. pos-save localStorage tem', Object.keys(chk).length, 'chaves');
+  if(typeof orcSincronizarEvento==='function') orcSincronizarEvento();
+  toast('Orçamento salvo!','ok');
+  setTimeout(function(){
+    var chk2 = loadOrc();
+    console.log('[ORC] 9. antes orcVoltarLista:', Object.keys(chk2).length, 'chaves');
+    if(typeof orcVoltarLista==='function') orcVoltarLista();
+  }, 800);
+}
+
+/* ── Exportar Excel (XLSX puro via CSV com BOM, compatível com Excel) ── */
+function orcExportXLSX(){
+  if(!orcCurrentVid){ toast('Selecione uma visita primeiro','err'); return; }
+  var vs = loadV();
+  var v = vs.find(function(x){ return x.id===orcCurrentVid; })||{};
+  var orcs = loadOrc();
+  var orc = orcs[orcCurrentVid]||{itens:[],status:'elaboracao',numOficial:'',verbaProd:0};
+  var itens = orcCollectItens();
+  var pNome = (me&&(me.nome||me.login))||'Alessandro Lima';
+  // Montar CSV no formato da planilha
+  var rows = [];
+  rows.push(['\tPLANILHA INICIAL']);
+  rows.push(['\tNº DO EVENTO\tCLIENTE\tNOME DA AÇÃO/EVENTO\t\t\t\t\tDATA\tHORÁRIO']);
+  rows.push(['\t'+(orc.numOficial||'')+'\t'+(v.empresa||'')+'\t'+(v.nome||'')+'\t\t\t\t\t'+(v.dataEvento||'')+'\t'+(v.horaEvento||'')]);
+  rows.push(['\tLOCAL:\t'+(v.local||v.end||'')+'\t\t\t\t\t\tPÚBLICO ESTIMADO:\t'+(v.pessoas||'')]);
+  rows.push(['\tMONTAGEM:\t'+(v.horaMont||'')]);
+  rows.push(['']);
+  rows.push(['\tSERVIÇO\tDESCRIÇÃO DO SERVIÇO\tQtde\tPreço Unit.\tFreq.\tUnidade\tValor final \tFornecedor\tForma de pagamento\tOBS']);
+  itens.forEach(function(it){
+    var vf = (it.qty||0)*parseMoney(it.price)*(it.freq||1);
+    rows.push(['\t'+orcSrvDisplay(it.srv)+'\t'+it.desc+'\t'+it.qty+'\t'+parseMoney(it.price)+'\t'+it.freq+'\t'+it.unidade+'\t'+vf+'\t'+it.forn+'\t'+it.pgto+'\t'+it.obs]);
+  });
+  var sub = itens.reduce(function(s,it){ return s+(it.qty||0)*parseMoney(it.price)*(it.freq||1); },0);
+  rows.push(['\tSUBTOTAL DOS SERVIÇOS\t\t\t\t\t\t'+sub]);
+  rows.push(['']);
+  rows.push(['\tDespesas com outro\tDescritivo\tQtde\tR$ Unitário\tFreq.\tUnidade\tValor final \tFornecedor\tContra apresentação somente com notas fiscais']);
+  rows.push(['\tVerba de Produção\tVerba para produção com comprovação pós evento\t1\t0\t\t\t0\t'+pNome]);
+  rows.push(['\tSUBTOTAL VERBA DE PRODUÇÃO\t\t\t\t\t\t0']);
+  rows.push(['']);
+  rows.push(['\tTOTAL DO EVENTO\t\t\t\t\t\t'+sub+'\t\t\tProdutor Responsável:']);
+  rows.push(['\t\t\t\t\t\t1.8\t'+(sub*1.8)+'\t\t\t'+pNome]);
+  var csv = '\uFEFF' + rows.map(function(r){ return r.join(''); }).join('\r\n');
+  var blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'Planilha_Orcamentaria_'+(v.nome||'evento').replace(/[^a-zA-Z0-9]/g,'_')+'.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('Excel exportado! Abra no Excel/LibreOffice.','ok');
+}
+
+/* ── WhatsApp Orçamento (com valores) ── */
+function orcWAOrcamento(){
+  if(!orcCurrentVid){ toast('Selecione uma visita primeiro','err'); return; }
+  var vs = loadV();
+  var v = vs.find(function(x){ return x.id===orcCurrentVid; })||{};
+  var itens = orcCollectItens();
+  var pNome = (me&&(me.nome||me.login))||'Alessandro Lima';
+  var orcs = loadOrc();
+  var orc = orcs[orcCurrentVid]||{numOficial:''};
+  var linha = '-----------------------------';
+  var m = '*PLANILHA ORÇAMENTÁRIA*\n'+linha+'\n';
+  if(orc.numOficial) m+='Nº do Evento: '+orc.numOficial+'\n';
+  m+='Cliente: '+(v.empresa||'');
+  if(v.nome) m+='\nEvento: '+v.nome;
+  if(v.dataEvento) m+='\nData: '+fmtDR(v.dataEvento, v.dataEventoFim);
+  if(v.horaEvento) m+=' às '+v.horaEvento;
+  if(v.local||v.end) m+='\nLocal: '+(v.local||v.end);
+  if(v.pessoas) m+='\nPúblico: '+v.pessoas+' pessoas';
+  m+='\n'+linha+'\n\n*ITENS DO ORÇAMENTO*\n\n';
+  var sub=0;
+  itens.forEach(function(it){
+    var srvLabel = orcSrvDisplay(it.srv)||'';
+    if(!srvLabel&&!it.desc) return;
+    var vf=(it.qty||0)*parseMoney(it.price)*(it.freq||1);
+    sub+=vf;
+    var linha = srvLabel||(it.desc||'');
+    if(srvLabel && it.desc) linha = srvLabel+' — '+it.desc;
+    var _oqty = parseInt(it.qty||1);
+    m+='• '+linha;
+    if(_oqty > 1) m+=' - Qtd: '+_oqty;
+    if((it.freq||1)>1) m+=' x '+it.freq+' dias';
+    m+=' | Valor: '+fmtM2(vf);
+    if(it.forn) m+=' | Forn: '+it.forn;
+    m+='\n';
+  });
+  m+='\n'+linha+'\n*TOTAL DO EVENTO: '+fmtM2(sub)+'*';
+  m+='\n\nProdutor responsável: '+pNome;
+  window.open('https://wa.me/?text='+encodeURIComponent(m),'_blank');
+}
+
+/* ── WhatsApp Cotação (sem valores) ── */
+function orcWACotacao(){
+  if(!orcCurrentVid){ toast('Selecione uma visita primeiro','err'); return; }
+  var vs = loadV();
+  var v = vs.find(function(x){ return x.id===orcCurrentVid; })||{};
+  var itens = orcCollectItens();
+  var orcs = loadOrc();
+  var orc = orcs[orcCurrentVid]||{numOficial:''};
+  var pNome = (me&&(me.nome||me.login))||'Alessandro Lima';
+
+  // Saudação automática
+  var h = new Date().getHours();
+  var saud = h<12 ? 'Bom dia' : (h<18 ? 'Boa tarde' : 'Boa noite');
+
+  // Helper para formatar hora "06:30" → "06h30"
+  function fmtHora(hhmm){
+    if(!hhmm) return '';
+    var p = hhmm.split(':');
+    return p[0]+'h'+(p[1]||'00');
+  }
+
+  var m = saud + '! Segue abaixo o pedido de orçamento:\n\n';
+
+  // Dados do evento
+  if(orc.numOficial) m += 'Nº do Evento: ' + orc.numOficial + '\n';
+  m += 'Evento: ' + (v.nome||'—') + '\n';
+  if(v.dataEvento){
+    m += 'Data: ' + fmtDR(v.dataEvento, v.dataEventoFim);
+    if(v.horaEvento) m += ' às ' + fmtHora(v.horaEvento);
+    m += '\n';
+  }
+  if(v.local||v.end) m += 'Local: ' + (v.local||v.end) + '\n';
+
+  // Link de localização (Mapa)
+  var mapa = '';
+  var mapaWaze = '';
+  if(v.gpsMain && v.gpsMain.lat){
+    var _clat = parseFloat(v.gpsMain.lat).toFixed(5);
+    var _clng = parseFloat(v.gpsMain.lng).toFixed(5);
+    mapa = 'https://maps.app.goo.gl?q=' + _clat + ',' + _clng;
+    mapaWaze = 'https://waze.com/ul?ll=' + _clat + ',' + _clng;
+  } else if(v.linkLoc){
+    mapa = v.linkLoc;
+  }
+  if(mapa){
+    m += '🗺 ' + mapa + '\n';
+    if(mapaWaze) m += '🚗 ' + mapaWaze + '\n';
+  }
+
+  // Montagem (se houver)
+  if(v.dataMont){
+    var partes = v.dataMont.split('-');
+    var dataMontFmt = partes.length===3 ? partes[2]+'/'+partes[1]+'/'+partes[0] : v.dataMont;
+    m += '\nMontagem: ' + dataMontFmt;
+    if(v.horaMont) m += ' às ' + fmtHora(v.horaMont);
+    m += '\n';
+  }
+
+  // Demanda
+  m += '\n*DEMANDA*\n';
+  itens.forEach(function(it){
+    var srvLabel = orcSrvDisplay(it.srv)||'';
+    if(!srvLabel && !it.desc) return;
+    var linha = srvLabel||(it.desc||'');
+    if(srvLabel && it.desc) linha = srvLabel+' — '+it.desc;
+    var _qty = (it.qty !== undefined && it.qty !== '' && it.qty !== null) ? parseInt(it.qty) : 1;
+    m += '• ' + linha;
+    if(_qty > 1) m += ' - Qtd: ' + _qty;
+    m += '\n';
+  });
+
+  // Encerramento
+  m += '\nPor favor, verifique a disponibilidade.';
+  m += '\nAguardo retorno. Obrigado!';
+  m += '\n\n' + pNome;
+
+  window.open('https://wa.me/?text=' + encodeURIComponent(m), '_blank');
+}
+
+function orcNovaVisita(){ irParaForm(); }
+
+/* ── Secretarias ── */
+function openSecModal(id){
+  orcEditSecId = id||null;
+  var sec = id ? loadSec().find(function(s){ return s.id===id; }) : null;
+  document.getElementById('modalSecTit').textContent = sec ? 'Editar secretaria' : 'Nova secretaria';
+  document.getElementById('sNome').value = sec ? sec.nome : '';
+  document.getElementById('sSigla').value = sec ? sec.sigla : '';
+  document.getElementById('sResp').value = sec ? (sec.resp||'') : '';
+  document.getElementById('modalSecOv').classList.add('on');
+}
+function closeSecModal(){ document.getElementById('modalSecOv').classList.remove('on'); }
+function saveSecretaria(){
+  var nome = document.getElementById('sNome').value.trim();
+  var sigla = document.getElementById('sSigla').value.trim().toUpperCase();
+  if(!nome){ toast('Informe o nome da secretaria','err'); return; }
+  var secs = loadSec();
+  var sec = { id: orcEditSecId||uid(), nome:nome, sigla:sigla, resp:document.getElementById('sResp').value.trim(), owner: (typeof _meuId==='function') ? _meuId() : null };
+  if(orcEditSecId){ var ix=secs.findIndex(function(s){return s.id===orcEditSecId;}); if(ix>=0) secs[ix]=sec; else secs.push(sec); }
+  else secs.push(sec);
+  saveSec(secs);
+  closeSecModal();
+  renderSecList();
+  toast('Secretaria salva!','ok');
+}
+function delSecretaria(id){
+  if(!confirm('Excluir esta secretaria?')) return;
+  saveSec(loadSec().filter(function(s){return s.id!==id;}));
+  renderSecList();
+  toast('Secretaria excluída.','ok');
+}
+function renderSecList(){
+  var el = document.getElementById('secList');
+  if(!el) return;
+  var secs = loadSec();
+  if(!secs.length){ el.innerHTML='<div class="empty"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><p>Nenhuma secretaria cadastrada</p><small>Cadastre as secretarias da Prefeitura</small></div>'; return; }
+  el.innerHTML = secs.map(function(s){
+    return '<div class="sec-card">'
+      +'<div class="sec-ico">🏛</div>'
+      +'<div><div class="sec-name">'+s.nome+'</div><div class="sec-sigla">'+(s.sigla?s.sigla+' · ':'')+(s.resp||'')+'</div></div>'
+      +'<div class="u-acts">'
+      +'<div class="bi" onclick="openSecModal(\''+s.id+'\')" title="Editar"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>'
+      +'<div class="bi danger" onclick="delSecretaria(\''+s.id+'\')" title="Excluir"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></div>'
+      +'</div></div>';
+  }).join('');
+}
+
+/* ── Patch adTab para incluir secretarias ── */
+var _origAdTab = adTab;
+adTab = function(t){
+  _origAdTab(t);
+  document.getElementById('adSecretariasP').style.display = t==='secretarias'?'block':'none';
+  if(t==='secretarias') renderSecList();
+  document.getElementById('at-secretarias').className='atab'+(t==='secretarias'?' on':'');
+  var adProdP = document.getElementById('adProdutoresP');
+  if(adProdP) adProdP.style.display = t==='produtores'?'block':'none';
+  if(t==='produtores') renderProdAdm();
+  var atProd = document.getElementById('at-produtores');
+  if(atProd) atProd.className='atab'+(t==='produtores'?' on':'');
+  var adBkP = document.getElementById('adBackupP');
+  if(adBkP) adBkP.style.display = t==='backup'?'block':'none';
+  if(t==='backup' && typeof bkAtualizarInfo==='function') bkAtualizarInfo();
+  var atBk = document.getElementById('at-backup');
+  if(atBk) atBk.className='atab'+(t==='backup'?' on':'');
+};
+
+
+/* ═══════════════════════════════════════════════════════════════
+   MIGRAÇÃO DE DADOS v1 — Corrige preços salvos como string
+   Roda uma única vez e marca como concluída.
+   ═══════════════════════════════════════════════════════════════ */
+(function migrarPlanilhasPrecos() {
+  if (localStorage.getItem('plnl_preco_migrado_v1')) return;
+  try {
+    function normP(v) {
+      if (v == null || v === '') return 0;
+      if (typeof v === 'number') return v;
+      var s = String(v).replace(/R\$\s*/g,'').trim()
+                       .replace(/\./g,'').replace(',','.');
+      return parseFloat(s) || 0;
+    }
+    function fixItens(arr) {
+      if (!Array.isArray(arr)) return arr;
+      return arr.map(function(item) {
+        var r = Object.assign({}, item);
+        if (r.preco  != null) r.preco  = normP(r.preco);
+        if (r.valor  != null) r.valor  = normP(r.valor);
+        return r;
+      });
+    }
+    var list = JSON.parse(localStorage.getItem('vtp_planilhas_v1') || '[]');
+    list.forEach(function(p) {
+      if (!p.dados) return;
+      p.dados.itens         = fixItens(p.dados.itens);
+      p.dados.clienteItens  = fixItens(p.dados.clienteItens);
+      p.dados.fornecedores  = fixItens(p.dados.fornecedores);
+      p.dados.verba         = fixItens(p.dados.verba);
+      if (p.dados.fechamento) {
+        p.dados.fechamento.itens = fixItens(p.dados.fechamento.itens);
+      }
+    });
+    localStorage.setItem('vtp_planilhas_v1', JSON.stringify(list));
+    localStorage.setItem('plnl_preco_migrado_v1', '1');
+    console.log('[GEP] Migração de preços concluída:', list.length, 'planilhas corrigidas');
+  } catch(e) {
+    console.warn('[GEP] Erro na migração de preços:', e);
+  }
+})();
+
+/* ── Patch sbGo para carregar seletor ao abrir orçamento ── */
+
+/* ══ PERMISSÕES: ocultar itens da sidebar ══ */
+function aplicarPermissoes(user) {
+  // Relê permissões frescas do localStorage (pega alterações em tempo real)
+  if (user && user.id && user.id !== 'root') {
+    var fresh = loadU().find(function(u){ return u.id === user.id; });
+    if (fresh) user = fresh;
+  }
+  if (!user || user.role === 'admin' || user.id === 'root') {
+    // Admin vê tudo — garantir que está tudo visível
+    document.querySelectorAll('[data-perm]').forEach(function(el) { el.style.display = ''; });
+    return;
+  }
+  var perms = user.permissions || [];
+
+  // Mapa: data-perm → permissão exigida
+  var PERM_REQ = {
+    'vt':        'pVt',
+    'orcamentos':'pOrc',
+    'planilha':  'pPlanilha',
+    'agenda':    'pAgenda',
+    'realizados':'pRealizados',
+    'cadastros': 'pCadastros',
+    'relatorios':'pRelatorios',
+    'sync':      'pSync'
+  };
+
+  Object.keys(PERM_REQ).forEach(function(zone) {
+    var req = PERM_REQ[zone];
+    var allowed = perms.indexOf(req) !== -1;
+    document.querySelectorAll('[data-perm="'+zone+'"]').forEach(function(el) {
+      el.style.display = allowed ? '' : 'none';
+    });
+  });
+
+  // Ocultar grupos de seção se todos os itens dentro sumiram
+  document.querySelectorAll('.sb-grp').forEach(function(grp) {
+    var next = grp.nextElementSibling;
+    var allHidden = true;
+    while (next && !next.classList.contains('sb-grp')) {
+      if (next.style.display !== 'none' &&
+          !next.id?.includes('Adm') &&
+          next.tagName !== 'DIV' || (next.classList.contains('sb-item') && next.style.display !== 'none')) {
+        allHidden = false;
+      }
+      next = next.nextElementSibling;
+    }
+  });
+}
+
 
 /* ── sbGo consolidado ── */
 var _sbGoOrig = sbGo;
