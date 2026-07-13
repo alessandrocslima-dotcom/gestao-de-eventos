@@ -1425,7 +1425,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
           <div class="gep-foot-dev">Desenvolvido por</div>
           <div class="gep-foot-name">Alessandro Lima</div>
           <div class="gep-foot-copy">© 2026 · Todos os direitos reservados</div>
-          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-164</span></div>
+          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-165</span></div>
         </div>
       </div>
     </div>
@@ -1489,7 +1489,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div class="d">Desenvolvido por</div>
       <div class="n">Alessandro Lima</div>
       <div class="c">© 2026 · Todos os direitos reservados</div>
-      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-164</span></div>
+      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-165</span></div>
     </div>
   </div>
 
@@ -5281,7 +5281,7 @@ saveEmp = function(){
 // Expor tudo globalmente
 
 /* ═══════════════════════════════════════════════════════════
-   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-164
+   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-165
    ═══════════════════════════════════════════════════════════ */
 var SK_PLNL = 'vtp_planilhas_v1';
 
@@ -5485,15 +5485,45 @@ function toggleManutencao(){
 
 // Verificar manutenção periodicamente (captura mudanças de outros dispositivos)
 function sincronizarManutencao(){
-  if(typeof db === 'undefined' || !db) return;
-  db.collection('gep_config').doc('_lista').onSnapshot(function(doc){
-    if(!doc.exists) return;
-    var d = doc.data();
-    if(d && d.items && typeof d.items.manutencao !== 'undefined'){
-      localStorage.setItem(SK_MANUT, d.items.manutencao ? '1' : '0');
-      verificarManutencao();
+  // Polling a cada 30 segundos — verifica estado de manutenção em tempo real
+  setInterval(function(){
+    if(!me) return; // Só verificar se estiver logado
+    if(typeof db !== 'undefined' && db){
+      // Tentar via Firebase direto
+      db.collection('gep_config').doc('_lista').get().then(function(doc){
+        if(doc.exists){
+          var d = doc.data();
+          if(d && d.items && typeof d.items.manutencao !== 'undefined'){
+            var novoEstado = d.items.manutencao ? '1' : '0';
+            var estadoAtual = localStorage.getItem(SK_MANUT);
+            if(novoEstado !== estadoAtual){
+              localStorage.setItem(SK_MANUT, novoEstado);
+              localStorage.setItem('vtp_gep_config_v1', JSON.stringify(d.items));
+              _aplicarEstadoManutencao();
+            }
+          }
+        }
+      }).catch(function(){
+        // Fallback: verificar via localStorage (atualizado pelo sync)
+        _aplicarEstadoManutencao();
+      });
+    } else {
+      _aplicarEstadoManutencao();
     }
-  });
+  }, 30000); // Verifica a cada 30 segundos
+
+  // Também usar onSnapshot para atualizações imediatas
+  if(typeof db !== 'undefined' && db){
+    db.collection('gep_config').doc('_lista').onSnapshot(function(doc){
+      if(!doc.exists || !me) return;
+      var d = doc.data();
+      if(d && d.items && typeof d.items.manutencao !== 'undefined'){
+        localStorage.setItem(SK_MANUT, d.items.manutencao ? '1' : '0');
+        localStorage.setItem('vtp_gep_config_v1', JSON.stringify(d.items));
+        _aplicarEstadoManutencao();
+      }
+    });
+  }
 }
 
 window.sbGo=sbGo; window.sbOpen=sbOpen; window.sbClose=sbClose;
@@ -6387,7 +6417,7 @@ window.orcSalvar=orcSalvar;
 window.orcExportXLSX=orcExportXLSX;
 
 /* ══════════════════════════════════════════════════════════
-   LISTA DE ORÇAMENTOS — v15-164
+   LISTA DE ORÇAMENTOS — v15-165
    ══════════════════════════════════════════════════════════ */
 var _orcFiltroAtivo = 'todos';
 
