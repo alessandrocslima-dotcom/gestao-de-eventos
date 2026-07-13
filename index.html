@@ -1425,7 +1425,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
           <div class="gep-foot-dev">Desenvolvido por</div>
           <div class="gep-foot-name">Alessandro Lima</div>
           <div class="gep-foot-copy">© 2026 · Todos os direitos reservados</div>
-          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-183</span></div>
+          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-184</span></div>
         </div>
       </div>
     </div>
@@ -1489,7 +1489,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div class="d">Desenvolvido por</div>
       <div class="n">Alessandro Lima</div>
       <div class="c">© 2026 · Todos os direitos reservados</div>
-      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-183</span></div>
+      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-184</span></div>
     </div>
   </div>
 
@@ -1888,6 +1888,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
         <button class="atab" onclick="adTab('secretarias')" id="at-secretarias">🏛 Secretarias</button>
         <button class="atab" onclick="adTab('catalogo')" id="at-catalogo">📦 Catálogo</button>
         <button class="atab" onclick="adTab('backup')" id="at-backup">💾 Backup</button>
+        <button class="atab" onclick="adTab('manutencao')" id="at-manutencao">🔧 Manutenção</button>
       </div>
       <div id="adSecretariasP" style="display:none">
         <button class="btn-outline-blue" onclick="openSecModal()">
@@ -2154,6 +2155,9 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
             <span id="plnl-editor-nome" style="font-size:14px;font-weight:600;color:#0F172A;flex:1"></span>
           </div>
           <iframe id="plnl-iframe" src="" style="width:100%;border:none;border-radius:10px;height:calc(100vh - 180px)"></iframe>
+        </div>
+
+      
         </div>
 
       </div>
@@ -4128,7 +4132,7 @@ function adTab(t){
     if(el) el.style.display = (t===k ? 'block' : 'none');
   });
   // Atualizar abas (highlight)
-  ['users','events','empresas','secretarias','catalogo','backup'].forEach(function(k){
+  ['users','events','empresas','secretarias','catalogo','backup','manutencao'].forEach(function(k){
     var btn = document.getElementById('at-'+k);
     if(btn) btn.className = 'atab' + (t===k ? ' on' : '');
   });
@@ -4994,6 +4998,7 @@ var _pageMeta = {
   'admin-secretarias':{title:'Secretarias',       bread:'Administração',    btn:false},
   'admin-catalogo':{title:'Catálogo de Itens',    bread:'Administração',    btn:false},
   'admin-backup':  {title:'Backup',                bread:'Administração',    btn:false},
+  'admin-manutencao':{title:'Manutenção',            bread:'Administração',    btn:false},
   'orcamentos':    {title:'Orçamentos',           bread:'Operacional',      btn:true},
   'planilha':      {title:'Planilha Orçamentária', bread:'Operacional',     btn:false},
   'eventos':       {title:'Agenda de Eventos',    bread:'Eventos',          btn:false},
@@ -5265,7 +5270,7 @@ saveEmp = function(){
 // Expor tudo globalmente
 
 /* ═══════════════════════════════════════════════════════════
-   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-183
+   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-184
    ═══════════════════════════════════════════════════════════ */
 var SK_PLNL = 'vtp_planilhas_v1';
 
