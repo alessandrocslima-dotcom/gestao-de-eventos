@@ -1425,7 +1425,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
           <div class="gep-foot-dev">Desenvolvido por</div>
           <div class="gep-foot-name">Alessandro Lima</div>
           <div class="gep-foot-copy">© 2026 · Todos os direitos reservados</div>
-          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-167</span></div>
+          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-168</span></div>
         </div>
       </div>
     </div>
@@ -1489,7 +1489,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div class="d">Desenvolvido por</div>
       <div class="n">Alessandro Lima</div>
       <div class="c">© 2026 · Todos os direitos reservados</div>
-      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-167</span></div>
+      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-168</span></div>
     </div>
   </div>
 
@@ -5281,7 +5281,7 @@ saveEmp = function(){
 // Expor tudo globalmente
 
 /* ═══════════════════════════════════════════════════════════
-   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-167
+   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-168
    ═══════════════════════════════════════════════════════════ */
 var SK_PLNL = 'vtp_planilhas_v1';
 
@@ -5441,7 +5441,8 @@ function _aplicarEstadoManutencao(){
     overlay.innerHTML = '<div style="font-size:52px;margin-bottom:20px">🔧</div>'
       + '<h2 style="color:#F1F5F9;font-size:22px;font-weight:700;margin:0 0 10px">Sistema em manutenção</h2>'
       + '<p style="color:#94A3B8;font-size:14px;max-width:340px;margin:0 auto 24px;line-height:1.6">Estamos realizando atualizações. Voltaremos em breve.</p>'
-      + '<div style="background:#1E293B;border:1px solid #334155;border-radius:10px;padding:12px 20px;font-size:13px;color:#64748B">⏱ Aguarde a liberação pelo administrador</div>';
+      + '<div style="background:#1E293B;border:1px solid #334155;border-radius:10px;padding:12px 20px;font-size:13px;color:#64748B;margin-bottom:20px">⏱ Aguarde a liberação pelo administrador</div>'
+      + '<button onclick="location.reload()" style="background:#2563EB;color:#fff;border:none;border-radius:10px;padding:12px 28px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;margin:0 auto">🔄 Atualizar página</button>';
     document.body.appendChild(overlay);
   }
 
@@ -6427,7 +6428,7 @@ window.orcSalvar=orcSalvar;
 window.orcExportXLSX=orcExportXLSX;
 
 /* ══════════════════════════════════════════════════════════
-   LISTA DE ORÇAMENTOS — v15-167
+   LISTA DE ORÇAMENTOS — v15-168
    ══════════════════════════════════════════════════════════ */
 var _orcFiltroAtivo = 'todos';
 
