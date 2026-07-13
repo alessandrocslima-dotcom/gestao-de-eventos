@@ -1425,7 +1425,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
           <div class="gep-foot-dev">Desenvolvido por</div>
           <div class="gep-foot-name">Alessandro Lima</div>
           <div class="gep-foot-copy">© 2026 · Todos os direitos reservados</div>
-          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-182</span></div>
+          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-183</span></div>
         </div>
       </div>
     </div>
@@ -1489,7 +1489,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div class="d">Desenvolvido por</div>
       <div class="n">Alessandro Lima</div>
       <div class="c">© 2026 · Todos os direitos reservados</div>
-      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-182</span></div>
+      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-183</span></div>
     </div>
   </div>
 
@@ -2154,9 +2154,6 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
             <span id="plnl-editor-nome" style="font-size:14px;font-weight:600;color:#0F172A;flex:1"></span>
           </div>
           <iframe id="plnl-iframe" src="" style="width:100%;border:none;border-radius:10px;height:calc(100vh - 180px)"></iframe>
-        </div>
-
-      
         </div>
 
       </div>
@@ -5018,6 +5015,7 @@ var _pageMap = {
   'admin-secretarias': 'vpAdmin',
   'admin-catalogo':    'vpAdmin',
   'admin-backup':      'vpAdmin',
+  'admin-manutencao':  'vpAdmin',
   'orcamentos':     'vpOrcamentos',
   'planilha':       'vpPlanilha',
   'eventos':        'vpEventos',
@@ -5068,6 +5066,7 @@ function sbGo(page, el) {
   if(page === 'admin-secretarias') { adTab('secretarias'); }
   if(page === 'admin-catalogo')    { adTab('catalogo'); }
   if(page === 'admin-backup')      { adTab('backup'); }
+  if(page === 'admin-manutencao')  { adTab('manutencao'); }
   if(page === 'empresas-cad')   { renderEmpListCad(); }
   if(page === 'rel-visitas')    { renderRelVisitas(); }
 
@@ -5266,7 +5265,7 @@ saveEmp = function(){
 // Expor tudo globalmente
 
 /* ═══════════════════════════════════════════════════════════
-   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-182
+   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-183
    ═══════════════════════════════════════════════════════════ */
 var SK_PLNL = 'vtp_planilhas_v1';
 
