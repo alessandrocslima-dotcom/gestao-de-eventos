@@ -1425,7 +1425,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
           <div class="gep-foot-dev">Desenvolvido por</div>
           <div class="gep-foot-name">Alessandro Lima</div>
           <div class="gep-foot-copy">© 2026 · Todos os direitos reservados</div>
-          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-179</span></div>
+          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-180</span></div>
         </div>
       </div>
     </div>
@@ -1489,7 +1489,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div class="d">Desenvolvido por</div>
       <div class="n">Alessandro Lima</div>
       <div class="c">© 2026 · Todos os direitos reservados</div>
-      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-179</span></div>
+      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-180</span></div>
     </div>
   </div>
 
@@ -5280,7 +5280,7 @@ saveEmp = function(){
 // Expor tudo globalmente
 
 /* ═══════════════════════════════════════════════════════════
-   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-179
+   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-180
    ═══════════════════════════════════════════════════════════ */
 var SK_PLNL = 'vtp_planilhas_v1';
 
@@ -5288,6 +5288,7 @@ function plnlLoad(){ try{ return JSON.parse(localStorage.getItem(SK_PLNL)||'[]')
 function plnlSave(a){ localStorage.setItem(SK_PLNL, JSON.stringify(a)); if(typeof marcarMudanca==='function') marcarMudanca(); }
 
 function plnlRenderList(){
+  console.log('[PLNL] plnlRenderList chamada - listState:', document.getElementById('plnl-list-state') ? document.getElementById('plnl-list-state').style.display : 'NÃO ENCONTRADO');
   // Garantir que o estado correto está visível
   var listState = document.getElementById('plnl-list-state');
   var editorState = document.getElementById('plnl-editor-state');
@@ -6416,7 +6417,7 @@ var _sbGoOrig = sbGo;
 window.sbGo = function(page, el){
   _sbGoOrig(page, el);
   if(page==='orcamentos')  { if(typeof orcRenderLista==='function') orcRenderLista(); else if(typeof orcPopulateSelector==='function') orcPopulateSelector(); }
-  if(page==='planilha')    { if(typeof plnlRenderList==='function') plnlRenderList(); }
+  if(page==='planilha')    { console.log('[PLNL] sbGo planilha chamado'); if(typeof plnlRenderList==='function') plnlRenderList(); else console.warn('[PLNL] plnlRenderList NÃO EXISTE!'); }
   // Reaplicar permissões a cada navegação
   if(me && typeof aplicarPermissoes==='function') aplicarPermissoes(me);
   // Verificar manutenção (localStorage é síncrono — funciona sem Firebase)
@@ -6507,7 +6508,7 @@ window.orcSalvar=orcSalvar;
 window.orcExportXLSX=orcExportXLSX;
 
 /* ══════════════════════════════════════════════════════════
-   LISTA DE ORÇAMENTOS — v15-179
+   LISTA DE ORÇAMENTOS — v15-180
    ══════════════════════════════════════════════════════════ */
 var _orcFiltroAtivo = 'todos';
 
