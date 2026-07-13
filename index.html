@@ -1425,7 +1425,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
           <div class="gep-foot-dev">Desenvolvido por</div>
           <div class="gep-foot-name">Alessandro Lima</div>
           <div class="gep-foot-copy">© 2026 · Todos os direitos reservados</div>
-          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-165</span></div>
+          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-167</span></div>
         </div>
       </div>
     </div>
@@ -1489,7 +1489,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div class="d">Desenvolvido por</div>
       <div class="n">Alessandro Lima</div>
       <div class="c">© 2026 · Todos os direitos reservados</div>
-      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-165</span></div>
+      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-167</span></div>
     </div>
   </div>
 
@@ -5281,7 +5281,7 @@ saveEmp = function(){
 // Expor tudo globalmente
 
 /* ═══════════════════════════════════════════════════════════
-   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-165
+   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-167
    ═══════════════════════════════════════════════════════════ */
 var SK_PLNL = 'vtp_planilhas_v1';
 
@@ -5429,20 +5429,26 @@ function verificarManutencao(){
 }
 
 function _aplicarEstadoManutencao(){
-  // Ler do config sincronizado (mais confiável que SK_MANUT)
-  try{
-    var cfg = JSON.parse(localStorage.getItem('vtp_gep_config_v1')||'{}');
-    if(typeof cfg.manutencao !== 'undefined'){
-      localStorage.setItem(SK_MANUT, cfg.manutencao ? '1' : '0');
-    }
-  }catch(e){}
+  // Lê SK_MANUT direto — sem sobrescrever com dados potencialmente antigos da nuvem
   var ativo = localStorage.getItem(SK_MANUT) === '1';
+
+  // Criar overlay dinamicamente se não existir no DOM (versão antiga em cache)
   var overlay = document.getElementById('gepManutencaoOverlay');
-  if(!overlay) return;
+  if(!overlay){
+    overlay = document.createElement('div');
+    overlay.id = 'gepManutencaoOverlay';
+    overlay.style.cssText = 'display:none;position:fixed;inset:0;z-index:99999;background:#0F172A;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2rem';
+    overlay.innerHTML = '<div style="font-size:52px;margin-bottom:20px">🔧</div>'
+      + '<h2 style="color:#F1F5F9;font-size:22px;font-weight:700;margin:0 0 10px">Sistema em manutenção</h2>'
+      + '<p style="color:#94A3B8;font-size:14px;max-width:340px;margin:0 auto 24px;line-height:1.6">Estamos realizando atualizações. Voltaremos em breve.</p>'
+      + '<div style="background:#1E293B;border:1px solid #334155;border-radius:10px;padding:12px 20px;font-size:13px;color:#64748B">⏱ Aguarde a liberação pelo administrador</div>';
+    document.body.appendChild(overlay);
+  }
+
   if(ativo && !isAdmin()){
-    overlay.classList.add('ativo');
+    overlay.style.display = 'flex';
   } else {
-    overlay.classList.remove('ativo');
+    overlay.style.display = 'none';
   }
   atualizarPainelManutencao();
 }
@@ -5518,9 +5524,13 @@ function sincronizarManutencao(){
       if(!doc.exists || !me) return;
       var d = doc.data();
       if(d && d.items && typeof d.items.manutencao !== 'undefined'){
-        localStorage.setItem(SK_MANUT, d.items.manutencao ? '1' : '0');
-        localStorage.setItem('vtp_gep_config_v1', JSON.stringify(d.items));
-        _aplicarEstadoManutencao();
+        var cfgL = {};
+        try{ cfgL = JSON.parse(localStorage.getItem('vtp_gep_config_v1')||'{}'); }catch(e){}
+        if((d.items.ts||0) >= (cfgL.ts||0)){
+          localStorage.setItem(SK_MANUT, d.items.manutencao ? '1' : '0');
+          localStorage.setItem('vtp_gep_config_v1', JSON.stringify(d.items));
+          _aplicarEstadoManutencao();
+        }
       }
     });
   }
@@ -6417,7 +6427,7 @@ window.orcSalvar=orcSalvar;
 window.orcExportXLSX=orcExportXLSX;
 
 /* ══════════════════════════════════════════════════════════
-   LISTA DE ORÇAMENTOS — v15-165
+   LISTA DE ORÇAMENTOS — v15-167
    ══════════════════════════════════════════════════════════ */
 var _orcFiltroAtivo = 'todos';
 
