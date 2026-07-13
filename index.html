@@ -1425,7 +1425,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
           <div class="gep-foot-dev">Desenvolvido por</div>
           <div class="gep-foot-name">Alessandro Lima</div>
           <div class="gep-foot-copy">© 2026 · Todos os direitos reservados</div>
-          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-176</span></div>
+          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-178</span></div>
         </div>
       </div>
     </div>
@@ -1489,7 +1489,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div class="d">Desenvolvido por</div>
       <div class="n">Alessandro Lima</div>
       <div class="c">© 2026 · Todos os direitos reservados</div>
-      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-176</span></div>
+      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-178</span></div>
     </div>
   </div>
 
@@ -2155,9 +2155,6 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
             <span id="plnl-editor-nome" style="font-size:14px;font-weight:600;color:#0F172A;flex:1"></span>
           </div>
           <iframe id="plnl-iframe" src="" style="width:100%;border:none;border-radius:10px;height:calc(100vh - 180px)"></iframe>
-        </div>
-
-      
         </div>
 
       </div>
@@ -5283,7 +5280,7 @@ saveEmp = function(){
 // Expor tudo globalmente
 
 /* ═══════════════════════════════════════════════════════════
-   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-176
+   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-178
    ═══════════════════════════════════════════════════════════ */
 var SK_PLNL = 'vtp_planilhas_v1';
 
@@ -5294,7 +5291,7 @@ function plnlRenderList(){
   // Garantir que o estado correto está visível
   var listState = document.getElementById('plnl-list-state');
   var editorState = document.getElementById('plnl-editor-state');
-  if(listState) listState.style.display = '';
+  if(listState) listState.style.display = 'block';
   if(editorState) editorState.style.display = 'none';
   // Limpar iframe para não ficar carregando em background
   var ifr = document.getElementById('plnl-iframe');
@@ -6050,6 +6047,18 @@ function orcSalvar(){
   var orcs = loadOrc();
   console.log('[ORC] 3. orcs keys=', Object.keys(orcs).length);
   var existente = orcs[orcCurrentVid] || {};
+  // Coletar dados do cabeçalho avulso (se campos existirem no DOM)
+  var avNomeEl = document.getElementById('avNome');
+  var avulsoData = avNomeEl ? {
+    avulso: true,
+    nomeEvento: avNomeEl.value||'',
+    empresa: (document.getElementById('avEmpresa')||{}).value||'',
+    dataEvento: (document.getElementById('avData')||{}).value||'',
+    horaEvento: (document.getElementById('avHorario')||{}).value||'',
+    local: (document.getElementById('avLocal')||{}).value||'',
+    montagem: (document.getElementById('avMontagem')||{}).value||'',
+    produtor: (document.getElementById('avProdutor')||{}).value||''
+  } : (existente.avulsoData || null);
   console.log('[ORC] 4. orcCollectItens...');
   var itens;
   try { itens = orcCollectItens(); } catch(e) { console.error('[ORC] ERRO collectItens:', e.message); itens = []; }
@@ -6061,6 +6070,7 @@ function orcSalvar(){
     itens: itens,
     status: status,
     listaStatus: existente.listaStatus || 'pendente',
+    avulsoData: avulsoData || existente.avulsoData || null,
     numOficial: (document.getElementById('orc-num-field')||{}).value||'',
     aprovData: (document.getElementById('orc-aprov-data')||{}).value||'',
     verbaProd: 0,
@@ -6497,7 +6507,7 @@ window.orcSalvar=orcSalvar;
 window.orcExportXLSX=orcExportXLSX;
 
 /* ══════════════════════════════════════════════════════════
-   LISTA DE ORÇAMENTOS — v15-176
+   LISTA DE ORÇAMENTOS — v15-178
    ══════════════════════════════════════════════════════════ */
 var _orcFiltroAtivo = 'todos';
 
@@ -6568,11 +6578,14 @@ function orcRenderLista() {
     var v = vs.find(function(x) { return x.id === vid; }) || {};
     var lStatus = orcGetListaStatus(orc);
     var total = orcCalcTotal(orc.itens);
-    var numEvt = orc.numOficial || v.numEvento || v.numero || '—';
-    var nome = v.nome || v.nomeEvento || 'Sem nome';
-    var empresa = v.empresa || '—';
-    var produtor = v.produtor || '—';
-    var data = v.dataEvento ? fmtDR(v.dataEvento, v.dataEventoFim) : '—';
+    var numEvt = orc.numOficial || (v && (v.numEvento || v.numero)) || '—';
+    var ad = orc.avulsoData; // dados do cabeçalho avulso
+    var nome = (ad && ad.nomeEvento) || (v && (v.nome || v.nomeEvento)) || 'Orçamento avulso';
+    var empresa = (ad && ad.empresa) || (v && v.empresa) || '—';
+    var produtor = (ad && ad.produtor) || (v && v.produtor) || '—';
+    var dataEvt = (ad && ad.dataEvento) || (v && v.dataEvento);
+    var dataFim = v && v.dataEventoFim;
+    var data = dataEvt ? fmtDR(dataEvt, dataFim) : '—';
 
     var waSvg = '<svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:currentColor;flex-shrink:0"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.096.537 4.07 1.477 5.787L0 24l6.393-1.477A11.934 11.934 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.879 0-3.638-.494-5.159-1.355l-.36-.213-3.799.876.9-3.687-.234-.376A9.96 9.96 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>';
     return '<div class="orc-list-card orc-list-borda ' + lStatus + '" data-vid="' + vid + '">' +
@@ -6606,20 +6619,68 @@ function orcRenderLista() {
 function escHtmlOrc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 function orcNovoAvulso(){
-  // Criar orçamento sem VT vinculada
+  // Criar orçamento avulso: abrir formulário DIRETAMENTE sem mostrar card antes
   var vid = '__avulso_' + Date.now();
-  var orcs = loadOrc();
-  orcs[vid] = {
-    itens: [], status: 'elaboracao', listaStatus: 'pendente',
-    numOficial: '', aprovData: '', verbaProd: 0,
-    savedTs: nowTs(), owner: (me ? me.id : null),
-    avulso: true, nomeEvento: ''
-  };
-  saveOrc(orcs);
-  sbGo('orcamentos', null);
-  setTimeout(function(){
-    if(typeof orcAbrirFormFromLista === 'function') orcAbrirFormFromLista(vid);
-  }, 100);
+  // Guardar ID temporariamente mas NÃO salvar na lista ainda
+  orcCurrentVid = vid;
+  // Esconder lista, mostrar form
+  var listaState = document.getElementById('orc-lista-state');
+  var formState = document.getElementById('orc-form-state');
+  if(listaState) listaState.style.display = 'none';
+  if(formState) formState.style.display = '';
+  // Esconder seletor de VT
+  var selPanel = document.getElementById('orc-selector-panel');
+  if(selPanel) selPanel.style.display = 'none';
+  // Mostrar botão voltar
+  var btn = document.getElementById('orcVoltarBtn');
+  if(btn){ btn.style.display=''; btn.onclick=function(){ orcVoltarLista(); }; }
+  // Atualizar subtitle
+  var sub = document.getElementById('orc-subtitle');
+  if(sub) sub.textContent = 'Orçamento avulso · sem visita vinculada';
+  // Mostrar cabeçalho editável (modo avulso)
+  orcAbrirCabecalhoAvulso(vid);
+  // Mostrar painel principal
+  var bp = document.getElementById('orc-body-panel');
+  if(bp) bp.style.display = 'block';
+  // Resetar status e itens
+  orcRenderStatus('elaboracao');
+  var numFld = document.getElementById('orc-num-field');
+  if(numFld) numFld.value = '';
+  var aprov = document.getElementById('orc-aprov-data');
+  if(aprov) aprov.value = '';
+  orcRenderItens([]);
+  orcUpdateTotal();
+  var pNome = (me&&(me.nome||me.login)) || 'Alessandro Lima';
+  var prodEl = document.getElementById('orc-produtor-nome');
+  if(prodEl) prodEl.textContent = pNome;
+  var tsEl = document.getElementById('orc-saved-ts');
+  if(tsEl) tsEl.textContent = '';
+}
+
+function orcAbrirCabecalhoAvulso(vid){
+  var el = document.getElementById('orc-cabecalho');
+  if(!el) return;
+  // Cabeçalho editável para avulso
+  el.innerHTML = '<div style="background:#F0F9FF;border:1.5px solid #BAE6FD;border-radius:12px;padding:14px 16px;margin-bottom:14px">'
+    + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">'
+    + '<span style="font-size:12px;font-weight:700;color:#0369A1;text-transform:uppercase;letter-spacing:.4px">✏️ Preencha o cabeçalho</span>'
+    + '</div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px">'
+    + '<div style="grid-column:span 2"><label style="font-size:10px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px">Nome do Evento</label>'
+    + '<input id="avNome" type="text" placeholder="Nome da ação / evento" style="width:100%;padding:8px 10px;border:1px solid #CBD5E1;border-radius:7px;font-size:13px;font-family:inherit;outline:none"></div>'
+    + '<div><label style="font-size:10px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px">Cliente / Empresa</label>'
+    + '<input id="avEmpresa" type="text" placeholder="Ex: Gabinete" style="width:100%;padding:8px 10px;border:1px solid #CBD5E1;border-radius:7px;font-size:13px;font-family:inherit;outline:none"></div>'
+    + '<div><label style="font-size:10px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px">Data</label>'
+    + '<input id="avData" type="date" style="width:100%;padding:8px 10px;border:1px solid #CBD5E1;border-radius:7px;font-size:13px;font-family:inherit;outline:none"></div>'
+    + '<div><label style="font-size:10px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px">Horário</label>'
+    + '<input id="avHorario" type="text" placeholder="Ex: 10h00" style="width:100%;padding:8px 10px;border:1px solid #CBD5E1;border-radius:7px;font-size:13px;font-family:inherit;outline:none"></div>'
+    + '<div style="grid-column:span 2"><label style="font-size:10px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px">Local</label>'
+    + '<input id="avLocal" type="text" placeholder="Ex: Rua das Flores, 100" style="width:100%;padding:8px 10px;border:1px solid #CBD5E1;border-radius:7px;font-size:13px;font-family:inherit;outline:none"></div>'
+    + '<div><label style="font-size:10px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px">Montagem</label>'
+    + '<input id="avMontagem" type="text" placeholder="Ex: 08h00" style="width:100%;padding:8px 10px;border:1px solid #CBD5E1;border-radius:7px;font-size:13px;font-family:inherit;outline:none"></div>'
+    + '<div><label style="font-size:10px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px">Produtor</label>'
+    + '<input id="avProdutor" type="text" value="'+ ((me&&(me.nome||me.login))||'Alessandro Lima') +'" style="width:100%;padding:8px 10px;border:1px solid #CBD5E1;border-radius:7px;font-size:13px;font-family:inherit;outline:none"></div>'
+    + '</div></div>';
 }
 
 function orcWACotacaoFromLista(vid) {
