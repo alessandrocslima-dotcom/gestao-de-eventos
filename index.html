@@ -1425,7 +1425,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
           <div class="gep-foot-dev">Desenvolvido por</div>
           <div class="gep-foot-name">Alessandro Lima</div>
           <div class="gep-foot-copy">© 2026 · Todos os direitos reservados</div>
-          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-168</span></div>
+          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-169</span></div>
         </div>
       </div>
     </div>
@@ -1489,7 +1489,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div class="d">Desenvolvido por</div>
       <div class="n">Alessandro Lima</div>
       <div class="c">© 2026 · Todos os direitos reservados</div>
-      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-168</span></div>
+      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-169</span></div>
     </div>
   </div>
 
@@ -5281,7 +5281,7 @@ saveEmp = function(){
 // Expor tudo globalmente
 
 /* ═══════════════════════════════════════════════════════════
-   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-168
+   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-169
    ═══════════════════════════════════════════════════════════ */
 var SK_PLNL = 'vtp_planilhas_v1';
 
@@ -5446,7 +5446,8 @@ function _aplicarEstadoManutencao(){
     document.body.appendChild(overlay);
   }
 
-  if(ativo && !isAdmin()){
+  if(ativo && me && !isAdmin()){
+    // Só bloqueia usuários comuns já logados — nunca bloqueia a tela de login
     overlay.style.display = 'flex';
   } else {
     overlay.style.display = 'none';
@@ -6428,7 +6429,7 @@ window.orcSalvar=orcSalvar;
 window.orcExportXLSX=orcExportXLSX;
 
 /* ══════════════════════════════════════════════════════════
-   LISTA DE ORÇAMENTOS — v15-168
+   LISTA DE ORÇAMENTOS — v15-169
    ══════════════════════════════════════════════════════════ */
 var _orcFiltroAtivo = 'todos';
 
