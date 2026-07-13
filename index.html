@@ -1425,7 +1425,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
           <div class="gep-foot-dev">Desenvolvido por</div>
           <div class="gep-foot-name">Alessandro Lima</div>
           <div class="gep-foot-copy">© 2026 · Todos os direitos reservados</div>
-          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-175</span></div>
+          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-176</span></div>
         </div>
       </div>
     </div>
@@ -1489,7 +1489,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div class="d">Desenvolvido por</div>
       <div class="n">Alessandro Lima</div>
       <div class="c">© 2026 · Todos os direitos reservados</div>
-      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-175</span></div>
+      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-176</span></div>
     </div>
   </div>
 
@@ -1969,11 +1969,14 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
             <h1>💰 Orçamentos</h1>
             <p>Acompanhe todos os orçamentos criados</p>
           </div>
-          <div class="orc-filter-bar">
-            <span class="orc-filter-pill ativo" data-filtro="todos" onclick="orcFiltrar('todos',this)">Todos</span>
-            <span class="orc-filter-pill" data-filtro="pendente" onclick="orcFiltrar('pendente',this)">🟡 Pendente</span>
-            <span class="orc-filter-pill" data-filtro="aprovado" onclick="orcFiltrar('aprovado',this)">🟢 Aprovado</span>
-            <span class="orc-filter-pill" data-filtro="recusado" onclick="orcFiltrar('recusado',this)">🔴 Recusado</span>
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+            <div class="orc-filter-bar" style="margin-bottom:0">
+              <span class="orc-filter-pill ativo" data-filtro="todos" onclick="orcFiltrar('todos',this)">Todos</span>
+              <span class="orc-filter-pill" data-filtro="pendente" onclick="orcFiltrar('pendente',this)">🟡 Pendente</span>
+              <span class="orc-filter-pill" data-filtro="aprovado" onclick="orcFiltrar('aprovado',this)">🟢 Aprovado</span>
+              <span class="orc-filter-pill" data-filtro="recusado" onclick="orcFiltrar('recusado',this)">🔴 Recusado</span>
+            </div>
+            <button onclick="orcNovoAvulso()" style="padding:8px 16px;background:#0F172A;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">📋 Orçamento avulso</button>
           </div>
           <div id="orc-lista-body"></div>
         </div>
@@ -2706,15 +2709,13 @@ function sincronizarTudo(onComplete){
             }
           }
           if(devoBaixar){
-            // Não sobrescrever dados locais com nuvem vazia
-            if(cloudCount === 0){
-              var _localRaw = localStorage.getItem(m.sk);
-              var _localCount = 0;
-              try { var _lp=JSON.parse(_localRaw||'{}'); _localCount=Array.isArray(_lp)?_lp.length:Object.keys(_lp).length; } catch(e){}
-              if(_localCount > 0){
-                console.warn('  ⏭ '+m.col+' PULADO - nuvem vazia mas local tem '+_localCount+' itens');
-                devoBaixar = false;
-              }
+            // Proteção: não sobrescrever se local tem mais itens que a nuvem
+            var _localRaw2 = localStorage.getItem(m.sk);
+            var _localCount2 = 0;
+            try { var _lp2=JSON.parse(_localRaw2||'[]'); _localCount2=Array.isArray(_lp2)?_lp2.length:Object.keys(_lp2).length; } catch(e){}
+            if(cloudCount < _localCount2){
+              console.warn('  ⏭ '+m.col+' PULADO - nuvem tem '+cloudCount+' mas local tem '+_localCount2+' itens');
+              devoBaixar = false;
             }
           }
           if(devoBaixar){
@@ -5282,7 +5283,7 @@ saveEmp = function(){
 // Expor tudo globalmente
 
 /* ═══════════════════════════════════════════════════════════
-   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-175
+   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-176
    ═══════════════════════════════════════════════════════════ */
 var SK_PLNL = 'vtp_planilhas_v1';
 
@@ -6496,7 +6497,7 @@ window.orcSalvar=orcSalvar;
 window.orcExportXLSX=orcExportXLSX;
 
 /* ══════════════════════════════════════════════════════════
-   LISTA DE ORÇAMENTOS — v15-175
+   LISTA DE ORÇAMENTOS — v15-176
    ══════════════════════════════════════════════════════════ */
 var _orcFiltroAtivo = 'todos';
 
@@ -6603,6 +6604,23 @@ function orcRenderLista() {
 }
 
 function escHtmlOrc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function orcNovoAvulso(){
+  // Criar orçamento sem VT vinculada
+  var vid = '__avulso_' + Date.now();
+  var orcs = loadOrc();
+  orcs[vid] = {
+    itens: [], status: 'elaboracao', listaStatus: 'pendente',
+    numOficial: '', aprovData: '', verbaProd: 0,
+    savedTs: nowTs(), owner: (me ? me.id : null),
+    avulso: true, nomeEvento: ''
+  };
+  saveOrc(orcs);
+  sbGo('orcamentos', null);
+  setTimeout(function(){
+    if(typeof orcAbrirFormFromLista === 'function') orcAbrirFormFromLista(vid);
+  }, 100);
+}
 
 function orcWACotacaoFromLista(vid) {
   orcCurrentVid = vid;
