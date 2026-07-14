@@ -1425,7 +1425,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
           <div class="gep-foot-dev">Desenvolvido por</div>
           <div class="gep-foot-name">Alessandro Lima</div>
           <div class="gep-foot-copy">© 2026 · Todos os direitos reservados</div>
-          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-189</span></div>
+          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-190</span></div>
         </div>
       </div>
     </div>
@@ -1489,7 +1489,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div class="d">Desenvolvido por</div>
       <div class="n">Alessandro Lima</div>
       <div class="c">© 2026 · Todos os direitos reservados</div>
-      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-189</span></div>
+      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-190</span></div>
     </div>
   </div>
 
@@ -5269,7 +5269,7 @@ saveEmp = function(){
 // Expor tudo globalmente
 
 /* ═══════════════════════════════════════════════════════════
-   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-189
+   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-190
    ═══════════════════════════════════════════════════════════ */
 var SK_PLNL = 'vtp_planilhas_v1';
 
@@ -5277,12 +5277,6 @@ function plnlLoad(){ try{ return JSON.parse(localStorage.getItem(SK_PLNL)||'[]')
 function plnlSave(a){ localStorage.setItem(SK_PLNL, JSON.stringify(a)); if(typeof marcarMudanca==='function') marcarMudanca(); }
 
 function plnlRenderList(){
-  var listState = document.getElementById('plnl-list-state');
-  var editorState = document.getElementById('plnl-editor-state');
-  if(listState) listState.style.display = 'block';
-  if(editorState) editorState.style.display = 'none';
-  var ifr = document.getElementById('plnl-iframe');
-  if(ifr) ifr.src = '';
   var list = plnlLoad();
   var body = document.getElementById('plnl-list-body');
   if(!body) return;
