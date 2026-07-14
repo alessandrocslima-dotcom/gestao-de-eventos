@@ -1360,7 +1360,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
           <div class="gep-foot-dev">Desenvolvido por</div>
           <div class="gep-foot-name">Alessandro Lima</div>
           <div class="gep-foot-copy">© 2026 · Todos os direitos reservados</div>
-          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-196</span></div>
+          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-197</span></div>
         </div>
       </div>
     </div>
@@ -1424,7 +1424,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div class="d">Desenvolvido por</div>
       <div class="n">Alessandro Lima</div>
       <div class="c">© 2026 · Todos os direitos reservados</div>
-      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-196</span></div>
+      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-197</span></div>
     </div>
   </div>
 
@@ -5168,7 +5168,7 @@ saveEmp = function(){
 // Expor tudo globalmente
 
 /* ═══════════════════════════════════════════════════════════
-   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-196
+   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-197
    ═══════════════════════════════════════════════════════════ */
 var SK_PLNL = 'vtp_planilhas_v1';
 
@@ -5399,6 +5399,7 @@ function orcLoadVisita(vid){
     var pNome = (me&&(me.nome||me.login)) || 'Alessandro Lima';
     var pn=document.getElementById('orc-produtor-nome'); if(pn) pn.textContent=pNome;
     var st=document.getElementById('orc-saved-ts'); if(st) st.textContent='';
+    document.getElementById('orc-selector-panel').style.display='none';
     document.getElementById('orc-body-panel').style.display='block';
     return;
   }
@@ -5435,6 +5436,7 @@ function orcLoadVisita(vid){
   document.getElementById('orc-produtor-nome').textContent = pNome;
   document.getElementById('orc-saved-ts').textContent = orc.savedTs ? 'Salvo em '+orc.savedTs : '';
   document.getElementById('orc-subtitle').textContent = (v.nome||'Sem nome') + ' · ID: VTP-'+new Date(parseInt(vid,36)||Date.now()).getFullYear()+'-'+(String(loadV().findIndex(function(x){return x.id===vid;})+1).padStart(4,'0'));
+  document.getElementById('orc-selector-panel').style.display='none';
   document.getElementById('orc-body-panel').style.display='block';
   // Atualizar botão Agendar
   if(typeof orcAtualizarBotaoAgendar==='function') orcAtualizarBotaoAgendar();
@@ -9154,6 +9156,8 @@ function orcVoltar(){
   if(bv) bv.style.display = 'none';
   var sub = document.getElementById('orc-subtitle');
   if(sub) sub.textContent = 'Selecione um orçamento ou crie um novo';
+  var sp = document.getElementById('orc-selector-panel');
+  if(sp) sp.style.display = 'block';
   orcRenderLista();
 }
 
