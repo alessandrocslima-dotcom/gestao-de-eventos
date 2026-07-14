@@ -5302,6 +5302,9 @@ function orcPopulateSelector(){
 function orcRenderLista(){
   var lista = document.getElementById('orc-lista-vts');
   if(!lista) return;
+  // Esconder preview ao mostrar lista
+  var prev = document.getElementById('orc-visita-preview');
+  if(prev) prev.style.display='none';
   var orcs = loadOrc();
   var vs = loadV();
   if(typeof filtrarVisitasVisiveis==='function') vs = filtrarVisitasVisiveis(vs);
@@ -5319,18 +5322,34 @@ function orcRenderLista(){
     return;
   }
 
+  var STATUS_LABEL = {elaboracao:'Em elaboração', enviado:'Enviado', aprovado:'Aprovado', recusado:'Recusado'};
+  var STATUS_COLOR = {elaboracao:'#92400E', enviado:'#1e40af', aprovado:'#166534', recusado:'#991b1b'};
+  var STATUS_BG    = {elaboracao:'#FEF3C7', enviado:'#DBEAFE', aprovado:'#DCFCE7', recusado:'#FEE2E2'};
+  var STATUS_BORDER= {elaboracao:'#F59E0B', enviado:'#3B82F6', aprovado:'#16A34A', recusado:'#DC2626'};
+
   var h = '';
   enviadas.forEach(function(v){
     var orc = orcs[v.id] || {};
-    var status = orc.status || 'elaboracao';
-    var statusLabel = {elaboracao:'✏️ Em elaboração', enviado:'📤 Enviado', aprovado:'✅ Aprovado', recusado:'❌ Recusado'}[status] || status;
-    var statusColor = {elaboracao:'#64748B', enviado:'#2563EB', aprovado:'#16A34A', recusado:'#DC2626'}[status] || '#64748B';
-    h += '<div style="background:#fff;border:1px solid #E2E8F0;border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer" onclick="orcLoadVisita(\'' + v.id + '\')">'; 
-    h += '<div style="flex:1;min-width:0">';
-    h += '<div style="font-size:13px;font-weight:600;color:#0F172A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(v.nome||'Sem nome')+'</div>';
-    h += '<div style="font-size:11px;color:#64748B;margin-top:2px">'+(v.empresa||'')+(v.dataEvento?' · '+v.dataEvento:'')+'</div>';
+    var st = orc.status || 'elaboracao';
+    var num = orc.numOficial ? '<span style="font-size:11px;color:#64748B;margin-left:8px">Nº '+orc.numOficial+'</span>' : '';
+    h += '<div style="background:#fff;border:1px solid #E2E8F0;border-left:3px solid '+(STATUS_BORDER[st]||'#E2E8F0')+';border-radius:10px;padding:14px 16px;margin-bottom:10px">';
+    h += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">';
+    h += '<div style="display:flex;align-items:center;gap:8px">';
+    h += '<span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:6px;background:'+(STATUS_BG[st]||'#F1F5F9')+';color:'+(STATUS_COLOR[st]||'#475569')+'">'+(STATUS_LABEL[st]||st)+'</span>';
+    h += num;
     h += '</div>';
-    h += '<div style="font-size:11px;font-weight:600;color:'+statusColor+';white-space:nowrap">'+statusLabel+'</div>';
+    h += '<span style="font-size:13px;font-weight:700;color:#0F172A">R$ '+((orc._total||0).toFixed ? (orc._total||0).toFixed(2) : '0,00').replace('.',',')+'</span>';
+    h += '</div>';
+    h += '<div style="font-size:14px;font-weight:600;color:#0F172A;margin-bottom:6px">'+(v.nome||'Sem nome')+'</div>';
+    h += '<div style="font-size:12px;color:#64748B;display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px">';
+    if(v.empresa) h += '<span>🏢 '+v.empresa+'</span>';
+    if(v.produtor) h += '<span>👤 '+v.produtor+'</span>';
+    if(v.dataEvento) h += '<span>📅 '+v.dataEvento+'</span>';
+    h += '</div>';
+    h += '<div style="display:flex;gap:8px;flex-wrap:wrap">';
+    h += '<button onclick="event.stopPropagation();orcWaCotacao(\'' + v.id + '\')" style="font-size:11px;padding:6px 12px;border:1.5px solid #86EFAC;border-radius:7px;background:#F0FDF4;color:#15803D;cursor:pointer;font-weight:600">🟢 WA Cotação</button>';
+    h += '<button onclick="orcLoadVisita(\'' + v.id + '\')" style="font-size:11px;padding:6px 12px;border:1.5px solid #BFDBFE;border-radius:7px;background:#EFF6FF;color:#1D4ED8;cursor:pointer;font-weight:600">✏️ Editar itens</button>';
+    h += '</div>';
     h += '</div>';
   });
 
@@ -5896,8 +5915,12 @@ function vtEnviarParaOrcamento(vid){
   saveOrc(orcs);
   toast('Visita enviada para Orçamentos ✓','ok');
   renderDash();
+  // Navegar para orçamentos e abrir direto
   sbGo('orcamentos', null);
-  setTimeout(function(){ orcLoadVisita(vid); }, 150);
+  setTimeout(function(){
+    orcRenderLista();
+    orcLoadVisita(vid);
+  }, 200);
 }
 
 function vtVerOrcamento(vid){
