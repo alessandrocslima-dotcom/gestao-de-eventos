@@ -1360,7 +1360,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
           <div class="gep-foot-dev">Desenvolvido por</div>
           <div class="gep-foot-name">Alessandro Lima</div>
           <div class="gep-foot-copy">© 2026 · Todos os direitos reservados</div>
-          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-198</span></div>
+          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-199</span></div>
         </div>
       </div>
     </div>
@@ -1424,7 +1424,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div class="d">Desenvolvido por</div>
       <div class="n">Alessandro Lima</div>
       <div class="c">© 2026 · Todos os direitos reservados</div>
-      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-198</span></div>
+      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-199</span></div>
     </div>
   </div>
 
@@ -1889,7 +1889,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
             <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;vertical-align:-2px"><polyline points="15 18 9 12 15 6"/></svg>
             Voltar para Orçamentos
           </button>
-          <h1>💰 Planilha Orçamentária</h1>
+          <h1>💰 Orçamentos</h1>
           <p id="orc-subtitle">Selecione uma visita para gerar o orçamento</p>
         </div>
 
@@ -2034,7 +2034,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
         <!-- ESTADO: LISTA -->
         <div id="plnl-list-state">
           <div class="pg-hdr">
-            <h1>📊 Planilha Orçamentária</h1>
+            <h1>💰 Orçamentos</h1>
             <p>Crie e gerencie planilhas de orçamento com exportação Excel profissional</p>
           </div>
           <div class="panel">
@@ -2447,6 +2447,7 @@ window.addEventListener('load', function(){
               if(typeof renderDash==='function' && me) try{ renderDash(); }catch(e){}
               if(typeof agRenderAll==='function') try{ agRenderAll(); }catch(e){}
               if(typeof renderForns==='function') try{ renderForns(); }catch(e){}
+              if(typeof orcRenderLista==='function') try{ orcRenderLista(); }catch(e){}
               if(typeof eqPopulateSelect==='function') try{ eqPopulateSelect(); }catch(e){} if(typeof somPopulateSelect==='function') try{ somPopulateSelect(); }catch(e){} if(typeof equipesPopulateSelect==='function') try{ equipesPopulateSelect(); }catch(e){} if(typeof servicosPopulateSelect==='function') try{ servicosPopulateSelect(); }catch(e){}
             }
           });
@@ -5168,7 +5169,7 @@ saveEmp = function(){
 // Expor tudo globalmente
 
 /* ═══════════════════════════════════════════════════════════
-   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-198
+   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-199
    ═══════════════════════════════════════════════════════════ */
 var SK_PLNL = 'vtp_planilhas_v1';
 
