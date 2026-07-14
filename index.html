@@ -1360,7 +1360,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
           <div class="gep-foot-dev">Desenvolvido por</div>
           <div class="gep-foot-name">Alessandro Lima</div>
           <div class="gep-foot-copy">© 2026 · Todos os direitos reservados</div>
-          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-197</span></div>
+          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-198</span></div>
         </div>
       </div>
     </div>
@@ -1424,7 +1424,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div class="d">Desenvolvido por</div>
       <div class="n">Alessandro Lima</div>
       <div class="c">© 2026 · Todos os direitos reservados</div>
-      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-197</span></div>
+      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-198</span></div>
     </div>
   </div>
 
@@ -5168,7 +5168,7 @@ saveEmp = function(){
 // Expor tudo globalmente
 
 /* ═══════════════════════════════════════════════════════════
-   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-197
+   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-198
    ═══════════════════════════════════════════════════════════ */
 var SK_PLNL = 'vtp_planilhas_v1';
 
@@ -5347,7 +5347,7 @@ function orcRenderLista(){
     if(v.dataEvento) h += '<span>📅 '+v.dataEvento+'</span>';
     h += '</div>';
     h += '<div style="display:flex;gap:8px;flex-wrap:wrap">';
-    h += '<button onclick="event.stopPropagation();orcWaCotacao(\'' + v.id + '\')" style="font-size:11px;padding:6px 12px;border:1.5px solid #86EFAC;border-radius:7px;background:#F0FDF4;color:#15803D;cursor:pointer;font-weight:600">🟢 WA Cotação</button>';
+    h += '<button onclick="event.stopPropagation();orcCurrentVid=\'' + v.id + '\';orcWACotacao()" style="font-size:11px;padding:6px 12px;border:1.5px solid #86EFAC;border-radius:7px;background:#F0FDF4;color:#15803D;cursor:pointer;font-weight:600">🟢 WA Cotação</button>';
     h += '<button onclick="orcLoadVisita(\'' + v.id + '\')" style="font-size:11px;padding:6px 12px;border:1.5px solid #BFDBFE;border-radius:7px;background:#EFF6FF;color:#1D4ED8;cursor:pointer;font-weight:600">✏️ Editar itens</button>';
     h += '</div>';
     h += '</div>';
