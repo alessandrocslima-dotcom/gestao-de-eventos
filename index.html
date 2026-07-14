@@ -4178,12 +4178,18 @@ document.getElementById('modalOv').addEventListener('click',function(e){ if(e.ta
 /* ── INIT ── */
 // Funções de navegação globais — simples e diretas
 function irParaDash(){
-  document.getElementById('tpForm').style.display='none';
-  document.getElementById('tpAdmin').style.display='none';
-  document.getElementById('tpDash').style.display='block';
-  document.getElementById('ntDash').className='ntab on';
-  document.getElementById('ntForm').className='ntab';
-  document.getElementById('ntAdmin').className='ntab';
+  var tpForm = document.getElementById('tpForm');
+  var tpAdmin = document.getElementById('tpAdmin');
+  var tpDash = document.getElementById('tpDash');
+  var ntDash = document.getElementById('ntDash');
+  var ntForm = document.getElementById('ntForm');
+  var ntAdmin = document.getElementById('ntAdmin');
+  if(tpForm) tpForm.style.display='none';
+  if(tpAdmin) tpAdmin.style.display='none';
+  if(tpDash) tpDash.style.display='block';
+  if(ntDash) ntDash.className='ntab on';
+  if(ntForm) ntForm.className='ntab';
+  if(ntAdmin) ntAdmin.className='ntab';
   window.scrollTo(0,0);
   renderDash();
 }
@@ -4199,9 +4205,9 @@ function onEmpSelect(){
 }
 
 function irParaForm(){
-  document.getElementById('tpDash').style.display='none';
-  document.getElementById('tpAdmin').style.display='none';
-  document.getElementById('tpForm').style.display='block';
+  var _tpD=document.getElementById('tpDash'); if(_tpD) _tpD.style.display='none';
+  var _tpA2=document.getElementById('tpAdmin'); if(_tpA2) _tpA2.style.display='none';
+  var _tpF=document.getElementById('tpForm'); if(_tpF) _tpF.style.display='block';
   document.getElementById('ntDash').className='ntab';
   document.getElementById('ntForm').className='ntab on';
   document.getElementById('ntAdmin').className='ntab';
@@ -4211,9 +4217,9 @@ function irParaForm(){
   window.isEditing=false;
 }
 function irParaAdmin(){
-  document.getElementById('tpDash').style.display='none';
-  document.getElementById('tpForm').style.display='none';
-  document.getElementById('tpAdmin').style.display='block';
+  var _tpD2=document.getElementById('tpDash'); if(_tpD2) _tpD2.style.display='none';
+  var _tpF2=document.getElementById('tpForm'); if(_tpF2) _tpF2.style.display='none';
+  var _tpA=document.getElementById('tpAdmin'); if(_tpA) _tpA.style.display='block';
   document.getElementById('ntDash').className='ntab';
   document.getElementById('ntForm').className='ntab';
   document.getElementById('ntAdmin').className='ntab on';
@@ -5319,7 +5325,7 @@ function orcRenderLista(){
     var status = orc.status || 'elaboracao';
     var statusLabel = {elaboracao:'✏️ Em elaboração', enviado:'📤 Enviado', aprovado:'✅ Aprovado', recusado:'❌ Recusado'}[status] || status;
     var statusColor = {elaboracao:'#64748B', enviado:'#2563EB', aprovado:'#16A34A', recusado:'#DC2626'}[status] || '#64748B';
-    h += '<div style="background:#fff;border:1px solid #E2E8F0;border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer" onclick="orcLoadVisita(''+v.id+'')">';
+    h += '<div style="background:#fff;border:1px solid #E2E8F0;border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer" onclick="orcLoadVisita(\'' + v.id + '\')">'; 
     h += '<div style="flex:1;min-width:0">';
     h += '<div style="font-size:13px;font-weight:600;color:#0F172A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(v.nome||'Sem nome')+'</div>';
     h += '<div style="font-size:11px;color:#64748B;margin-top:2px">'+(v.empresa||'')+(v.dataEvento?' · '+v.dataEvento:'')+'</div>';
@@ -5333,7 +5339,7 @@ function orcRenderLista(){
     var status = orc.status || 'elaboracao';
     var statusLabel = {elaboracao:'✏️ Em elaboração', enviado:'📤 Enviado', aprovado:'✅ Aprovado', recusado:'❌ Recusado'}[status] || status;
     var statusColor = {elaboracao:'#64748B', enviado:'#2563EB', aprovado:'#16A34A', recusado:'#DC2626'}[status] || '#64748B';
-    h += '<div style="background:#fff;border:1px solid #E2E8F0;border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer" onclick="orcLoadVisita(''+k+'')">';
+    h += '<div style="background:#fff;border:1px solid #E2E8F0;border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer" onclick="orcLoadVisita(\'' + k + '\')">'; 
     h += '<div style="flex:1;min-width:0">';
     h += '<div style="font-size:13px;font-weight:600;color:#0F172A">'+(orc._nomeAvulso||'Orçamento avulso')+'</div>';
     h += '<div style="font-size:11px;color:#94A3B8;margin-top:2px">Avulso · '+new Date(orc._enviadoTs||Date.now()).toLocaleDateString('pt-BR')+'</div>';
