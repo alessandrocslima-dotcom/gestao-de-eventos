@@ -1360,7 +1360,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
           <div class="gep-foot-dev">Desenvolvido por</div>
           <div class="gep-foot-name">Alessandro Lima</div>
           <div class="gep-foot-copy">© 2026 · Todos os direitos reservados</div>
-          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-199</span></div>
+          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-200</span></div>
         </div>
       </div>
     </div>
@@ -1424,7 +1424,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div class="d">Desenvolvido por</div>
       <div class="n">Alessandro Lima</div>
       <div class="c">© 2026 · Todos os direitos reservados</div>
-      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-199</span></div>
+      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-200</span></div>
     </div>
   </div>
 
@@ -5169,7 +5169,7 @@ saveEmp = function(){
 // Expor tudo globalmente
 
 /* ═══════════════════════════════════════════════════════════
-   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-199
+   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-200
    ═══════════════════════════════════════════════════════════ */
 var SK_PLNL = 'vtp_planilhas_v1';
 
@@ -5718,6 +5718,7 @@ function orcAutoSave(){
   // Debounce: salva localmente sempre, mas só envia pra nuvem 800ms após parar de digitar
   if(!orcCurrentVid) return;
   var orcs = loadOrc();
+  var _existing = orcs[orcCurrentVid] || {};
   orcs[orcCurrentVid] = {
     itens: orcCollectItens(),
     status: orcGetCurrentStatus(),
@@ -5725,7 +5726,10 @@ function orcAutoSave(){
     aprovData: (document.getElementById('orc-aprov-data')||{}).value||'',
     verbaProd: 0,
     savedTs: nowTs(),
-    owner: (typeof _meuId==='function') ? _meuId() : null
+    owner: (typeof _meuId==='function') ? _meuId() : null,
+    _enviado: _existing._enviado || false,
+    _enviadoTs: _existing._enviadoTs || null,
+    _nomeAvulso: _existing._nomeAvulso || null
   };
   // Salva local imediatamente (rápido, sem custo de rede)
   localStorage.setItem(SK_ORC, JSON.stringify(orcs));
@@ -5744,6 +5748,10 @@ function orcSalvar(){
   var el = document.getElementById('orc-saved-ts');
   if(el) el.textContent = 'Salvo em '+nowTs();
   toast('Orçamento salvo!','ok');
+  // Voltar para lista e atualizar
+  setTimeout(function(){
+    orcVoltar();
+  }, 800);
 }
 
 /* ── Exportar Excel (XLSX puro via CSV com BOM, compatível com Excel) ── */
