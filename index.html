@@ -1360,7 +1360,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
           <div class="gep-foot-dev">Desenvolvido por</div>
           <div class="gep-foot-name">Alessandro Lima</div>
           <div class="gep-foot-copy">© 2026 · Todos os direitos reservados</div>
-          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-205</span></div>
+          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-207</span></div>
         </div>
       </div>
     </div>
@@ -1424,7 +1424,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div class="d">Desenvolvido por</div>
       <div class="n">Alessandro Lima</div>
       <div class="c">© 2026 · Todos os direitos reservados</div>
-      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-205</span></div>
+      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-207</span></div>
     </div>
   </div>
 
@@ -2572,10 +2572,10 @@ function sincronizarTudo(onComplete){
     { col:'users_lista',   sk:'vtp_users_v2' },
     { col:'visitas_lista', sk:'vtp_visitas_v2' },
     { col:'fornecedores',  sk:'vtp_fornecedores_v1' },
+    { col:'orcamentos',    sk:'vtp_orcamentos_v1' },
     { col:'empresas',      sk:'vtp_empresas_v1' },
     { col:'secretarias',   sk:'vtp_secretarias_v1' },
     { col:'produtores',    sk:'vtp_produtores_v1' },
-    { col:'orcamentos',    sk:'vtp_orcamentos_v1' },
     { col:'agenda',        sk:'vtp_agenda_v1' },
     { col:'realizados',    sk:'vtp_realizados_v1' },
     { col:'catalogo',      sk:'vtp_catalogo_v1' }
@@ -2602,6 +2602,19 @@ function sincronizarTudo(onComplete){
             }
           }
           if(devoBaixar){
+            // Para orçamentos: só baixa se a nuvem tiver mais itens que o local
+            if(m.col === 'orcamentos'){
+              var localOrcs = {};
+              try{ localOrcs = JSON.parse(localStorage.getItem(m.sk)||'{}'); }catch(e){}
+              var localCount = Object.keys(localOrcs).length;
+              if(cloudCount <= localCount){
+                console.log('  ⏭ orcamentos MANTIDO LOCAL (local='+localCount+' >= nuvem='+cloudCount+')');
+                atualizados++;
+                pendentes--;
+                if(pendentes===0){ console.log('✅ Sincronização concluída ('+atualizados+'/'+modulos.length+' módulos)'); if(onComplete) onComplete(true); }
+                return;
+              }
+            }
             localStorage.setItem(m.sk, JSON.stringify(items));
             // Atualizar timestamp pra refletir o que está local agora
             if(cloudTs) try { localStorage.setItem('vtp_sync_ts_'+m.col, cloudTs); } catch(e){}
@@ -5169,7 +5182,7 @@ saveEmp = function(){
 // Expor tudo globalmente
 
 /* ═══════════════════════════════════════════════════════════
-   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-205
+   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-207
    ═══════════════════════════════════════════════════════════ */
 var SK_PLNL = 'vtp_planilhas_v1';
 
@@ -9298,10 +9311,10 @@ function enviarTudoParaNuvem(onComplete){
     { col:'users_lista',   sk:'vtp_users_v2' },
     { col:'visitas_lista', sk:'vtp_visitas_v2' },
     { col:'fornecedores',  sk:'vtp_fornecedores_v1' },
+    { col:'orcamentos',    sk:'vtp_orcamentos_v1' },
     { col:'empresas',      sk:'vtp_empresas_v1' },
     { col:'secretarias',   sk:'vtp_secretarias_v1' },
     { col:'produtores',    sk:'vtp_produtores_v1' },
-    { col:'orcamentos',    sk:'vtp_orcamentos_v1' },
     { col:'agenda',        sk:'vtp_agenda_v1' },
     { col:'realizados',    sk:'vtp_realizados_v1' },
     { col:'catalogo',      sk:'vtp_catalogo_v1' }
