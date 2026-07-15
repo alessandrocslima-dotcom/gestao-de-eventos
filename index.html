@@ -1360,7 +1360,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
           <div class="gep-foot-dev">Desenvolvido por</div>
           <div class="gep-foot-name">Alessandro Lima</div>
           <div class="gep-foot-copy">© 2026 · Todos os direitos reservados</div>
-          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-202</span></div>
+          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-203</span></div>
         </div>
       </div>
     </div>
@@ -1424,7 +1424,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div class="d">Desenvolvido por</div>
       <div class="n">Alessandro Lima</div>
       <div class="c">© 2026 · Todos os direitos reservados</div>
-      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-202</span></div>
+      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-203</span></div>
     </div>
   </div>
 
@@ -3852,8 +3852,8 @@ function genPDF(){
 
 /* ── RESET FORM ── */
 function resetForm(){
-  ['fEmp','fDoc','fTelEmp','fProd','fTelProd','fNome','fTipo','fData','fDataFim','fHora','fHoraFim','fPessoas',
-   'fDataM','fHoraM','fObsM','fLoc','fEnd','fRef','fLinkLoc','fRDesc','fSom','fSomDet','fObsEst','fObs'].forEach(function(id){
+  ['fEmpSel','fEmp','fDoc','fTelEmp','fProd','fTelProd','fNome','fTipo','fData','fDataFim','fHora','fHoraFim','fPessoas',
+   'fDataM','fHoraM','fObsM','fLoc','fEnd','fRef','fLinkLoc','fRDesc','fSom','fSomDet','fObsEst','fObs','fSec'].forEach(function(id){
     var e=document.getElementById(id); if(e){ if(e.tagName==='SELECT') e.selectedIndex=0; else e.value=''; }
   });
   fRisco=''; gps={main:{lat:null,lng:null,dt:''},r1:{lat:null,lng:null,dt:''},r2:{lat:null,lng:null,dt:''}};
@@ -5169,7 +5169,7 @@ saveEmp = function(){
 // Expor tudo globalmente
 
 /* ═══════════════════════════════════════════════════════════
-   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-202
+   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-203
    ═══════════════════════════════════════════════════════════ */
 var SK_PLNL = 'vtp_planilhas_v1';
 
