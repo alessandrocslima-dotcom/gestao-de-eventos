@@ -1360,7 +1360,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
           <div class="gep-foot-dev">Desenvolvido por</div>
           <div class="gep-foot-name">Alessandro Lima</div>
           <div class="gep-foot-copy">© 2026 · Todos os direitos reservados</div>
-          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-207</span></div>
+          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-208</span></div>
         </div>
       </div>
     </div>
@@ -1424,7 +1424,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div class="d">Desenvolvido por</div>
       <div class="n">Alessandro Lima</div>
       <div class="c">© 2026 · Todos os direitos reservados</div>
-      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-207</span></div>
+      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-208</span></div>
     </div>
   </div>
 
@@ -5182,7 +5182,7 @@ saveEmp = function(){
 // Expor tudo globalmente
 
 /* ═══════════════════════════════════════════════════════════
-   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-207
+   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-208
    ═══════════════════════════════════════════════════════════ */
 var SK_PLNL = 'vtp_planilhas_v1';
 
@@ -5321,25 +5321,37 @@ function orcRenderLista(){
   if(prev) prev.style.display='none';
   var orcs = loadOrc();
   var vs = loadV();
+  // Chave separada de enviados (não é sobrescrita pelo sync do Firebase)
+  var _enviados = JSON.parse(localStorage.getItem('vtp_orc_enviados')||'{}');
 
-  // Filtrar orçamentos enviados diretamente do objeto orcs (não depende do loadV)
-  var enviadosIds = Object.keys(orcs).filter(function(k){
-    return k.indexOf('_avulso_') < 0 && orcs[k]._enviado;
+  // Unir IDs do objeto orcs E da chave separada
+  var enviadosIds = Object.keys(_enviados);
+  // Adicionar também os que estão em orcs com _enviado=true
+  Object.keys(orcs).forEach(function(k){
+    if(k.indexOf('_avulso_') < 0 && orcs[k]._enviado && enviadosIds.indexOf(k) < 0){
+      enviadosIds.push(k);
+    }
+  });
+  // Garantir _enviado no orcs para todos os IDs da chave separada
+  enviadosIds.forEach(function(id){
+    if(!orcs[id]) orcs[id] = { itens:[], status:'elaboracao', numOficial:'', aprovData:'', verbaProd:0 };
+    orcs[id]._enviado = true;
+    orcs[id]._enviadoTs = orcs[id]._enviadoTs || (_enviados[id]&&_enviados[id].ts) || Date.now();
   });
   enviadosIds.sort(function(a,b){ return (orcs[b]._enviadoTs||0)-(orcs[a]._enviadoTs||0); });
 
-  // Buscar dados da VT — se não achar no loadV, usar dados salvos no orçamento
+  // Buscar dados da VT
   var enviadas = enviadosIds.map(function(id){
     var vt = vs.find(function(v){ return v.id===id; });
     if(vt) return vt;
-    // Fallback: usar dados que foram salvos no próprio orçamento
-    var orc = orcs[id];
+    var fb = _enviados[id] || {};
+    var orc = orcs[id] || {};
     return {
       id: id,
-      nome: orc._nomeEvento || orc._nome || id,
-      empresa: orc._empresa || '',
-      produtor: orc._produtor || '',
-      dataEvento: orc._data || ''
+      nome: fb.nome || orc._nomeEvento || id,
+      empresa: fb.empresa || orc._empresa || '',
+      produtor: fb.produtor || orc._produtor || '',
+      dataEvento: fb.data || orc._data || ''
     };
   });
 
@@ -5966,6 +5978,10 @@ function vtEnviarParaOrcamento(vid){
   var _tsEnvio = new Date().toISOString();
   localStorage.setItem('vtp_orcamentos_v1', JSON.stringify(orcs));
   localStorage.setItem('vtp_sync_ts_orcamentos', _tsEnvio);
+  // Salvar lista de IDs enviados em chave separada (não é sobrescrita pelo sync)
+  var _enviados = JSON.parse(localStorage.getItem('vtp_orc_enviados')||'{}');
+  _enviados[vid] = { ts: Date.now(), nome: v.nome||'', empresa: v.empresa||'', produtor: v.produtor||'', data: v.dataEvento||'' };
+  localStorage.setItem('vtp_orc_enviados', JSON.stringify(_enviados));
   if(typeof marcarMudanca==='function') marcarMudanca();
   if(typeof cloudSaveList==='function') cloudSaveList('orcamentos', orcs);
   toast('Visita enviada para Orçamentos ✓','ok');
