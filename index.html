@@ -1360,7 +1360,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
           <div class="gep-foot-dev">Desenvolvido por</div>
           <div class="gep-foot-name">Alessandro Lima</div>
           <div class="gep-foot-copy">© 2026 · Todos os direitos reservados</div>
-          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-200</span></div>
+          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-201</span></div>
         </div>
       </div>
     </div>
@@ -1424,7 +1424,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div class="d">Desenvolvido por</div>
       <div class="n">Alessandro Lima</div>
       <div class="c">© 2026 · Todos os direitos reservados</div>
-      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-200</span></div>
+      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-201</span></div>
     </div>
   </div>
 
@@ -5169,7 +5169,7 @@ saveEmp = function(){
 // Expor tudo globalmente
 
 /* ═══════════════════════════════════════════════════════════
-   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-200
+   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-201
    ═══════════════════════════════════════════════════════════ */
 var SK_PLNL = 'vtp_planilhas_v1';
 
@@ -5747,6 +5747,9 @@ function orcSalvar(){
   if(typeof orcSincronizarEvento==='function') orcSincronizarEvento();
   var el = document.getElementById('orc-saved-ts');
   if(el) el.textContent = 'Salvo em '+nowTs();
+  // Forçar save na nuvem imediatamente
+  var _orcsNow = loadOrc();
+  if(typeof cloudSaveList==='function') cloudSaveList('orcamentos', _orcsNow);
   toast('Orçamento salvo!','ok');
   // Voltar para lista e atualizar
   setTimeout(function(){
@@ -5923,7 +5926,10 @@ function vtEnviarParaOrcamento(vid){
   if(!orcs[vid]) orcs[vid] = { itens:[], status:'elaboracao', numOficial:'', aprovData:'', verbaProd:0 };
   orcs[vid]._enviado = true;
   orcs[vid]._enviadoTs = Date.now();
-  saveOrc(orcs);
+  // Salvar local E nuvem imediatamente
+  localStorage.setItem('vtp_orcamentos_v1', JSON.stringify(orcs));
+  if(typeof marcarMudanca==='function') marcarMudanca();
+  if(typeof cloudSaveList==='function') cloudSaveList('orcamentos', orcs);
   toast('Visita enviada para Orçamentos ✓','ok');
   renderDash();
   // Navegar para orçamentos e abrir direto
