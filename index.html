@@ -1360,7 +1360,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
           <div class="gep-foot-dev">Desenvolvido por</div>
           <div class="gep-foot-name">Alessandro Lima</div>
           <div class="gep-foot-copy">© 2026 · Todos os direitos reservados</div>
-          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-208</span></div>
+          <div class="gep-foot-ver">GEP · Gestão de Eventos Pro · <span id="appVer">v15-209</span></div>
         </div>
       </div>
     </div>
@@ -1424,7 +1424,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div class="d">Desenvolvido por</div>
       <div class="n">Alessandro Lima</div>
       <div class="c">© 2026 · Todos os direitos reservados</div>
-      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-208</span></div>
+      <div class="v">GEP · Gestão de Eventos Pro · <span id="appVer">v15-209</span></div>
     </div>
   </div>
 
@@ -5182,7 +5182,7 @@ saveEmp = function(){
 // Expor tudo globalmente
 
 /* ═══════════════════════════════════════════════════════════
-   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-208
+   PLANILHA ORÇAMENTÁRIA — gerenciador GEP v15-209
    ═══════════════════════════════════════════════════════════ */
 var SK_PLNL = 'vtp_planilhas_v1';
 
@@ -5441,6 +5441,20 @@ function orcLoadVisita(vid){
     var pNome = (me&&(me.nome||me.login)) || 'Alessandro Lima';
     var pn=document.getElementById('orc-produtor-nome'); if(pn) pn.textContent=pNome;
     var st=document.getElementById('orc-saved-ts'); if(st) st.textContent='';
+    // Renderizar cabeçalho vazio para avulso (editável pelo usuário)
+    var vAvulso = {
+      empresa: orc._empresa || '',
+      dataEvento: orc._data || '',
+      horaEvento: orc._hora || '',
+      nome: orc._nomeEvento || '',
+      local: orc._local || '',
+      endereco: orc._end || '',
+      pessoas: orc._pessoas || '',
+      dataMont: orc._dataMonт || '',
+      horaMonт: orc._horaMont || '',
+      sec: orc._sec || ''
+    };
+    if(typeof orcRenderCabecalho==='function') orcRenderCabecalho(vAvulso);
     document.getElementById('orc-selector-panel').style.display='none';
     document.getElementById('orc-body-panel').style.display='block';
     return;
